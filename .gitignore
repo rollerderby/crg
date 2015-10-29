@@ -18,3 +18,5 @@ android/assets/
 android/build/
 /rules/
 cmd/scoreboard/scoreboard*
+*.json
+*.swp
