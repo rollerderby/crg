@@ -10,6 +10,7 @@ import (
 	"time"
 )
 
+// Saver handles saving part (or all) of the state to a file
 type Saver struct {
 	sync.Mutex
 	state       map[string]*string
@@ -21,6 +22,12 @@ type Saver struct {
 	lastSaved   time.Time
 }
 
+// NewSaver creates a new saver.
+// filename: name of the file
+// base: pattern to match (see PatternMatch for examples of matching)
+// interval: time between saves.  Zero if you want/need a save on every change, will only
+//           save if something has actually changed
+// version: save older versions of the file (move file to file.1, file.1 to file.2, etc) NOT IMPLEMENTED!
 func NewSaver(filename, base string, interval time.Duration, version bool) (*Saver, map[string]string) {
 	savedState := loadState(filename)
 
@@ -39,6 +46,8 @@ func NewSaver(filename, base string, interval time.Duration, version bool) (*Sav
 	return s, savedState
 }
 
+// Close unregisters the Saver from the statemanager and stops the saving go routine (issuing one last save
+// in case there were changes since last save)
 func (s *Saver) Close() {
 	s.listener.Close()
 	s.listener = nil
@@ -93,6 +102,8 @@ func loadState(filename string) map[string]string {
 	return state
 }
 
+// TODO: implement s.interval in a better way.  only issues save if the last save was more than interval away,
+// should possibly issue a save if nothing has changed in that time too.
 func (s *Saver) saveLoop() {
 	for {
 		select {

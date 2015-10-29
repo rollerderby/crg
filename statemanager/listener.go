@@ -6,6 +6,7 @@ import (
 	"sort"
 )
 
+// Listener allows functions to listen for changes in the state of the scoreboard
 type Listener struct {
 	name     string
 	callback func(map[string]*string)
@@ -16,6 +17,9 @@ type Listener struct {
 
 var listeners []*Listener
 
+// NewListener creates a listener with name describing the listener (for log messages)
+// and cb is a callback function which gets called on changes to the state filtered
+// by Listener.RegisterPaths
 func NewListener(name string, cb func(map[string]*string)) *Listener {
 	lock.Lock()
 	defer lock.Unlock()
@@ -33,6 +37,8 @@ func NewListener(name string, cb func(map[string]*string)) *Listener {
 	return l
 }
 
+// Close closes the listener.  After this call it the callback will never be called for
+// this listener again.
 func (l *Listener) Close() {
 	lock.Lock()
 	defer lock.Unlock()
@@ -70,6 +76,9 @@ func (l *Listener) processUpdates() {
 	}
 }
 
+// RegisterPaths adds the paths to the listener to get updates.  See PatternMatch for examples
+// of how the pattern matching is done.  The callback will immediately be called with and
+// matching paths before returning to the caller.
 func (l *Listener) RegisterPaths(paths []string) {
 	if paths == nil || len(paths) == 0 {
 		return
@@ -86,7 +95,8 @@ func (l *Listener) RegisterPaths(paths []string) {
 	l.flush(paths)
 }
 
-func (l *Listener) UnregisterListenerPaths(paths []string) {
+// UnregisterPaths removes the paths from the listener.
+func (l *Listener) UnregisterPaths(paths []string) {
 	if paths == nil || len(paths) == 0 {
 		return
 	}
@@ -152,22 +162,3 @@ func flushListeners() {
 		}
 	}
 }
-
-// func RegisterListener(l Listener) {
-// 	lock.Lock()
-// 	defer lock.Unlock()
-//
-// 	_, ok := listeners[l]
-// 	if !ok {
-// 		listeners[l] = 0
-// 		listenerPaths[l] = make(map[string]bool)
-// 	}
-// }
-//
-// func UnregisterListener(l Listener) {
-// 	lock.Lock()
-// 	defer lock.Unlock()
-//
-// 	delete(listeners, l)
-// 	delete(listenerPaths, l)
-// }

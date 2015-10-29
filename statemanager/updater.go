@@ -6,8 +6,13 @@ import (
 	"strconv"
 )
 
+// UpdaterFunc is a callback type for string updates from the state engine
 type UpdaterFunc func(string) error
+
+// UpdaterInt64Func is a callback type for int64 updates from the state engine
 type UpdaterInt64Func func(int64) error
+
+// UpdaterBoolFunc is a callback type for bool updates from the state engine
 type UpdaterBoolFunc func(bool) error
 
 type stateUpdater struct {
@@ -21,7 +26,7 @@ type stateUpdaterArray []*stateUpdater
 
 var updaters = make(map[string]*stateUpdater)
 
-// StateSet attempts to update the scoreboard to value
+// StateSet attempts to update the state to value
 // using keyName to lookup a handler.  It returns an
 // error on failure.
 func StateSet(keyName string, value string) error {
@@ -69,6 +74,12 @@ func StateSet(keyName string, value string) error {
 	return ErrNotFound
 }
 
+// StateSetGroup attempts to update the state using a
+// map of key/values to lookup handlers.  Calls
+// StateSet for each key/values using the groupPriority
+// of the registered updater to call lower numbers (higher
+// priority) first.  Allows setting things like min/max values
+// before the actual number.
 func StateSetGroup(values map[string]string) {
 	var u []*stateUpdater
 
@@ -89,18 +100,22 @@ func StateSetGroup(values map[string]string) {
 	}
 }
 
+// RegisterUpdater adds a string updater to the statemanager.
 func RegisterUpdater(name string, groupPriority uint8, u UpdaterFunc) {
 	updaters[name] = &stateUpdater{stringUpdater: u, name: name, groupPriority: groupPriority}
 }
 
+// RegisterUpdaterInt64 adds an int64 updater to the statemanager.
 func RegisterUpdaterInt64(name string, groupPriority uint8, u UpdaterInt64Func) {
 	updaters[name] = &stateUpdater{int64Updater: u, name: name, groupPriority: groupPriority}
 }
 
+// RegisterUpdaterBool adds a bool updater to the statemanager.
 func RegisterUpdaterBool(name string, groupPriority uint8, u UpdaterBoolFunc) {
 	updaters[name] = &stateUpdater{boolUpdater: u, name: name, groupPriority: groupPriority}
 }
 
+// UnregisterUpdater removes an updater from the statemanager.
 func UnregisterUpdater(name string) {
 	delete(updaters, name)
 }

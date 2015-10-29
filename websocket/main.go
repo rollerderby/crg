@@ -108,6 +108,7 @@ func wsHandler(w http.ResponseWriter, r *http.Request) {
 	c.Run()
 }
 
+// Initialize registers the websocket with the HTTP Server Mux
 func Initialize(mux *http.ServeMux) {
 	mux.HandleFunc("/ws", wsHandler)
 }
