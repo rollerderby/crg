@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<title>CRG Operator Controls</title>
+		<script type="text/javascript" src="/external/jquery/jquery.js"></script>
+		<script type="text/javascript" src="/external/jquery/jquery.js"></script>
+		<script type="text/javascript" src="/json/core.js"></script>
+		<link href="/external/jquery-ui/css/default/jquery-ui.css" type="text/css" rel="stylesheet" />
+	</head>
+	<body sbContext="ScoreBoard">
+		<div class="ConnectionError">Not connected</div>
+		<div class="Row">
+			<div class="MasterControls">
+				<div class="Row">
+					<div>
+						<button class="StartJam">Start</button>
+						<button class="UnStartJam">Undo Start</button>
+					</div>
+					<div>
+						<button class="StopJam">Stop</button>
+						<button class="UnStopJam">Undo Stop</button>
+					</div>
+					<div>
+						<button class="Timeout">Timeout</button>
+						<button class="UnTimeout">Undo Timeout</button>
+					</div>
+				</div>
+			</div>
+		</div>
+		<div class="Row">
+			<div class="Team Team1" sbContext="Team(1)">
+				<div class="Row">
+					<div class="Logo" sbDisplay="Logo"></div>
+					<div class="Name" sbDisplay="Name"></div>
+				</div>
+				<div class="Row">
+					<div class="ScoreDown">
+						<button class="ScoreDown">Score -1</button><br />
+						<button class="JamScoreDown SmallButton">Jam Score -1</button>
+					</div>
+					<div class="JamScore" sbDisplay="JamScore"></div>
+					<div class="Score" sbDisplay="Score"></div>
+					<div class="InstantScore"></div>
+					<div class="ScoreUp">
+						<button class="ScoreUp">Score +1</button><br />
+						<button class="JamScoreUp SmallButton">Jam Score +1</button>
+					</div>
+				</div>
+				<div class="Row PassScores">
+					<div><input type="number" min="0" max="7" class="Pass2" /></div>
+					<div><input type="number" min="0" max="7" class="Pass3" /></div>
+					<div><input type="number" min="0" max="7" class="Pass4" /></div>
+					<div><input type="number" min="0" max="7" class="Pass5" /></div>
+					<div><input type="number" min="0" max="7" class="Pass6" /></div>
+					<div><input type="number" min="0" max="7" class="Pass7" /></div>
+					<div><input type="number" min="0" max="7" class="Pass8" /></div>
+					<div><input type="number" min="0" max="7" class="Pass9" /></div>
+				</div>
+				<div class="Row">
+					<div class="Timeout">
+						<button class="Timeout">Timeout</button>
+					</div>
+					<div class="Timeouts" sbDisplay="Timeouts"></div>
+					<div class="OfficialReview">
+						<button class="OfficialReview">Official Review</button>
+					</div>
+					<div class="OfficialReviews" sbDisplay="OfficialReviews"></div>
+					<div class="Retained">
+						<button class="Retained">Retained</button>
+					</div>
+				</div>
+				<div class="Row">
+					<div class="Lead">
+						<div class="buttonset">
+							<button class="SmallButton Lead">Lead</button>
+							<button class="SmallButton No">No</button>
+							<button class="SmallButton Lost">Lost</button>
+						</div>
+					</div>
+					<div class="Jammer">
+						<select class="Jammer">
+							<option value="">No Jammer</option>
+						</select>
+						<button class="SmallButton Box">Box</button>
+					</div>
+				</div>
+				<div class="Row">
+					<div class="StarPass">
+						<div class="buttonset">
+							<button class="SmallButton Yes">Star Pass</button>
+							<button class="SmallButton No">No</button>
+						</div>
+					</div>
+					<div class="Pivot">
+						<select class="Pivot">
+							<option value="">No Pivot</option>
+						</select>
+						<button class="SmallButton Box">Box</button>
+					</div>
+				</div>
+			</div>
+			<div class="Clocks">
+				<div class="Clock Period" sbContext="Clock(Period)">
+					<div class="Row">
+						<div class="Name" sbDisplay="Name"></div>
+					</div>
+					<div class="Row Num">
+						<div class="Down SmallButton"><button>-1</button></div>
+						<div class="Num" sbDisplay="Number.Num"></div>
+						<div class="Up SmallButton"><button>+1</button></div>
+					</div>
+					<div class="Row Time">
+						<div class="Down SmallButton"><button>-1</button></div>
+						<div class="Time" sbDisplay="Time.Num" sbModify="toTime"></div>
+						<div class="Up SmallButton"><button>+1</button></div>
+					</div>
+				</div>
+				<div class="Clock Jam" sbCopyDiv=".Clock.Period" sbContext="Clock(Jam)"></div>
+				<div class="Clock Lineup" sbCopyDiv=".Clock.Period" sbContext="Clock(Lineup)"></div>
+				<div class="Clock Timeout" sbCopyDiv=".Clock.Period" sbContext="Clock(Timeout)"></div>
+				<div class="Clock Intermission" sbCopyDiv=".Clock.Period" sbContext="Clock(Intermission)"></div>
+			</div>
+			<div class="Team Team2 Reverse" sbCopyDiv=".Team1" sbContext="Team(2)"></div>
+		</div>
+		<div class="Row">
+			<div>
+				Debug <button class="startDebug">Start</button>  <button class="stopDebug">Stop</button>
+			</div>
+			<div class="debug"></div>
+		</div>
+	</body>
+</html>

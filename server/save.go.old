@@ -1,0 +1,60 @@
+package server
+
+import (
+	"encoding/json"
+	"fmt"
+	"io/ioutil"
+	"log"
+	"os"
+
+	"github.com/rollerderby/crg/statemanager"
+)
+
+var state = make(map[string]*string)
+
+func saveInitialize() {
+	c := make(chan map[string]*string, 10)
+	go func() {
+		for {
+			updates := <-c
+			for key, value := range updates {
+				state[key] = value
+			}
+
+			saveState()
+		}
+	}()
+	statemanager.RegisterListener(c)
+	statemanager.RegisterListenerPaths(c, []string{"ScoreBoard"})
+}
+
+func loadState() map[string]string {
+	state := make(map[string]string)
+
+	b, err := ioutil.ReadFile("state.json")
+	if err != nil {
+		return nil
+	}
+
+	err = json.Unmarshal(b, &state)
+	if err != nil {
+		fmt.Println("error:", err)
+		return nil
+	}
+
+	return state
+}
+
+func saveState() {
+	w, err := os.Create("state.json")
+	if err != nil {
+		log.Print("Cannot save state to disk.", err)
+	}
+	defer w.Close()
+
+	b, err := json.Marshal(state)
+	if err != nil {
+		fmt.Println("error:", err)
+	}
+	w.Write(b)
+}
