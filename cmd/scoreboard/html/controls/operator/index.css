@@ -83,7 +83,7 @@ table.ScoreKeeper thead tr {
 	height: 20px;
 }
 table.ScoreKeeper thead td:not(.Pass) {
-	transform: rotate(90deg);
+	transform: rotate(-90deg);
 }
 table.ScoreKeeper thead td {
 	font-size: 50%;
@@ -94,6 +94,9 @@ table.ScoreKeeper input {
 }
 table.ScoreKeeper .Pass input {
 	width: 100%;
+}
+table.ScoreKeeper tbody tr.Template {
+	display: none;
 }
 
 .Clocks {
