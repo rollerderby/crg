@@ -39,6 +39,14 @@ function init() {
 		registerButtonCommand(".Clock." + clock + " .Time .Up button", "ClockAdjustTime", [clock, "1000"]);
 		registerButtonCommand(".Clock." + clock + " .Num .Down button", "ClockAdjustNumber", [clock, "-1"]);
 		registerButtonCommand(".Clock." + clock + " .Num .Up button", "ClockAdjustNumber", [clock, "1"]);
+
+		WS.Register("ScoreBoard.Clock("+clock+").Running", function(k, v) {
+			$(".Clock."+clock).toggleClass("Running", isTrue(v));
+		});
+		WS.Register("ScoreBoard.Clock("+clock+").Adjustable", function(k, v) {
+			console.log(k, v);
+			$(".Clock."+clock+" button").prop("disabled", !isTrue(v));
+		});
 	});
 
 	registerButtonCommand(".MasterControls .StartJam", "StartJam");
