@@ -15,14 +15,19 @@ type masterClock struct {
 }
 
 type clock struct {
-	parent    parent
-	base      string
-	name      string
-	number    *minMaxNumber
-	time      *minMaxNumber
-	countdown bool
-	running   bool
-	stateIDs  map[string]string
+	parent     parent
+	base       string
+	name       string
+	number     *minMaxNumber
+	time       *minMaxNumber
+	countdown  bool
+	running    bool
+	adjustable bool
+	stateIDs   map[string]string
+
+	// used for precise timing and undos
+	startedSec  int64
+	startedTime time.Time
 }
 
 const (
@@ -33,6 +38,9 @@ const (
 	clockIntermission = "Intermission"
 )
 
+const clockTicksPerSecond int64 = 5
+
+var clockTimeTick int64 = 1000 / clockTicksPerSecond
 var errClockNotFound = errors.New("Clock not found")
 
 func newMasterClock(p parent) *masterClock {
@@ -107,16 +115,12 @@ func (mc *masterClock) stateBase() string {
 }
 
 func (mc *masterClock) tickClocks() {
-	var ticksPerSecond int64 = 5
-
-	timeTicks := time.Second / time.Duration(ticksPerSecond)
-	clockTicks := 1000 / ticksPerSecond
-	ticker := time.NewTicker(timeTicks)
+	ticker := time.NewTicker(time.Second / time.Duration(clockTicksPerSecond))
 	for now := range ticker.C {
 		statemanager.Lock()
 		for _, c := range mc.clocks {
 			if c.isRunning() {
-				c.tick(now, clockTicks)
+				c.tick(now, clockTimeTick)
 			}
 		}
 		statemanager.Unlock()
@@ -158,6 +162,15 @@ func (mc *masterClock) stopClock(id string) error {
 		return errClockNotFound
 	}
 	c.stop()
+	return nil
+}
+
+func (mc *masterClock) setClockAdjustable(id string, adjustable bool) error {
+	c, ok := mc.clocks[id]
+	if !ok {
+		return errClockNotFound
+	}
+	c.setAdjustable(adjustable)
 	return nil
 }
 
@@ -236,6 +249,7 @@ func newClock(p parent, name string, numMin, numMax, timeMin, timeMax int64, cou
 	c.stateIDs["name"] = c.base + ".Name"
 	c.stateIDs["countdown"] = c.base + ".CountDown"
 	c.stateIDs["running"] = c.base + ".Running"
+	c.stateIDs["adjustable"] = c.base + ".Adjustable"
 
 	statemanager.RegisterUpdater(c.stateIDs["name"], 0, c.setName)
 	statemanager.RegisterUpdaterBool(c.stateIDs["countdown"], 4, c.setCountDown)
@@ -244,6 +258,7 @@ func newClock(p parent, name string, numMin, numMax, timeMin, timeMax int64, cou
 	c.setName(name)
 	c.setCountDown(countdown)
 	c.setRunning(running)
+	c.setAdjustable(false)
 
 	return c
 }
@@ -303,4 +318,9 @@ func (c *clock) tick(now time.Time, tickDuration int64) {
 }
 
 func (c *clock) SetTime(time int64) {
+}
+
+func (c *clock) setAdjustable(adjustable bool) {
+	c.adjustable = adjustable
+	statemanager.StateUpdate(c.stateIDs["adjustable"], adjustable)
 }

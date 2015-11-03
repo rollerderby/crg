@@ -64,6 +64,12 @@ func (sb *Scoreboard) setState(state string) error {
 	log.Printf("scoreboard: setState(%+v)", state)
 	sb.state = state
 	statemanager.StateUpdate(sb.stateIDs["state"], state)
+
+	adjustable := false
+	if state == stateTimeout {
+		adjustable = true
+	}
+	sb.clocks.setClockAdjustable(clockPeriod, adjustable)
 	return nil
 }
 
