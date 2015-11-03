@@ -46,15 +46,43 @@
 						<button class="JamScoreUp SmallButton">Jam Score +1</button>
 					</div>
 				</div>
-				<div class="Row PassScores">
-					<div><input type="number" min="0" max="7" class="Pass2" /></div>
-					<div><input type="number" min="0" max="7" class="Pass3" /></div>
-					<div><input type="number" min="0" max="7" class="Pass4" /></div>
-					<div><input type="number" min="0" max="7" class="Pass5" /></div>
-					<div><input type="number" min="0" max="7" class="Pass6" /></div>
-					<div><input type="number" min="0" max="7" class="Pass7" /></div>
-					<div><input type="number" min="0" max="7" class="Pass8" /></div>
-					<div><input type="number" min="0" max="7" class="Pass9" /></div>
+				<div class="Row">
+					<table class="ScoreKeeper">
+						<thead>
+							<tr>
+								<td>Lost</td>
+								<td>Lead</td>
+								<td>Call</td>
+								<td>Inj</td>
+								<td>NP</td>
+								<td class="Pass">Pass 2</td>
+								<td class="Pass">Pass 3</td>
+								<td class="Pass">Pass 4</td>
+								<td class="Pass">Pass 5</td>
+								<td class="Pass">Pass 6</td>
+								<td class="Pass">Pass 7</td>
+								<td class="Pass">Pass 8</td>
+								<td class="Pass">Pass 9</td>
+							</tr>
+						</thead>
+						<tbody>
+							<tr class="Template">
+								<td><input type="checkbox" class="Lost" /></td>
+								<td><input type="checkbox" class="Lead" /></td>
+								<td><input type="checkbox" class="Call" /></td>
+								<td><input type="checkbox" class="Injury" /></td>
+								<td><input type="checkbox" class="NoPass" /></td>
+								<td class="Pass"><input type="number" min="0" max="7" class="Pass2" /></td>
+								<td class="Pass"><input type="number" min="0" max="7" class="Pass3" /></td>
+								<td class="Pass"><input type="number" min="0" max="7" class="Pass4" /></td>
+								<td class="Pass"><input type="number" min="0" max="7" class="Pass5" /></td>
+								<td class="Pass"><input type="number" min="0" max="7" class="Pass6" /></td>
+								<td class="Pass"><input type="number" min="0" max="7" class="Pass7" /></td>
+								<td class="Pass"><input type="number" min="0" max="7" class="Pass8" /></td>
+								<td class="Pass"><input type="number" min="0" max="7" class="Pass9" /></td>
+							</tr>
+						</tbody>
+					</table>
 				</div>
 				<div class="Row">
 					<div class="Timeout">

@@ -72,6 +72,30 @@ div.Row>div {
 	font-weight: bold;
 }
 
+table.ScoreKeeper {
+	width: 100%;
+}
+table.ScoreKeeper td {
+	margin: 0px;
+	padding: 0px;
+}
+table.ScoreKeeper thead tr {
+	height: 20px;
+}
+table.ScoreKeeper thead td:not(.Pass) {
+	transform: rotate(90deg);
+}
+table.ScoreKeeper thead td {
+	font-size: 50%;
+}
+table.ScoreKeeper input {
+	margin: 0px;
+	padding: 0px;
+}
+table.ScoreKeeper .Pass input {
+	width: 100%;
+}
+
 .Clocks {
 	width: 250px;
 	flex-grow: initial !important;
@@ -89,4 +113,17 @@ div.Row>div {
 	font-family: monospace;
 	font-size: 200%;
 	font-weight: bold;
+}
+
+.Clock.Running>div.Row>div.Name {
+	background-color: lightgreen;
+	border-radius: 10px 10px 0px 0px;
+}
+
+.Clock:not(.Period):not(.Jam)>div.Num {
+	display: none;
+}
+
+button:disabled span {
+	color: grey;
 }
