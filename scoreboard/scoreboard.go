@@ -18,10 +18,13 @@ type Scoreboard struct {
 
 const (
 	stateNotRunning   = ""
+	statePreGame      = "PreGame"
 	stateJam          = "Jam"
 	stateLineup       = "Lineups"
 	stateTimeout      = "Timeout"
 	stateIntermission = "Intermission"
+	stateUnofficial   = "UnofficialFinal"
+	stateFinal        = "Final"
 )
 
 type parent interface {
