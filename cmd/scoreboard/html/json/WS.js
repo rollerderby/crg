@@ -45,7 +45,7 @@ var WS = {
 			};
 			WS.socket.onmessage = function(e) {
 				json = JSON.parse(e.data);
-				console.log(e.data, json);
+				// console.log(e.data, json);
 				if (WS.debug) console.log("WS", json);
 				if (json.authorization != null)
 					alert(json.authorization);
