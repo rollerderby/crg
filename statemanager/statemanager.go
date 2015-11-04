@@ -84,7 +84,6 @@ func StateUpdate(keyName string, value interface{}) error {
 			}
 		}
 	} else {
-		s.stateNum = stateNum
 		var newValue string
 		switch v := value.(type) {
 		case string:
@@ -103,6 +102,7 @@ func StateUpdate(keyName string, value interface{}) error {
 			if debug {
 				log.Printf("StateUpdate: setting %s to %v", keyName, value)
 			}
+			s.stateNum = stateNum
 			s.value = &newValue
 			stateUpdated = true
 		}
