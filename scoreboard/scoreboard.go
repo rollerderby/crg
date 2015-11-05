@@ -48,15 +48,64 @@ func New() *Scoreboard {
 	statemanager.RegisterUpdater(sb.stateIDs["state"], 0, sb.setState)
 
 	statemanager.RegisterCommand("StartJam", sb.startJam)
-	statemanager.RegisterCommand("UndoStartJam", sb.startJamUndo)
 	statemanager.RegisterCommand("StopJam", sb.stopJam)
-	statemanager.RegisterCommand("UndoStopJam", sb.stopJamUndo)
 	statemanager.RegisterCommand("Timeout", sb.timeout)
-	statemanager.RegisterCommand("UndoTimeout", sb.timeoutUndo)
+	statemanager.RegisterCommand("UndoStateChange", sb.undoStateChange)
 
 	sb.setState(stateNotRunning)
 
 	return sb
+}
+
+func (sb *Scoreboard) snapshotStateStart() {
+}
+
+func (sb *Scoreboard) snapshotStateEnd(canUndo bool) {
+}
+
+func (sb *Scoreboard) clocksExpired() {
+	switch sb.state {
+	case stateLineup:
+		if !sb.clocks.period.running {
+			// Period clock ended, go to intermission or unofficial
+			sb.endOfPeriod(false)
+		} else {
+			// Lineup expired, start jam!
+			sb.startJam(nil)
+		}
+	case stateJam:
+		if !sb.clocks.jam.running {
+			if !sb.clocks.period.running {
+				// Period clock is out, go to intermission or unofficial
+				sb.endOfPeriod(false)
+				return
+			}
+			sb.stopJam(nil)
+		}
+	case stateIntermission:
+		if sb.clocks.intermission.number.num == 1 {
+			sb.endOfIntermission()
+		}
+	}
+}
+
+func (sb *Scoreboard) endOfPeriod(canUndo bool) {
+	sb.snapshotStateEnd(canUndo)
+	defer sb.snapshotStateStart()
+	if sb.clocks.period.number.num == 1 {
+		sb.setState(stateIntermission)
+
+		// Reset & start intermission clock
+		sb.clocks.intermission.reset(false, false)
+		sb.clocks.setRunningClocks(clockIntermission)
+	} else {
+		sb.setState(stateUnofficial)
+	}
+}
+
+func (sb *Scoreboard) endOfIntermission() {
+	sb.clocks.period.reset(false, true)
+	sb.clocks.jam.reset(true, false)
 }
 
 func (sb *Scoreboard) stateBase() string {
@@ -77,17 +126,21 @@ func (sb *Scoreboard) setState(state string) error {
 }
 
 func (sb *Scoreboard) startJam(_ []string) error {
-	if sb.state == stateJam {
+	switch sb.state {
+	case stateJam:
 		return nil
+	case stateIntermission:
+		sb.endOfIntermission()
 	}
+
+	sb.snapshotStateEnd(true)
+	defer sb.snapshotStateStart()
 	sb.setState(stateJam)
 
+	// Reset jam clock and increment jam number
+	sb.clocks.jam.reset(false, true)
 	// Start clocks Period, Jam
-	// Reset clocks Jam
-	return sb.clocks.setRunningClocks([]string{clockPeriod, clockJam}, []string{clockJam})
-}
-
-func (sb *Scoreboard) startJamUndo(_ []string) error {
+	sb.clocks.setRunningClocks(clockPeriod, clockJam)
 	return nil
 }
 
@@ -95,14 +148,22 @@ func (sb *Scoreboard) stopJam(_ []string) error {
 	if sb.state != stateJam {
 		return nil
 	}
+
+	if !sb.clocks.period.running {
+		// Period clock is out, go to intermission or unofficial
+		sb.endOfPeriod(true)
+		return nil
+	}
+
+	// Not the end of a period, start lineups
+	sb.snapshotStateEnd(sb.clocks.jam.time.num == sb.clocks.jam.time.min)
+	defer sb.snapshotStateStart()
 	sb.setState(stateLineup)
 
+	// Reset lineup clock
+	sb.clocks.lineup.reset(false, false)
 	// Start clocks Period, Lineup
-	// Reset clocks Lineup
-	return sb.clocks.setRunningClocks([]string{clockPeriod, clockLineup}, []string{clockLineup})
-}
-
-func (sb *Scoreboard) stopJamUndo(_ []string) error {
+	sb.clocks.setRunningClocks(clockPeriod, clockLineup)
 	return nil
 }
 
@@ -110,13 +171,18 @@ func (sb *Scoreboard) timeout(_ []string) error {
 	if sb.state == stateTimeout {
 		return nil
 	}
+	sb.snapshotStateEnd(true)
+	defer sb.snapshotStateStart()
 	sb.setState(stateTimeout)
 
+	// Reset timeout clock
+	sb.clocks.timeout.reset(false, false)
 	// Start clocks Timeout
-	// Reset clocks Timeout
-	return sb.clocks.setRunningClocks([]string{clockTimeout}, []string{clockTimeout})
+	sb.clocks.setRunningClocks(clockTimeout)
+	return nil
 }
 
-func (sb *Scoreboard) timeoutUndo(_ []string) error {
+func (sb *Scoreboard) undoStateChange(_ []string) error {
+	log.Print("Scoreboard.undoStateChange: NOT IMPLEMENTED")
 	return nil
 }

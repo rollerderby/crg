@@ -7,26 +7,29 @@ import (
 )
 
 type minMaxNumber struct {
-	parent   parent
-	base     string
-	num      int64
-	min      int64
-	max      int64
-	updateOn int64
-	stateIDs map[string]string
+	parent    parent
+	base      string
+	countdown bool
+	num       int64
+	min       int64
+	max       int64
+	updateOn  int64
+	stateIDs  map[string]string
 }
 
-func newMinMaxNumber(p parent, id string, min, max, num, updateOn int64) *minMaxNumber {
+func newMinMaxNumber(p parent, id string, countdown bool, min, max, num, updateOn int64) *minMaxNumber {
 	mmn := &minMaxNumber{
-		parent:   p,
-		base:     fmt.Sprintf("%s.%s", p.stateBase(), id),
-		updateOn: updateOn,
-		stateIDs: make(map[string]string),
+		parent:    p,
+		base:      fmt.Sprintf("%s.%s", p.stateBase(), id),
+		countdown: countdown,
+		updateOn:  updateOn,
+		stateIDs:  make(map[string]string),
 	}
 
 	mmn.stateIDs["min"] = mmn.base + ".Min"
 	mmn.stateIDs["max"] = mmn.base + ".Max"
 	mmn.stateIDs["num"] = mmn.base + ".Num"
+	mmn.stateIDs["precise"] = mmn.base + ".PreciseNum"
 
 	statemanager.RegisterUpdaterInt64(mmn.stateIDs["min"], 1, mmn.setMin)
 	statemanager.RegisterUpdaterInt64(mmn.stateIDs["max"], 2, mmn.setMax)
@@ -39,16 +42,18 @@ func newMinMaxNumber(p parent, id string, min, max, num, updateOn int64) *minMax
 	return mmn
 }
 
+func (mmn *minMaxNumber) sendNumStateUpdate() {
+	statemanager.StateUpdate(mmn.stateIDs["precise"], mmn.num)
+	diff := mmn.num % mmn.updateOn
+	if mmn.countdown {
+		diff = -((mmn.updateOn - diff) % mmn.updateOn)
+	}
+	statemanager.StateUpdate(mmn.stateIDs["num"], mmn.num-diff)
+}
+
 func (mmn *minMaxNumber) adjust(down bool, adjust int64) bool {
-	last := mmn.num
 	defer func() {
-		diff := last - mmn.num
-		if diff < 0 {
-			diff = -diff
-		}
-		if mmn.num%mmn.updateOn == 0 || diff >= mmn.updateOn {
-			statemanager.StateUpdate(mmn.stateIDs["num"], mmn.num)
-		}
+		mmn.sendNumStateUpdate()
 	}()
 	if adjust < 0 {
 		adjust = -adjust
@@ -106,6 +111,15 @@ func (mmn *minMaxNumber) setNum(v int64) error {
 		mmn.num = v
 	}
 
-	statemanager.StateUpdate(mmn.stateIDs["num"], mmn.num)
+	mmn.sendNumStateUpdate()
 	return nil
+}
+
+func (mmn *minMaxNumber) setCountDown(countdown bool) {
+	mmn.countdown = countdown
+	mmn.sendNumStateUpdate()
+}
+
+func (mmn *minMaxNumber) incNum() error {
+	return mmn.setNum(mmn.num + 1)
 }
