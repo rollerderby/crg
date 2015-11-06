@@ -5,6 +5,8 @@ import (
 	"log"
 	"net"
 	"net/http"
+	"os"
+	"os/signal"
 	"time"
 
 	"github.com/rollerderby/crg/scoreboard"
@@ -71,14 +73,22 @@ func Start(port uint16) {
 
 	// filename, base string, interval time.Duration, version bool
 	saver, savedState := statemanager.NewSaver("state.json", "ScoreBoard", time.Duration(5)*time.Second, true)
-	log.Printf("Saved State: %+v", savedState)
 	statemanager.StateSetGroup(savedState)
 
 	printStartup(port)
 	mux.Handle("/", http.FileServer(http.Dir("html")))
-	err := http.ListenAndServe(fmt.Sprintf(":%d", port), setDefaultHeaders(mux))
-	if err != nil {
-		log.Print(err)
-	}
+
+	c := make(chan os.Signal, 1)
+	go func() {
+		err := http.ListenAndServe(fmt.Sprintf(":%d", port), setDefaultHeaders(mux))
+		if err != nil {
+			log.Print(err)
+		}
+		c <- os.Kill
+	}()
+
+	signal.Notify(c, os.Interrupt, os.Kill)
+	s := <-c
+	log.Printf("Server received signal: %v.  Shutting down", s)
 	saver.Close()
 }
