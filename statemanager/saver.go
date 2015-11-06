@@ -29,6 +29,7 @@ type Saver struct {
 //           save if something has actually changed
 // version: save older versions of the file (move file to file.1, file.1 to file.2, etc) NOT IMPLEMENTED!
 func NewSaver(filename, base string, interval time.Duration, version bool) (*Saver, map[string]string) {
+	log.Printf("Saver(%v): Opening", filename)
 	savedState := loadState(filename)
 
 	s := &Saver{
@@ -49,9 +50,12 @@ func NewSaver(filename, base string, interval time.Duration, version bool) (*Sav
 // Close unregisters the Saver from the statemanager and stops the saving go routine (issuing one last save
 // in case there were changes since last save)
 func (s *Saver) Close() {
+	log.Printf("Saver(%v): Closing", s.filename)
 	s.listener.Close()
+	s.saveState()
 	s.listener = nil
 	s.saveTrigger <- true
+	log.Printf("Saver(%v): Closed", s.filename)
 }
 
 func (s *Saver) processUpdates(updates map[string]*string) {
@@ -108,10 +112,11 @@ func (s *Saver) saveLoop() {
 	for {
 		select {
 		case <-s.saveTrigger:
+			if s.listener == nil {
+				// listener is nil, saver close was requsted, saveState already called from Close()
+				return
+			}
 			s.saveState()
-		}
-		if s.listener == nil {
-			return
 		}
 	}
 }
