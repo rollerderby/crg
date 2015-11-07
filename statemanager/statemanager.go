@@ -9,6 +9,7 @@ import (
 	"strconv"
 	"strings"
 	"sync"
+	"time"
 )
 
 type state struct {
@@ -95,7 +96,11 @@ func StateUpdate(keyName string, value interface{}) error {
 		case bool:
 			newValue = strconv.FormatBool(v)
 			s.valueType = "bool"
+		case time.Time:
+			newValue = v.UTC().Format(time.RFC3339)
+			s.valueType = "time"
 		default:
+			log.Printf("StateUpdate: Unknown type '%T' for %v", value, keyName)
 			return ErrUnknownType
 		}
 		if s.value == nil || *s.value != newValue {

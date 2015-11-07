@@ -14,15 +14,16 @@
 				<div class="Row">
 					<div>
 						<button class="StartJam">Start</button>
-						<button class="UnStartJam">Undo Start</button>
 					</div>
 					<div>
 						<button class="StopJam">Stop</button>
-						<button class="UnStopJam">Undo Stop</button>
+					</div>
+					<div class="buttonset">
+						<button class="Timeout">Timeout</button>
+						<button class="EndTimeout">End Timeout</button>
 					</div>
 					<div>
-						<button class="Timeout">Timeout</button>
-						<button class="UnTimeout">Undo Timeout</button>
+						<button class="Undo">Undo</button>
 					</div>
 				</div>
 			</div>
@@ -154,11 +155,25 @@
 			</div>
 			<div class="Team Team2 Reverse" sbCopyDiv=".Team1" sbContext="Team(2)"></div>
 		</div>
-		<div class="Row">
-			<div>
-				Debug <button class="startDebug">Start</button>  <button class="stopDebug">Stop</button>
-			</div>
-			<div class="debug"></div>
+		<div class="StateHistory Row">
+			<table cellspacing="0">
+				<thead>
+					<tr>
+						<td></td>
+						<td>Period/Jam</td>
+						<td>State</td>
+						<td>Can Revert</td>
+						<td>Length</td>
+						<td>Period</td>
+						<td>Jam</td>
+						<td>Lineup</td>
+						<td>Timeout</td>
+						<td>Intermission</td>
+					</tr>
+				</thead>
+				<tbody>
+				</tbody>
+			</table>
 		</div>
 	</body>
 </html>

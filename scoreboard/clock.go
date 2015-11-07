@@ -2,7 +2,6 @@ package scoreboard
 
 import (
 	"fmt"
-	"time"
 
 	"github.com/rollerderby/crg/statemanager"
 )
@@ -105,7 +104,7 @@ func (c *clock) stop() {
 }
 
 // returns true if clock timedout
-func (c *clock) tick(now time.Time, tickDuration int64) bool {
+func (c *clock) tick(tickDuration int64) bool {
 	if !c.time.adjust(c.countdown, tickDuration) {
 		c.stop()
 		return true

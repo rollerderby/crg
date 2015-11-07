@@ -10,18 +10,24 @@ import (
 // live state for the scoreboard are contained within and exported
 // via github.com/rollerderby/crg/statemanager
 type Scoreboard struct {
-	stateIDs map[string]string
-	teams    []*team
-	clocks   *masterClock
-	state    string
+	stateIDs       map[string]string
+	teams          []*team
+	clocks         *masterClock
+	state          string
+	snapshots      []*stateSnapshot
+	activeSnapshot *stateSnapshot
 }
 
 const (
 	stateNotRunning   = ""
 	statePreGame      = "PreGame"
 	stateJam          = "Jam"
-	stateLineup       = "Lineups"
-	stateTimeout      = "Timeout"
+	stateLineup       = "Lineup"
+	stateOTO          = "OTO"
+	stateTTO1         = "TTO1"
+	stateTTO2         = "TTO2"
+	stateOR1          = "OR1"
+	stateOR2          = "OR2"
 	stateIntermission = "Intermission"
 	stateUnofficial   = "UnofficialFinal"
 	stateFinal        = "Final"
@@ -50,17 +56,27 @@ func New() *Scoreboard {
 	statemanager.RegisterCommand("StartJam", sb.startJam)
 	statemanager.RegisterCommand("StopJam", sb.stopJam)
 	statemanager.RegisterCommand("Timeout", sb.timeout)
-	statemanager.RegisterCommand("UndoStateChange", sb.undoStateChange)
+	statemanager.RegisterCommand("EndTimeout", sb.endTimeout)
+	statemanager.RegisterCommand("Undo", sb.undo)
 
 	sb.setState(stateNotRunning)
+	sb.snapshotStateStart()
 
 	return sb
 }
 
 func (sb *Scoreboard) snapshotStateStart() {
+	sb.activeSnapshot = newStateSnapshot(sb, len(sb.snapshots))
+	sb.snapshots = append(sb.snapshots, sb.activeSnapshot)
 }
 
 func (sb *Scoreboard) snapshotStateEnd(canUndo bool) {
+	// Check for an active snapshot
+	if sb.activeSnapshot == nil {
+		return
+	}
+
+	sb.activeSnapshot.end(sb, canUndo)
 }
 
 func (sb *Scoreboard) clocksExpired() {
@@ -118,7 +134,7 @@ func (sb *Scoreboard) setState(state string) error {
 	statemanager.StateUpdate(sb.stateIDs["state"], state)
 
 	adjustable := false
-	if state == stateTimeout {
+	if isTimeoutState(state) {
 		adjustable = true
 	}
 	sb.clocks.setClockAdjustable(clockPeriod, adjustable)
@@ -156,7 +172,7 @@ func (sb *Scoreboard) stopJam(_ []string) error {
 	}
 
 	// Not the end of a period, start lineups
-	sb.snapshotStateEnd(sb.clocks.jam.time.num == sb.clocks.jam.time.min)
+	sb.snapshotStateEnd(sb.clocks.jam.time.num != sb.clocks.jam.time.min)
 	defer sb.snapshotStateStart()
 	sb.setState(stateLineup)
 
@@ -167,13 +183,20 @@ func (sb *Scoreboard) stopJam(_ []string) error {
 	return nil
 }
 
-func (sb *Scoreboard) timeout(_ []string) error {
-	if sb.state == stateTimeout {
+func (sb *Scoreboard) timeout(data []string) error {
+	var newState = stateOTO
+	if len(data) > 0 {
+		if isTimeoutState(data[0]) {
+			newState = data[0]
+		}
+	}
+
+	if sb.state == stateOTO && newState == stateOTO {
 		return nil
 	}
 	sb.snapshotStateEnd(true)
 	defer sb.snapshotStateStart()
-	sb.setState(stateTimeout)
+	sb.setState(newState)
 
 	// Reset timeout clock
 	sb.clocks.timeout.reset(false, false)
@@ -182,7 +205,52 @@ func (sb *Scoreboard) timeout(_ []string) error {
 	return nil
 }
 
-func (sb *Scoreboard) undoStateChange(_ []string) error {
-	log.Print("Scoreboard.undoStateChange: NOT IMPLEMENTED")
+func (sb *Scoreboard) endTimeout(_ []string) error {
+	if !isTimeoutState(sb.state) {
+		return nil
+	}
+	sb.snapshotStateEnd(true)
+	defer sb.snapshotStateStart()
+	sb.setState(stateLineup)
+
+	// Reset timeout clock
+	sb.clocks.lineup.reset(false, false)
+	// Start clocks Timeout
+	sb.clocks.setRunningClocks(clockLineup)
 	return nil
+}
+
+func (sb *Scoreboard) undo(_ []string) error {
+	if len(sb.snapshots) > 1 {
+		lastSnapshot := sb.snapshots[len(sb.snapshots)-2]
+		if !lastSnapshot.canRevert {
+			return nil
+		}
+		log.Printf("Scoreboard.undo: REVERTING")
+
+		for name, c := range lastSnapshot.clocks {
+			clock := sb.clocks.clocks[name]
+			clock.setRunning(c.running)
+			clock.time.setNum(c.endTime)
+			clock.number.setNum(c.number)
+		}
+		sb.clocks.ticks = lastSnapshot.endTicks
+		sb.setState(lastSnapshot.state)
+
+		sb.activeSnapshot.delete()
+		lastSnapshot.unend()
+		sb.activeSnapshot = lastSnapshot
+		sb.snapshots = sb.snapshots[:len(sb.snapshots)-1]
+
+		sb.clocks.ticker()
+	}
+	return nil
+}
+
+func isTimeoutState(state string) bool {
+	return state == stateOTO ||
+		state == stateTTO1 ||
+		state == stateTTO2 ||
+		state == stateOR1 ||
+		state == stateOR2
 }

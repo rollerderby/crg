@@ -2,6 +2,7 @@ package scoreboard
 
 import (
 	"errors"
+	"log"
 	"strconv"
 	"time"
 
@@ -12,6 +13,8 @@ type masterClock struct {
 	sb         *Scoreboard
 	syncClocks bool
 	clocks     map[string]*clock
+	startTime  time.Time
+	ticks      int64
 
 	period       *clock
 	jam          *clock
@@ -29,6 +32,7 @@ const (
 )
 
 const clockTicksPerSecond int64 = 10
+const durationPerTick = time.Second / time.Duration(clockTicksPerSecond)
 
 var clockTimeTick = 1000 / clockTicksPerSecond
 var errClockNotFound = errors.New("Clock not found")
@@ -106,14 +110,22 @@ func (mc *masterClock) stateBase() string {
 	return mc.sb.stateBase()
 }
 
-func (mc *masterClock) tickClocks() {
-	ticker := time.NewTicker(time.Second / time.Duration(clockTicksPerSecond))
-	for now := range ticker.C {
+// Called from tickClocks() and stateSnapshot.rollback()
+// statemanager lock MUST be held before calling and
+// released after ticker() returns by the caller
+func (mc *masterClock) ticker() {
+	now := time.Now()
+	ticksFromStart := int64(now.Sub(mc.startTime) / durationPerTick)
+	ticksToDo := ticksFromStart - mc.ticks
+
+	if ticksToDo > 1 {
+		log.Printf("Ticking %v times, now: %v, ticksFromStart: %v", ticksToDo, now, ticksFromStart)
+	}
+	for i := int64(0); i < ticksToDo; i++ {
 		clockExpired := false
-		statemanager.Lock()
 		for _, c := range mc.clocks {
 			if c.isRunning() {
-				if c.tick(now, clockTimeTick) {
+				if c.tick(clockTimeTick) {
 					clockExpired = true
 				}
 			}
@@ -121,6 +133,19 @@ func (mc *masterClock) tickClocks() {
 		if clockExpired {
 			mc.sb.clocksExpired()
 		}
+	}
+
+	mc.ticks = ticksFromStart
+}
+
+func (mc *masterClock) tickClocks() {
+	mc.startTime = time.Now()
+	mc.ticks = 0
+
+	ticker := time.NewTicker(durationPerTick)
+	for range ticker.C {
+		statemanager.Lock()
+		mc.ticker()
 		statemanager.Unlock()
 	}
 }

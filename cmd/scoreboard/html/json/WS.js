@@ -100,7 +100,7 @@ var WS = {
 			c = WS.callbacks[idx];
 			if (c.callback == null)
 				continue;
-			if (k.indexOf(c.path) == 0) {
+			if (patternMatch(k, c.path)) { // k.indexOf(c.path) == 0) {
 				try {
 					c.callback(k, v);
 					callbackCalled = true;
@@ -118,7 +118,7 @@ var WS = {
 		for (var prop in state) {
 			// update all incoming properties before triggers 
 			// dependency issues causing problems
-			console.log(prop, state[prop]);
+			// console.log(prop, state[prop]);
 			WS.state[prop] = state[prop];
 		}
 
@@ -273,3 +273,55 @@ var WS = {
 	},
 };
 
+function patternMatch(value, pattern) {
+	// Special case, if pattern is empty, it matches
+	if (pattern == "") {
+		return true;
+	}
+	while (true) {
+		var id = pattern.indexOf("(*)");
+		if (id == -1) {
+			break;
+		}
+		id = id + 1;
+		// check if value is long enough
+		if (value.length < id) {
+			return false;
+		}
+
+		// check everything leading up to the open paren
+		if (value.substring(0, id) != pattern.substring(0, id)) {
+			return false;
+		}
+
+		// prefix matched, now look for the close paren
+		var rparen = value.indexOf(")");
+		if (rparen == -1) {
+			return false;
+		}
+
+		value = value.substring(rparen+1);
+		pattern = pattern.substring(id+2);
+	}
+
+	if (value == pattern) {
+		return true;
+	}
+	if (value.indexOf(pattern+".") == 0) {
+		return true;
+	}
+
+	// match if pattern is empty and value is empty or starts with a dot
+	if (pattern.length == 0) {
+		var ret = value.length == 0 || value[0] == '.';
+		return ret;
+	}
+
+	// look for trailing *
+	if (pattern.substring(pattern.length-1) == "*") {
+		var ret = value.indexOf(pattern.substring(0, pattern.length - 1)) == 0;
+		return ret;
+	}
+
+	return value == pattern;
+}

@@ -4,6 +4,7 @@ import (
 	"log"
 	"sort"
 	"strconv"
+	"time"
 )
 
 // UpdaterFunc is a callback type for string updates from the state engine
@@ -15,10 +16,14 @@ type UpdaterInt64Func func(int64) error
 // UpdaterBoolFunc is a callback type for bool updates from the state engine
 type UpdaterBoolFunc func(bool) error
 
+// UpdaterTimeFunc is a callback type for time updates from the state engine
+type UpdaterTimeFunc func(time.Time) error
+
 type stateUpdater struct {
 	stringUpdater UpdaterFunc
 	int64Updater  UpdaterInt64Func
 	boolUpdater   UpdaterBoolFunc
+	timeUpdater   UpdaterTimeFunc
 	name          string
 	groupPriority uint8
 }
@@ -68,7 +73,17 @@ func StateSet(keyName string, value string) error {
 			log.Printf("Calling boolUpdater(%v) for %s (%s)", v, keyName, *state.value)
 		}
 		return updater.boolUpdater(v)
+	case "time":
+		v, err := time.Parse(value, time.RFC3339)
+		if err != nil {
+			return err
+		}
+		if debug {
+			log.Printf("Calling timeUpdater(%v) for %s (%s)", v, keyName, *state.value)
+		}
+		return updater.timeUpdater(v)
 	default:
+		log.Printf("StateSet: Unknown type '%v' for %v", state.valueType, keyName)
 		return ErrUnknownType
 	}
 	return ErrNotFound
@@ -113,6 +128,11 @@ func RegisterUpdaterInt64(name string, groupPriority uint8, u UpdaterInt64Func) 
 // RegisterUpdaterBool adds a bool updater to the statemanager.
 func RegisterUpdaterBool(name string, groupPriority uint8, u UpdaterBoolFunc) {
 	updaters[name] = &stateUpdater{boolUpdater: u, name: name, groupPriority: groupPriority}
+}
+
+// RegisterUpdaterTime adds a time updater to the statemanager.
+func RegisterUpdaterTime(name string, groupPriority uint8, u UpdaterTimeFunc) {
+	updaters[name] = &stateUpdater{timeUpdater: u, name: name, groupPriority: groupPriority}
 }
 
 // UnregisterUpdater removes an updater from the statemanager.

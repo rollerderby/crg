@@ -59,6 +59,7 @@ _include("/json", [
 	"Rulesets.js",
 	"Game.js",
 	"WS.js",
+	"time.js",
 ]);
 
 $(function() {

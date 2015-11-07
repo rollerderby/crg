@@ -96,7 +96,7 @@ table.ScoreKeeper .Pass input {
 	width: 100%;
 }
 table.ScoreKeeper tbody tr.Template {
-	display: none;
+	/*display: none;*/
 }
 
 .Clocks {
@@ -129,4 +129,21 @@ table.ScoreKeeper tbody tr.Template {
 
 button:disabled span {
 	color: grey;
+}
+
+.StateHistory {
+	max-height: 150px;
+	overflow-y: scroll;
+}
+
+.StateHistory table td {
+	border: 1px solid black;
+	margin: 0px;
+	padding-left: 5px;
+	padding-right: 5px;
+}
+
+.StateHistory td.StateClock {
+	font-family: monospace;
+	text-align: right;
 }

@@ -1,0 +1,33 @@
+<html>
+	<head>
+		<script src="WS.js"></script>
+		<script>
+function runTest(pattern, value, expected) {
+	var results = patternMatch(value, pattern);
+	if (expected != results) {
+		console.log("FAIL: " + pattern + ", " + value + ", " + expected + "!=" + results);
+	}
+}
+
+function runTests() {
+	runTest("Scoreboard.Team(*)", "Scoreboard.Team(1)", true);
+	runTest("Scoreboard.Team(*)", "Scoreboard.Team(2).Name", true);
+	runTest("Scoreboard.Team(*).*", "Scoreboard.Team(1)", false);
+	runTest("Scoreboard.Team(*).*", "Scoreboard.Team(2).Name", true);
+	runTest("Scoreboard.Team(1).*", "Scoreboard.Team(1).Name", true);
+	runTest("Scoreboard.Team(1).*", "Scoreboard.Team(2).Name", false);
+	runTest("Scoreboard.Team(*).Color(operator).Name.Key(*)", "Scoreboard.Team(1).Color(operator).Name.Key(blue)", true);
+	runTest("Scoreboard.Team(*).Color(operator).Name.Key(*)", "Scoreboard.Team(1).Color(operator).Name.Key(blue).Color", true);
+	runTest("Scoreboard.Team(*).Color(operator).Name.Key(*)", "Scoreboard.Team(1).Color(overlay).Name.Key(blue)", false);
+	runTest("Scoreboard.Team(*).Color(operator).Name.Key(*)", "Scoreboard.Team(1).Color(overlay)", false);
+	runTest("", "Scoreboard.Team(1).Color(overlay)", true);
+	runTest("ScoreBoard", "ScoreBoard.State", true);
+	runTest("ScoreBoard", "ScoreBoard", true);
+}
+
+runTests();
+		</script>
+	</head>
+	<body>
+	</body>
+</html>
