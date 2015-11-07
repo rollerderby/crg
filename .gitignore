@@ -20,3 +20,5 @@ android/build/
 cmd/scoreboard/scoreboard*
 *.json
 *.swp
+*.tar.gz
+*.zip
