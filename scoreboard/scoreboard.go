@@ -51,13 +51,30 @@ func New() *Scoreboard {
 	sb.stateIDs = make(map[string]string)
 	sb.stateIDs["state"] = sb.stateBase() + ".State"
 
-	statemanager.RegisterUpdater(sb.stateIDs["state"], 0, sb.setState)
+	statemanager.RegisterUpdaterString(sb.stateIDs["state"], 0, sb.setState)
 
 	statemanager.RegisterCommand("StartJam", sb.startJam)
 	statemanager.RegisterCommand("StopJam", sb.stopJam)
 	statemanager.RegisterCommand("Timeout", sb.timeout)
 	statemanager.RegisterCommand("EndTimeout", sb.endTimeout)
 	statemanager.RegisterCommand("Undo", sb.undo)
+
+	// Setup Updaters for stateSnapshots (functions located in state_snapshot.go)
+	statemanager.RegisterPatternUpdaterString(sb.stateBase()+".Snapshot(*).State", 0, sb.ssSetState)
+	statemanager.RegisterPatternUpdaterBool(sb.stateBase()+".Snapshot(*).InProgress", 0, sb.ssSetInProgress)
+	statemanager.RegisterPatternUpdaterBool(sb.stateBase()+".Snapshot(*).CanRevert", 0, sb.ssSetCanRevert)
+	statemanager.RegisterPatternUpdaterInt64(sb.stateBase()+".Snapshot(*).StartTicks", 0, sb.ssSetStartTicks)
+	statemanager.RegisterPatternUpdaterInt64(sb.stateBase()+".Snapshot(*).EndTicks", 0, sb.ssSetEndTicks)
+	statemanager.RegisterPatternUpdaterInt64(sb.stateBase()+".Snapshot(*).Length", 0, sb.ssSetLength)
+	statemanager.RegisterPatternUpdaterTime(sb.stateBase()+".Snapshot(*).StartTime", 0, sb.ssSetStartTime)
+	statemanager.RegisterPatternUpdaterTime(sb.stateBase()+".Snapshot(*).EndTime", 0, sb.ssSetEndTime)
+	statemanager.RegisterPatternUpdaterInt64(sb.stateBase()+".Snapshot(*).Clock(*).Number", 0, sb.sscSetNumber)
+	statemanager.RegisterPatternUpdaterInt64(sb.stateBase()+".Snapshot(*).Clock(*).StartTime", 0, sb.sscSetStartTime)
+	statemanager.RegisterPatternUpdaterInt64(sb.stateBase()+".Snapshot(*).Clock(*).EndTime", 0, sb.sscSetEndTime)
+	statemanager.RegisterPatternUpdaterBool(sb.stateBase()+".Snapshot(*).Clock(*).Running", 0, sb.sscSetRunning)
+	statemanager.RegisterPatternUpdaterInt64(sb.stateBase()+".Snapshot(*).Team(*).Timeouts", 0, sb.sstSetTimeouts)
+	statemanager.RegisterPatternUpdaterInt64(sb.stateBase()+".Snapshot(*).Team(*).OfficialReviews", 0, sb.sstSetOfficialReviews)
+	statemanager.RegisterPatternUpdaterBool(sb.stateBase()+".Snapshot(*).Team(*).OfficialReviewRetained", 0, sb.sstSetOfficialReviewRetained)
 
 	sb.setState(stateNotRunning)
 	sb.snapshotStateStart()
@@ -66,7 +83,7 @@ func New() *Scoreboard {
 }
 
 func (sb *Scoreboard) snapshotStateStart() {
-	sb.activeSnapshot = newStateSnapshot(sb, len(sb.snapshots))
+	sb.activeSnapshot = newStateSnapshot(sb, int64(len(sb.snapshots)), true)
 	sb.snapshots = append(sb.snapshots, sb.activeSnapshot)
 }
 

@@ -36,7 +36,10 @@ func newClock(sb *Scoreboard, name string, numMin, numMax, timeMin, timeMax int6
 	c.stateIDs["running"] = c.base + ".Running"
 	c.stateIDs["adjustable"] = c.base + ".Adjustable"
 
-	statemanager.RegisterUpdater(c.stateIDs["name"], 0, c.setName)
+	statemanager.RegisterCommand(c.time.stateIDs["num"]+".Inc", c.incTime)
+	statemanager.RegisterCommand(c.time.stateIDs["num"]+".Dec", c.decTime)
+
+	statemanager.RegisterUpdaterString(c.stateIDs["name"], 0, c.setName)
 	statemanager.RegisterUpdaterBool(c.stateIDs["countdown"], 4, c.setCountDown)
 	statemanager.RegisterUpdaterBool(c.stateIDs["running"], 4, c.setRunning)
 
@@ -112,14 +115,21 @@ func (c *clock) tick(tickDuration int64) bool {
 	return false
 }
 
-func (c *clock) SetTime(time int64) {
-}
-
 func (c *clock) setAdjustable(adjustable bool) {
 	c.adjustable = adjustable
 	statemanager.StateUpdate(c.stateIDs["adjustable"], adjustable)
 }
 
 func (c *clock) clone() *clock {
+	return nil
+}
+
+func (c *clock) incTime(_ []string) error {
+	c.time.adjust(false, c.time.updateOn)
+	return nil
+}
+
+func (c *clock) decTime(_ []string) error {
+	c.time.adjust(false, -c.time.updateOn)
 	return nil
 }

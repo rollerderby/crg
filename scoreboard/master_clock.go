@@ -3,7 +3,6 @@ package scoreboard
 import (
 	"errors"
 	"log"
-	"strconv"
 	"time"
 
 	"github.com/rollerderby/crg/statemanager"
@@ -99,9 +98,6 @@ func newMasterClock(sb *Scoreboard) *masterClock {
 	for _, c := range mc.clocks {
 		c.reset(true, false)
 	}
-
-	statemanager.RegisterCommand("ClockAdjustTime", mc.adjustTimeCmd)
-	statemanager.RegisterCommand("ClockAdjustNumber", mc.adjustNumberCmd)
 
 	mc.stateIDs["startTime"] = sb.stateBase() + ".MasterClock.StartTime"
 	mc.stateIDs["ticks"] = sb.stateBase() + ".MasterClock.Ticks"
@@ -235,42 +231,6 @@ func (mc *masterClock) resetCmd(data []string) error {
 		return errClockNotFound
 	}
 	return mc.resetClock(data[0])
-}
-
-func (mc *masterClock) adjustTimeCmd(data []string) error {
-	if len(data) < 1 {
-		return errClockNotFound
-	}
-	id := data[0]
-	c, ok := mc.clocks[id]
-	if !ok {
-		return errClockNotFound
-	}
-
-	by, err := strconv.ParseInt(data[1], 10, 64)
-	if err != nil {
-		return err
-	}
-	c.time.adjust(false, by)
-	return nil
-}
-
-func (mc *masterClock) adjustNumberCmd(data []string) error {
-	if len(data) < 1 {
-		return errClockNotFound
-	}
-	id := data[0]
-	c, ok := mc.clocks[id]
-	if !ok {
-		return errClockNotFound
-	}
-
-	by, err := strconv.ParseInt(data[1], 10, 64)
-	if err != nil {
-		return err
-	}
-	c.number.adjust(false, by)
-	return nil
 }
 
 func calculateClockOffset(master, slave *clock) int64 {

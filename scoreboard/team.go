@@ -35,18 +35,24 @@ func newTeam(p parent, id uint8) *team {
 	t.stateIDs["name"] = fmt.Sprintf("%s.Name", t.base)
 	t.stateIDs["score"] = fmt.Sprintf("%s.Score", t.base)
 	t.stateIDs["lastScore"] = fmt.Sprintf("%s.LastScore", t.base)
+	t.stateIDs["jamScore"] = fmt.Sprintf("%s.JamScore", t.base)
 	t.stateIDs["timeouts"] = fmt.Sprintf("%s.Timeouts", t.base)
 	t.stateIDs["officialReviews"] = fmt.Sprintf("%s.OfficialReviews", t.base)
 	t.stateIDs["officialReviewRetained"] = fmt.Sprintf("%s.OfficialReviewRetained", t.base)
 
 	statemanager.StateUpdate(t.stateIDs["id"], int64(id))
 
-	statemanager.RegisterUpdater(t.stateIDs["name"], 0, t.setName)
+	statemanager.RegisterUpdaterString(t.stateIDs["name"], 0, t.setName)
 	statemanager.RegisterUpdaterInt64(t.stateIDs["score"], 0, t.setScore)
 	statemanager.RegisterUpdaterInt64(t.stateIDs["lastScore"], 0, t.setLastScore)
 	statemanager.RegisterUpdaterInt64(t.stateIDs["timeouts"], 0, t.setTimeouts)
 	statemanager.RegisterUpdaterInt64(t.stateIDs["officialReviews"], 0, t.setOfficialReviews)
 	statemanager.RegisterUpdaterBool(t.stateIDs["officialReviewRetained"], 0, t.setOfficialReviewRetained)
+
+	statemanager.RegisterCommand(t.stateIDs["score"]+".Inc", t.incScore)
+	statemanager.RegisterCommand(t.stateIDs["score"]+".Dec", t.decScore)
+	statemanager.RegisterCommand(t.stateIDs["lastScore"]+".Inc", t.incLastScore)
+	statemanager.RegisterCommand(t.stateIDs["lastScore"]+".Dec", t.decLastScore)
 
 	t.setName(fmt.Sprintf("Team %d", id))
 	t.setScore(0)
@@ -65,14 +71,28 @@ func (t *team) setName(name string) error {
 }
 
 func (t *team) setScore(v int64) error {
+	if v < 0 {
+		return nil
+	}
 	t.score = v
+	if v < t.lastScore {
+		t.setLastScore(v)
+	}
 	statemanager.StateUpdate(t.stateIDs["score"], v)
+	statemanager.StateUpdate(t.stateIDs["jamScore"], t.score-t.lastScore)
 	return nil
 }
 
 func (t *team) setLastScore(v int64) error {
+	if v < 0 {
+		return nil
+	}
+	if v > t.score {
+		return nil
+	}
 	t.lastScore = v
 	statemanager.StateUpdate(t.stateIDs["lastScore"], v)
+	statemanager.StateUpdate(t.stateIDs["jamScore"], t.score-t.lastScore)
 	return nil
 }
 
@@ -108,4 +128,24 @@ func (t *team) useOfficialReview() bool {
 		return true
 	}
 	return false
+}
+
+func (t *team) incScore(_ []string) error {
+	t.setScore(t.score + 1)
+	return nil
+}
+
+func (t *team) decScore(_ []string) error {
+	t.setScore(t.score - 1)
+	return nil
+}
+
+func (t *team) incLastScore(_ []string) error {
+	t.setLastScore(t.lastScore + 1)
+	return nil
+}
+
+func (t *team) decLastScore(_ []string) error {
+	t.setLastScore(t.lastScore - 1)
+	return nil
 }
