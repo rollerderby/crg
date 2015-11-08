@@ -11,7 +11,6 @@ function init() {
 	$(window).resize(function () {
 		width = $(window).width();
 		height = $(window).height();
-		console.log("RESIZE", width, height);
 	});
 	width = $(window).width();
 	height = $(window).height();
@@ -19,7 +18,6 @@ function init() {
 	tHeight = window.outerHeight;
 	offsetWidth = tWidth - width;
 	offsetHeight = tHeight - height;
-	console.log(width, height, tWidth, tHeight, offsetWidth, offsetHeight);
 	window.resizeTo(1366 + offsetWidth, 768 + offsetHeight);
 	
 
@@ -75,35 +73,45 @@ function toTime(k, v) {
 }
 
 function snapshot(k, v) {
-	if (k.indexOf(".InProgress") == -1) {
-		return
-	}
+	// if (k.indexOf(".InProgress") == -1) {
+	// 	return
+	// }
 	var idx = k.replace("ScoreBoard.Snapshot(", "");
 	idx = idx.substring(0, idx.indexOf(")"));
 	var prefix = "ScoreBoard.Snapshot(" + idx + ")";
 
-	row = findSnapshotRow(idx, v != null);
-	console.log("Looking for row", idx, row, v);
+	var period = WS.state[prefix + ".Clock(Period).Number"];
+	var jam = WS.state[prefix + ".Clock(Jam).Number"];
+	var state = WS.state[prefix + ".State"];
+	row = findSnapshotRow(idx, period, jam, state, v != null);
 
 	if (row && v == null) {
 		// Remove row
-		console.log("REMOVING ROW");
 		row.remove();
 	} else if (row && v != null) {
-		row.find(".Index").text(idx);
-		row.find(".PeriodJam").text(
-			WS.state[prefix + ".Clock(Period).Number"] + ' / ' + 
-			WS.state[prefix + ".Clock(Jam).Number"]);
-		row.find(".State").text(WS.state[prefix + ".State"]);
-		row.find(".CanRevert").text(isTrue(WS.state[prefix + ".CanRevert"]) ? "Yes" : "No");
-		row.find(".Length").text(timeComputerToHuman(WS.state[prefix + ".Length"]));
+		if (k == prefix + ".CanRevert")
+			row.find(".CanRevert").text(isTrue(WS.state[prefix + ".CanRevert"]) ? "Yes" : "No");
+		if (k == prefix + ".Length")
+			row.find(".Length").text(timeComputerToHuman(WS.state[prefix + ".Length"]));
 		var inProgress = isTrue(WS.state[prefix + ".InProgress"]);
-		stateClock(row, prefix, "Period", inProgress);
-		stateClock(row, prefix, "Jam", inProgress);
-		stateClock(row, prefix, "Lineup", inProgress);
-		stateClock(row, prefix, "Timeout", inProgress);
-		stateClock(row, prefix, "Intermission", inProgress);
+		var lastInProgress = row.data("InProgress")
+		if (startsWith(k, prefix + ".Clock(Period).") || inProgress != lastInProgress)
+			stateClock(row, prefix, "Period", inProgress);
+		if (startsWith(k, prefix + ".Clock(Jam).") || inProgress != lastInProgress)
+			stateClock(row, prefix, "Jam", inProgress);
+		if (startsWith(k, prefix + ".Clock(Lineup).") || inProgress != lastInProgress)
+			stateClock(row, prefix, "Lineup", inProgress);
+		if (startsWith(k, prefix + ".Clock(Timeout).") || inProgress != lastInProgress)
+			stateClock(row, prefix, "Timeout", inProgress);
+		if (startsWith(k, prefix + ".Clock(Intermission).") || inProgress != lastInProgress)
+			stateClock(row, prefix, "Intermission", inProgress);
+
+		row.data("InProgress", inProgress);
 	}
+}
+
+function startsWith(a, b) {
+	return a.substring(0, b.length) == b;
 }
 
 function stateClock(row, prefix, clock, inProgress) {
@@ -119,17 +127,17 @@ function stateClock(row, prefix, clock, inProgress) {
 	}
 }
 
-function findSnapshotRow(idx, create) {
+function findSnapshotRow(idx, period, jam, state, create) {
 	while (idx.length < 5) {
 		idx = '0' + idx;
 	}
 	var row = $(".Snapshot_" + idx)[0];
 	if (row == null && create) {
-		console.log("Snapshot " + idx + " not found, creating");
 		row = $("<tr>").addClass("Snapshot Snapshot_"+idx);
-		row.append($("<td>").addClass("Index"));
-		row.append($("<td>").addClass("PeriodJam"));
-		row.append($("<td>").addClass("State"));
+		row.append($("<td>").addClass("Index").text(Number(idx)));
+		row.append($("<td>").addClass("PeriodJam").text(period + ' / ' + jam));
+		row.append($("<td>").addClass("State").text(state));
+
 		row.append($("<td>").addClass("CanRevert"));
 		row.append($("<td>").addClass("StateClock Length"));
 		row.append($("<td>").addClass("StateClock Period"));
@@ -145,14 +153,12 @@ function findSnapshotRow(idx, create) {
 				return;
 			r = $(r);
 			if (r.data('index') < row.data('index')) {
-				console.log("<< Inserting " + row.data('index') + " before " + r.data('index'));
 				r.before(row);
 				inserted = true;
 				return;
 			}
 		});
 		if (!inserted) {
-			console.log("Appending " + row.data('index') + " to end");
 			$(".StateHistory table tbody").prepend(row);
 		}
 	}

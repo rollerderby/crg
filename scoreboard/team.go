@@ -7,15 +7,18 @@ import (
 )
 
 type team struct {
-	parent    parent
-	base      string
-	id        uint8
-	name      string
-	score     int64
-	lastScore int64
-	settings  map[string]*setting
-	skaters   map[string]*skater
-	stateIDs  map[string]string
+	parent                 parent
+	base                   string
+	id                     uint8
+	name                   string
+	score                  int64
+	lastScore              int64
+	timeouts               int64
+	officialReviews        int64
+	officialReviewRetained bool
+	settings               map[string]*setting
+	skaters                map[string]*skater
+	stateIDs               map[string]string
 }
 
 func newTeam(p parent, id uint8) *team {
@@ -32,16 +35,25 @@ func newTeam(p parent, id uint8) *team {
 	t.stateIDs["name"] = fmt.Sprintf("%s.Name", t.base)
 	t.stateIDs["score"] = fmt.Sprintf("%s.Score", t.base)
 	t.stateIDs["lastScore"] = fmt.Sprintf("%s.LastScore", t.base)
+	t.stateIDs["timeouts"] = fmt.Sprintf("%s.Timeouts", t.base)
+	t.stateIDs["officialReviews"] = fmt.Sprintf("%s.OfficialReviews", t.base)
+	t.stateIDs["officialReviewRetained"] = fmt.Sprintf("%s.OfficialReviewRetained", t.base)
 
 	statemanager.StateUpdate(t.stateIDs["id"], int64(id))
 
 	statemanager.RegisterUpdater(t.stateIDs["name"], 0, t.setName)
 	statemanager.RegisterUpdaterInt64(t.stateIDs["score"], 0, t.setScore)
 	statemanager.RegisterUpdaterInt64(t.stateIDs["lastScore"], 0, t.setLastScore)
+	statemanager.RegisterUpdaterInt64(t.stateIDs["timeouts"], 0, t.setTimeouts)
+	statemanager.RegisterUpdaterInt64(t.stateIDs["officialReviews"], 0, t.setOfficialReviews)
+	statemanager.RegisterUpdaterBool(t.stateIDs["officialReviewRetained"], 0, t.setOfficialReviewRetained)
 
 	t.setName(fmt.Sprintf("Team %d", id))
 	t.setScore(0)
 	t.setLastScore(0)
+	t.setTimeouts(3)
+	t.setOfficialReviews(1)
+	t.setOfficialReviewRetained(false)
 
 	return t
 }
@@ -62,4 +74,38 @@ func (t *team) setLastScore(v int64) error {
 	t.lastScore = v
 	statemanager.StateUpdate(t.stateIDs["lastScore"], v)
 	return nil
+}
+
+func (t *team) setTimeouts(v int64) error {
+	t.timeouts = v
+	statemanager.StateUpdate(t.stateIDs["timeouts"], v)
+	return nil
+}
+
+func (t *team) setOfficialReviews(v int64) error {
+	t.officialReviews = v
+	statemanager.StateUpdate(t.stateIDs["officialReviews"], v)
+	return nil
+}
+
+func (t *team) setOfficialReviewRetained(v bool) error {
+	t.officialReviewRetained = v
+	statemanager.StateUpdate(t.stateIDs["officialReviewRetained"], v)
+	return nil
+}
+
+func (t *team) useTimeout() bool {
+	if t.timeouts > 0 {
+		t.setTimeouts(t.timeouts - 1)
+		return true
+	}
+	return false
+}
+
+func (t *team) useOfficialReview() bool {
+	if t.officialReviews > 0 {
+		t.setOfficialReviews(t.officialReviews - 1)
+		return true
+	}
+	return false
 }

@@ -15,6 +15,7 @@ type masterClock struct {
 	clocks     map[string]*clock
 	startTime  time.Time
 	ticks      int64
+	stateIDs   map[string]string
 
 	period       *clock
 	jam          *clock
@@ -31,7 +32,7 @@ const (
 	clockIntermission = "Intermission"
 )
 
-const clockTicksPerSecond int64 = 10
+const clockTicksPerSecond int64 = 5
 const durationPerTick = time.Second / time.Duration(clockTicksPerSecond)
 
 var clockTimeTick = 1000 / clockTicksPerSecond
@@ -42,6 +43,7 @@ func newMasterClock(sb *Scoreboard) *masterClock {
 		sb:         sb,
 		syncClocks: true,
 		clocks:     make(map[string]*clock),
+		stateIDs:   make(map[string]string),
 	}
 
 	ticksPerSecond := int64(1000)
@@ -101,6 +103,15 @@ func newMasterClock(sb *Scoreboard) *masterClock {
 	statemanager.RegisterCommand("ClockAdjustTime", mc.adjustTimeCmd)
 	statemanager.RegisterCommand("ClockAdjustNumber", mc.adjustNumberCmd)
 
+	mc.stateIDs["startTime"] = sb.stateBase() + ".MasterClock.StartTime"
+	mc.stateIDs["ticks"] = sb.stateBase() + ".MasterClock.Ticks"
+
+	statemanager.RegisterUpdaterTime(mc.stateIDs["startTime"], 0, mc.setStartTime)
+	statemanager.RegisterUpdaterInt64(mc.stateIDs["ticks"], 0, mc.setTicks)
+
+	mc.setStartTime(time.Now())
+	mc.setTicks(0)
+
 	go mc.tickClocks()
 
 	return mc
@@ -133,21 +144,31 @@ func (mc *masterClock) ticker() {
 		if clockExpired {
 			mc.sb.clocksExpired()
 		}
+		mc.sb.activeSnapshot.updateLength()
 	}
 
-	mc.ticks = ticksFromStart
+	mc.setTicks(ticksFromStart)
 }
 
 func (mc *masterClock) tickClocks() {
-	mc.startTime = time.Now()
-	mc.ticks = 0
-
 	ticker := time.NewTicker(durationPerTick)
 	for range ticker.C {
 		statemanager.Lock()
 		mc.ticker()
 		statemanager.Unlock()
 	}
+}
+
+func (mc *masterClock) setStartTime(v time.Time) error {
+	mc.startTime = v
+	statemanager.StateUpdate(mc.stateIDs["startTime"], v)
+	return nil
+}
+
+func (mc *masterClock) setTicks(v int64) error {
+	mc.ticks = v
+	statemanager.StateUpdate(mc.stateIDs["ticks"], v)
+	return nil
 }
 
 func (mc *masterClock) setRunningClocks(clocksToStart ...string) {

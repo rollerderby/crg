@@ -127,8 +127,8 @@ table.ScoreKeeper tbody tr.Template {
 	display: none;
 }
 
-button:disabled span {
-	color: grey;
+button:disabled {
+	display: none;
 }
 
 .StateHistory {

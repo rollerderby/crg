@@ -74,7 +74,7 @@ func StateSet(keyName string, value string) error {
 		}
 		return updater.boolUpdater(v)
 	case "time":
-		v, err := time.Parse(value, time.RFC3339)
+		v, err := time.Parse(time.RFC3339, value)
 		if err != nil {
 			return err
 		}

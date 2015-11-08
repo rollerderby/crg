@@ -76,7 +76,7 @@ func (sb *Scoreboard) snapshotStateEnd(canUndo bool) {
 		return
 	}
 
-	sb.activeSnapshot.end(sb, canUndo)
+	sb.activeSnapshot.end(canUndo)
 }
 
 func (sb *Scoreboard) clocksExpired() {
@@ -191,11 +191,47 @@ func (sb *Scoreboard) timeout(data []string) error {
 		}
 	}
 
-	if sb.state == stateOTO && newState == stateOTO {
-		return nil
-	}
+	stateChanged := false
 	sb.snapshotStateEnd(true)
-	defer sb.snapshotStateStart()
+	defer func() {
+		if stateChanged {
+			sb.snapshotStateStart()
+		} else {
+			if sb.activeSnapshot != nil {
+				sb.activeSnapshot.unend()
+			}
+		}
+	}()
+
+	switch newState {
+	case stateOTO:
+		if sb.state == stateOTO {
+			// Already in OTO
+			return nil
+		}
+	case stateTTO1:
+		if !sb.teams[0].useTimeout() {
+			// Timeout not available
+			return nil
+		}
+	case stateTTO2:
+		if !sb.teams[1].useTimeout() {
+			// Timeout not available
+			return nil
+		}
+	case stateOR1:
+		if !sb.teams[0].useOfficialReview() {
+			// OfficialReview not available
+			return nil
+		}
+	case stateOR2:
+		if !sb.teams[1].useOfficialReview() {
+			// OfficialReview not available
+			return nil
+		}
+	}
+
+	stateChanged = true
 	sb.setState(newState)
 
 	// Reset timeout clock
@@ -234,12 +270,19 @@ func (sb *Scoreboard) undo(_ []string) error {
 			clock.time.setNum(c.endTime)
 			clock.number.setNum(c.number)
 		}
-		sb.clocks.ticks = lastSnapshot.endTicks
+		for t := 0; t < 2; t++ {
+			sb.teams[t].setTimeouts(lastSnapshot.teams[0].timeouts)
+			sb.teams[t].setOfficialReviews(lastSnapshot.teams[0].officialReviews)
+			sb.teams[t].setOfficialReviewRetained(lastSnapshot.teams[0].officialReviewRetained)
+		}
+		sb.clocks.setTicks(lastSnapshot.endTicks)
+
 		sb.setState(lastSnapshot.state)
 
 		sb.activeSnapshot.delete()
 		lastSnapshot.unend()
 		sb.activeSnapshot = lastSnapshot
+		sb.snapshots[len(sb.snapshots)-1] = nil
 		sb.snapshots = sb.snapshots[:len(sb.snapshots)-1]
 
 		sb.clocks.ticker()

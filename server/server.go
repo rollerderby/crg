@@ -73,7 +73,9 @@ func Start(port uint16) {
 
 	// filename, base string, interval time.Duration, version bool
 	saver, savedState := statemanager.NewSaver("state.json", "ScoreBoard", time.Duration(5)*time.Second, true)
+	statemanager.Lock()
 	statemanager.StateSetGroup(savedState)
+	statemanager.Unlock()
 
 	printStartup(port)
 	mux.Handle("/", http.FileServer(http.Dir("html")))

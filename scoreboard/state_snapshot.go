@@ -9,6 +9,7 @@ import (
 )
 
 type stateSnapshot struct {
+	sb         *Scoreboard
 	state      string
 	inProgress bool
 	canRevert  bool
@@ -17,9 +18,16 @@ type stateSnapshot struct {
 	length     int64
 	startTime  time.Time
 	endTime    time.Time
+	teams      []*stateSnapshotTeam
 	clocks     map[string]*stateSnapshotClock
 	base       string
 	stateIDs   map[string]string
+}
+
+type stateSnapshotTeam struct {
+	timeouts               int64
+	officialReviews        int64
+	officialReviewRetained bool
 }
 
 type stateSnapshotClock struct {
@@ -33,11 +41,13 @@ var errCannotRollback = errors.New("Cannot rollback state")
 
 func newStateSnapshot(sb *Scoreboard, idx int) *stateSnapshot {
 	ss := &stateSnapshot{
+		sb:         sb,
 		state:      sb.state,
 		inProgress: true,
 		canRevert:  false,
 		startTime:  time.Now(),
 		startTicks: sb.clocks.ticks,
+		teams:      make([]*stateSnapshotTeam, 2),
 		clocks:     make(map[string]*stateSnapshotClock),
 		stateIDs:   make(map[string]string),
 		length:     0,
@@ -52,6 +62,14 @@ func newStateSnapshot(sb *Scoreboard, idx int) *stateSnapshot {
 	ss.stateIDs["length"] = ss.base + ".Length"
 	ss.stateIDs["startTime"] = ss.base + ".StartTime"
 	ss.stateIDs["endTime"] = ss.base + ".EndTime"
+
+	for t, team := range sb.teams {
+		ss.teams[t] = &stateSnapshotTeam{
+			timeouts:               team.timeouts,
+			officialReviews:        team.officialReviews,
+			officialReviewRetained: team.officialReviewRetained,
+		}
+	}
 
 	statemanager.StateUpdate(ss.stateIDs["state"], ss.state)
 	statemanager.StateUpdate(ss.stateIDs["inProgress"], ss.inProgress)
@@ -82,13 +100,13 @@ func newStateSnapshot(sb *Scoreboard, idx int) *stateSnapshot {
 	return ss
 }
 
-func (ss *stateSnapshot) end(sb *Scoreboard, canRevert bool) {
-	ss.endTicks = sb.clocks.ticks
+func (ss *stateSnapshot) end(canRevert bool) {
+	ss.updateLength()
+	ss.endTicks = ss.sb.clocks.ticks
 	ss.endTime = time.Now()
 	ss.canRevert = canRevert
 	ss.inProgress = false
-	ss.length = (sb.clocks.ticks - ss.startTicks) * clockTimeTick
-	for _, c := range sb.clocks.clocks {
+	for _, c := range ss.sb.clocks.clocks {
 		ss.clocks[c.name].endTime = c.time.num
 		statemanager.StateUpdate(ss.stateIDs[c.name+".endTime"], c.time.num)
 	}
@@ -97,10 +115,10 @@ func (ss *stateSnapshot) end(sb *Scoreboard, canRevert bool) {
 	statemanager.StateUpdate(ss.stateIDs["inProgress"], ss.inProgress)
 	statemanager.StateUpdate(ss.stateIDs["endTicks"], ss.endTicks)
 	statemanager.StateUpdate(ss.stateIDs["endTime"], ss.endTime)
-	statemanager.StateUpdate(ss.stateIDs["length"], ss.length)
 }
 
 func (ss *stateSnapshot) unend() {
+	ss.updateLength()
 	ss.canRevert = false
 	ss.endTicks = 0
 	ss.endTime = time.Time{}
@@ -114,6 +132,11 @@ func (ss *stateSnapshot) unend() {
 	statemanager.StateUpdate(ss.stateIDs["inProgress"], ss.inProgress)
 	statemanager.StateUpdate(ss.stateIDs["endTicks"], ss.endTicks)
 	statemanager.StateUpdate(ss.stateIDs["endTime"], ss.endTime)
+}
+
+func (ss *stateSnapshot) updateLength() {
+	ss.length = (ss.sb.clocks.ticks - ss.startTicks) * clockTimeTick
+	statemanager.StateUpdate(ss.stateIDs["length"], ss.length)
 }
 
 func (ss *stateSnapshot) delete() {
