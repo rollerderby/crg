@@ -10,6 +10,7 @@ type CommandFunc func([]string) error
 // ErrCommandNotFound is returned by Command when the requested
 // command is not currently registered with the system
 var ErrCommandNotFound = errors.New("Command Not Found")
+var ErrCommandArguments = errors.New("Incorrect Argument Count")
 var commands = make(map[string]CommandFunc)
 
 // Command requests the command registered with name be called
@@ -19,6 +20,13 @@ var commands = make(map[string]CommandFunc)
 func Command(name string, data []string) error {
 	Lock()
 	defer Unlock()
+
+	if name == "Set" {
+		if len(data) != 2 {
+			return ErrCommandArguments
+		}
+		return StateSet(data[0], data[1])
+	}
 
 	c, ok := commands[name]
 	if !ok {
