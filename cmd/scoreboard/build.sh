@@ -36,6 +36,7 @@ else
 
 	mkdir -p crg-scoreboard_$VERSION
 	cp -r html crg-scoreboard_$VERSION
+	cp start.html crg-scoreboard_$VERSION
 
 	build "linux" "386" "scoreboard-linux-32"
 	build "linux" "amd64" "scoreboard-linux-64"
