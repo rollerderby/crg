@@ -33,11 +33,6 @@ function init() {
 	WS.AutoRegister();
 
 	$(["Period", "Jam", "Lineup", "Timeout", "Intermission"]).each(function(idx, clock) {
-		registerButtonCommand(".Clock." + clock + " .Time .Down button", "ClockAdjustTime", [clock, "-1000"]);
-		registerButtonCommand(".Clock." + clock + " .Time .Up button", "ClockAdjustTime", [clock, "1000"]);
-		registerButtonCommand(".Clock." + clock + " .Num .Down button", "ClockAdjustNumber", [clock, "-1"]);
-		registerButtonCommand(".Clock." + clock + " .Num .Up button", "ClockAdjustNumber", [clock, "1"]);
-
 		WS.Register("ScoreBoard.Clock("+clock+").Running", function(k, v) {
 			$(".Clock."+clock).toggleClass("Running", isTrue(v));
 		});
@@ -46,18 +41,26 @@ function init() {
 		});
 	});
 
-	registerButtonCommand(".MasterControls .StartJam", "StartJam");
-	registerButtonCommand(".MasterControls .StopJam", "StopJam");
-	registerButtonCommand(".MasterControls .Timeout", "Timeout");
-	registerButtonCommand(".MasterControls .EndTimeout", "EndTimeout");
-	registerButtonCommand(".MasterControls .Undo", "Undo");
-
-	registerButtonCommand(".Team1 button.Timeout", "Timeout", ["TTO1"]);
-	registerButtonCommand(".Team1 button.OfficialReview", "Timeout", ["OR1"]);
-	registerButtonCommand(".Team2 button.Timeout", "Timeout", ["TTO2"]);
-	registerButtonCommand(".Team2 button.OfficialReview", "Timeout", ["OR2"]);
-
 	WS.Register("ScoreBoard.Snapshot(*)", snapshot);
+	$(["1", "2"]).each(function(idx, t) {
+		WS.Register("ScoreBoard.Team("+t+").OfficialReviewRetained", function(k, v) {
+			$(".Team"+t+" .OfficialReviewRetained").toggleClass("active", isTrue(v));
+		});
+	});
+	WS.Register("ScoreBoard.State", function(k, v) {
+		$(".MasterControls .Timeout").toggleClass("active", v == "OTO");
+		$(".Team1 .Timeout").toggleClass("active", v == "TTO1");
+		$(".Team1 .OfficialReview").toggleClass("active", v == "OR1");
+		$(".Team2 .Timeout").toggleClass("active", v == "TTO2");
+		$(".Team2 .OfficialReview").toggleClass("active", v == "OR2");
+	});
+
+	$("#debugClocks").click(function() {
+		WS.Command("Set", ["ScoreBoard.Clock(Period).Time.Max", "10000"]);
+		WS.Command("Set", ["ScoreBoard.Clock(Jam).Time.Max", "5000"]);
+		WS.Command("Set", ["ScoreBoard.Clock(Intermission).Time.Max", "45000"]);
+		WS.Command("ScoreBoard.Reset");
+	});
 }
 
 function registerButtonCommand(select, command, data) {
@@ -73,12 +76,11 @@ function toTime(k, v) {
 }
 
 function snapshot(k, v) {
-	// if (k.indexOf(".InProgress") == -1) {
-	// 	return
-	// }
 	var idx = k.replace("ScoreBoard.Snapshot(", "");
 	idx = idx.substring(0, idx.indexOf(")"));
 	var prefix = "ScoreBoard.Snapshot(" + idx + ")";
+	if (idx == 0) 
+		return;
 
 	var period = WS.state[prefix + ".Clock(Period).Number"];
 	var jam = WS.state[prefix + ".Clock(Jam).Number"];

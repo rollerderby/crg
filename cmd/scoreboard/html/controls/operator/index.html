@@ -13,17 +13,17 @@
 			<div class="MasterControls">
 				<div class="Row">
 					<div>
-						<button class="StartJam">Start</button>
+						<button class="StartJam" sbCommand="ScoreBoard.StartJam">Start</button>
 					</div>
 					<div>
-						<button class="StopJam">Stop</button>
+						<button class="StopJam" sbCommand="ScoreBoard.StopJam">Stop</button>
 					</div>
 					<div class="buttonset">
-						<button class="Timeout">Timeout</button>
-						<button class="EndTimeout">End Timeout</button>
+						<button class="Timeout" sbCommand="ScoreBoard.Timeout">Timeout</button>
+						<button class="EndTimeout" sbCommand="ScoreBoard.EndTimeout">End Timeout</button>
 					</div>
 					<div>
-						<button class="Undo">Undo</button>
+						<button class="Undo" sbCommand="ScoreBoard.Undo">Undo</button>
 					</div>
 				</div>
 			</div>
@@ -36,15 +36,15 @@
 				</div>
 				<div class="Row">
 					<div class="ScoreDown">
-						<button class="ScoreDown">Score -1</button><br />
-						<button class="JamScoreDown SmallButton">Jam Score -1</button>
+						<button class="ScoreDown" sbCommand="Dec" sbCommandField="Score">Score -1</button><br />
+						<button class="JamScoreDown SmallButton" sbCommand="Inc" sbCommandField="LastScore">Jam Score -1</button>
 					</div>
 					<div class="JamScore" sbDisplay="JamScore"></div>
 					<div class="Score" sbDisplay="Score"></div>
 					<div class="InstantScore"></div>
 					<div class="ScoreUp">
-						<button class="ScoreUp">Score +1</button><br />
-						<button class="JamScoreUp SmallButton">Jam Score +1</button>
+						<button class="ScoreUp" sbCommand="Inc" sbCommandField="Score">Score +1</button><br />
+						<button class="JamScoreUp SmallButton" sbCommand="Dec" sbCommandField="LastScore">Jam Score +1</button>
 					</div>
 				</div>
 				<div class="Row">
@@ -91,15 +91,15 @@
 				</div>
 				<div class="Row">
 					<div class="Timeout">
-						<button class="Timeout">Timeout</button>
+						<button class="Timeout" sbCommand="Start" sbCommandField="Timeouts">Timeout</button>
 					</div>
 					<div class="Timeouts" sbDisplay="Timeouts"></div>
 					<div class="OfficialReview">
-						<button class="OfficialReview">Official Review</button>
+						<button class="OfficialReview" sbCommand="Start" sbCommandField="OfficialReviews">Official Review</button>
 					</div>
 					<div class="OfficialReviews" sbDisplay="OfficialReviews"></div>
 					<div class="Retained">
-						<button class="Retained">Retained</button>
+						<button class="OfficialReviewRetained" sbCommand="Retained" sbCommandField="OfficialReviews">Retained</button>
 					</div>
 				</div>
 				<div class="Row">
@@ -141,9 +141,9 @@
 						<div class="Num" sbDisplay="Number.Num"></div>
 					</div>
 					<div class="Row Time">
-						<div class="Down SmallButton"><button>-1</button></div>
+						<div class="Down SmallButton" sbCommand="Dec" sbCommandField="Time.Num"><button>-1</button></div>
 						<div class="Time" sbDisplay="Time.Num" sbModify="toTime"></div>
-						<div class="Up SmallButton"><button>+1</button></div>
+						<div class="Up SmallButton" sbCommand="Inc" sbCommandField="Time.Num"><button>+1</button></div>
 					</div>
 				</div>
 				<div class="Clock Jam" sbCopyDiv=".Clock.Period" sbContext="Clock(Jam)"></div>
@@ -173,5 +173,6 @@
 				</tbody>
 			</table>
 		</div>
+		<button id="debugClocks">Debug Clocks</button>
 	</body>
 </html>

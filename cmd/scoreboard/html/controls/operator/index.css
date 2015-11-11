@@ -67,9 +67,16 @@ div.Row>div {
 	font-weight: bold;
 }
 
+.Team .JamScore, .Team .InstantScore {
+	font-size: 175%;
+	font-weight: bold;
+	vertical-align: middle;
+}
+
 .Team .Score {
 	font-size: 250%;
 	font-weight: bold;
+	vertical-align: middle;
 }
 
 table.ScoreKeeper {
@@ -146,4 +153,8 @@ button:disabled {
 .StateHistory td.StateClock {
 	font-family: monospace;
 	text-align: right;
+}
+
+button.active {
+	color: red;
 }

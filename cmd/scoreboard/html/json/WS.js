@@ -256,6 +256,17 @@ var WS = {
 			if (paths.length > 0)
 				WS.Register(paths, { triggerFunc: sbTrigger } );
 		});
+		$.each($("[sbCommand]"), function(idx, elem) {
+			elem = $(elem);
+			var cmd = elem.attr("sbCommand");
+			var data = new Array();
+			var field = elem.attr("sbCommandField");
+			if (field != null) {
+				cmd = WS._getContext(elem, "sbCommandField") + "." + cmd;
+			}
+			console.log(cmd, data);
+			elem.click(function() { WS.Command(cmd); });
+		});
 	},
 
 	_getContext: function(elem, attr) {

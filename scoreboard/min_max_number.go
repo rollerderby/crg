@@ -33,7 +33,7 @@ func newMinMaxNumber(p parent, id string, countdown bool, min, max, num, updateO
 
 	statemanager.RegisterUpdaterInt64(mmn.stateIDs["min"], 1, mmn.setMin)
 	statemanager.RegisterUpdaterInt64(mmn.stateIDs["max"], 2, mmn.setMax)
-	statemanager.RegisterUpdaterInt64(mmn.stateIDs["num"], 3, mmn.setNum)
+	statemanager.RegisterUpdaterInt64(mmn.stateIDs["precise"], 3, mmn.setNum)
 
 	mmn.setMin(min)
 	mmn.setMax(max)

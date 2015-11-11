@@ -1,6 +1,7 @@
 package scoreboard
 
 import (
+	"fmt"
 	"log"
 
 	"github.com/rollerderby/crg/statemanager"
@@ -12,7 +13,7 @@ import (
 type Scoreboard struct {
 	stateIDs       map[string]string
 	teams          []*team
-	clocks         *masterClock
+	masterClock    *masterClock
 	state          string
 	snapshots      []*stateSnapshot
 	activeSnapshot *stateSnapshot
@@ -46,18 +47,20 @@ func New() *Scoreboard {
 
 	sb := &Scoreboard{}
 	sb.teams = append(sb.teams, newTeam(sb, 1), newTeam(sb, 2))
-	sb.clocks = newMasterClock(sb)
+	sb.masterClock = newMasterClock(sb)
 
 	sb.stateIDs = make(map[string]string)
 	sb.stateIDs["state"] = sb.stateBase() + ".State"
 
 	statemanager.RegisterUpdaterString(sb.stateIDs["state"], 0, sb.setState)
 
-	statemanager.RegisterCommand("StartJam", sb.startJam)
-	statemanager.RegisterCommand("StopJam", sb.stopJam)
-	statemanager.RegisterCommand("Timeout", sb.timeout)
-	statemanager.RegisterCommand("EndTimeout", sb.endTimeout)
-	statemanager.RegisterCommand("Undo", sb.undo)
+	statemanager.RegisterCommand("ScoreBoard.StartJam", sb.startJam)
+	statemanager.RegisterCommand("ScoreBoard.StopJam", sb.stopJam)
+	statemanager.RegisterCommand("ScoreBoard.Timeout", sb.timeout)
+	statemanager.RegisterCommand("ScoreBoard.EndTimeout", sb.endTimeout)
+	statemanager.RegisterCommand("ScoreBoard.Undo", sb.undo)
+
+	statemanager.RegisterCommand("ScoreBoard.Reset", sb.reset)
 
 	// Setup Updaters for stateSnapshots (functions located in state_snapshot.go)
 	statemanager.RegisterPatternUpdaterString(sb.stateBase()+".Snapshot(*).State", 0, sb.ssSetState)
@@ -76,10 +79,26 @@ func New() *Scoreboard {
 	statemanager.RegisterPatternUpdaterInt64(sb.stateBase()+".Snapshot(*).Team(*).OfficialReviews", 0, sb.sstSetOfficialReviews)
 	statemanager.RegisterPatternUpdaterBool(sb.stateBase()+".Snapshot(*).Team(*).OfficialReviewRetained", 0, sb.sstSetOfficialReviewRetained)
 
-	sb.setState(stateNotRunning)
-	sb.snapshotStateStart()
+	sb.reset(nil)
 
 	return sb
+}
+
+func (sb *Scoreboard) reset(_ []string) error {
+	sb.setState(stateNotRunning)
+	for _, t := range sb.teams {
+		t.reset()
+	}
+	sb.masterClock.reset()
+
+	for idx := range sb.snapshots {
+		statemanager.StateUpdate(fmt.Sprintf("%v.Snapshot(%v)", sb.stateBase(), idx), nil)
+	}
+	sb.snapshots = nil
+	sb.activeSnapshot = nil
+	sb.snapshotStateStart()
+
+	return nil
 }
 
 func (sb *Scoreboard) snapshotStateStart() {
@@ -99,7 +118,7 @@ func (sb *Scoreboard) snapshotStateEnd(canUndo bool) {
 func (sb *Scoreboard) clocksExpired() {
 	switch sb.state {
 	case stateLineup:
-		if !sb.clocks.period.running {
+		if !sb.masterClock.period.running {
 			// Period clock ended, go to intermission or unofficial
 			sb.endOfPeriod(false)
 		} else {
@@ -107,8 +126,8 @@ func (sb *Scoreboard) clocksExpired() {
 			sb.startJam(nil)
 		}
 	case stateJam:
-		if !sb.clocks.jam.running {
-			if !sb.clocks.period.running {
+		if !sb.masterClock.jam.running {
+			if !sb.masterClock.period.running {
 				// Period clock is out, go to intermission or unofficial
 				sb.endOfPeriod(false)
 				return
@@ -116,7 +135,7 @@ func (sb *Scoreboard) clocksExpired() {
 			sb.stopJam(nil)
 		}
 	case stateIntermission:
-		if sb.clocks.intermission.number.num == 1 {
+		if sb.masterClock.intermission.number.num == 1 {
 			sb.endOfIntermission()
 		}
 	}
@@ -125,20 +144,22 @@ func (sb *Scoreboard) clocksExpired() {
 func (sb *Scoreboard) endOfPeriod(canUndo bool) {
 	sb.snapshotStateEnd(canUndo)
 	defer sb.snapshotStateStart()
-	if sb.clocks.period.number.num == 1 {
+	if sb.masterClock.period.number.num == 1 {
 		sb.setState(stateIntermission)
 
 		// Reset & start intermission clock
-		sb.clocks.intermission.reset(false, false)
-		sb.clocks.setRunningClocks(clockIntermission)
+		sb.masterClock.intermission.reset(false, false)
+		sb.masterClock.setRunningClocks(clockIntermission)
 	} else {
 		sb.setState(stateUnofficial)
+		sb.masterClock.setRunningClocks()
 	}
 }
 
 func (sb *Scoreboard) endOfIntermission() {
-	sb.clocks.period.reset(false, true)
-	sb.clocks.jam.reset(true, false)
+	log.Printf("END OF INTERMISSION!")
+	sb.masterClock.period.reset(false, true)
+	sb.masterClock.jam.reset(true, false)
 }
 
 func (sb *Scoreboard) stateBase() string {
@@ -154,26 +175,30 @@ func (sb *Scoreboard) setState(state string) error {
 	if isTimeoutState(state) {
 		adjustable = true
 	}
-	sb.clocks.setClockAdjustable(clockPeriod, adjustable)
+	sb.masterClock.setClockAdjustable(clockPeriod, adjustable)
 	return nil
 }
 
 func (sb *Scoreboard) startJam(_ []string) error {
-	switch sb.state {
-	case stateJam:
+	if sb.state == stateJam {
 		return nil
-	case stateIntermission:
-		sb.endOfIntermission()
 	}
 
 	sb.snapshotStateEnd(true)
 	defer sb.snapshotStateStart()
+
+	if sb.state == stateIntermission {
+		if sb.masterClock.intermission.time.num < sb.masterClock.intermission.time.max/2 {
+			sb.endOfIntermission()
+		}
+	}
+
 	sb.setState(stateJam)
 
 	// Reset jam clock and increment jam number
-	sb.clocks.jam.reset(false, true)
+	sb.masterClock.jam.reset(false, true)
 	// Start clocks Period, Jam
-	sb.clocks.setRunningClocks(clockPeriod, clockJam)
+	sb.masterClock.setRunningClocks(clockPeriod, clockJam)
 	return nil
 }
 
@@ -182,21 +207,21 @@ func (sb *Scoreboard) stopJam(_ []string) error {
 		return nil
 	}
 
-	if !sb.clocks.period.running {
+	if !sb.masterClock.period.running {
 		// Period clock is out, go to intermission or unofficial
 		sb.endOfPeriod(true)
 		return nil
 	}
 
 	// Not the end of a period, start lineups
-	sb.snapshotStateEnd(sb.clocks.jam.time.num != sb.clocks.jam.time.min)
+	sb.snapshotStateEnd(sb.masterClock.jam.time.num != sb.masterClock.jam.time.min)
 	defer sb.snapshotStateStart()
 	sb.setState(stateLineup)
 
 	// Reset lineup clock
-	sb.clocks.lineup.reset(false, false)
+	sb.masterClock.lineup.reset(false, false)
 	// Start clocks Period, Lineup
-	sb.clocks.setRunningClocks(clockPeriod, clockLineup)
+	sb.masterClock.setRunningClocks(clockPeriod, clockLineup)
 	return nil
 }
 
@@ -252,9 +277,9 @@ func (sb *Scoreboard) timeout(data []string) error {
 	sb.setState(newState)
 
 	// Reset timeout clock
-	sb.clocks.timeout.reset(false, false)
+	sb.masterClock.timeout.reset(false, false)
 	// Start clocks Timeout
-	sb.clocks.setRunningClocks(clockTimeout)
+	sb.masterClock.setRunningClocks(clockTimeout)
 	return nil
 }
 
@@ -267,9 +292,9 @@ func (sb *Scoreboard) endTimeout(_ []string) error {
 	sb.setState(stateLineup)
 
 	// Reset timeout clock
-	sb.clocks.lineup.reset(false, false)
+	sb.masterClock.lineup.reset(false, false)
 	// Start clocks Timeout
-	sb.clocks.setRunningClocks(clockLineup)
+	sb.masterClock.setRunningClocks(clockLineup)
 	return nil
 }
 
@@ -282,7 +307,7 @@ func (sb *Scoreboard) undo(_ []string) error {
 		log.Printf("Scoreboard.undo: REVERTING")
 
 		for name, c := range lastSnapshot.clocks {
-			clock := sb.clocks.clocks[name]
+			clock := sb.masterClock.clocks[name]
 			clock.setRunning(c.running)
 			clock.time.setNum(c.endTime)
 			clock.number.setNum(c.number)
@@ -292,7 +317,7 @@ func (sb *Scoreboard) undo(_ []string) error {
 			sb.teams[t].setOfficialReviews(lastSnapshot.teams[0].officialReviews)
 			sb.teams[t].setOfficialReviewRetained(lastSnapshot.teams[0].officialReviewRetained)
 		}
-		sb.clocks.setTicks(lastSnapshot.endTicks)
+		sb.masterClock.setTicks(lastSnapshot.endTicks)
 
 		sb.setState(lastSnapshot.state)
 
@@ -302,7 +327,7 @@ func (sb *Scoreboard) undo(_ []string) error {
 		sb.snapshots[len(sb.snapshots)-1] = nil
 		sb.snapshots = sb.snapshots[:len(sb.snapshots)-1]
 
-		sb.clocks.ticker()
+		sb.masterClock.ticker()
 	}
 	return nil
 }

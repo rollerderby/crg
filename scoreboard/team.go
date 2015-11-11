@@ -7,7 +7,7 @@ import (
 )
 
 type team struct {
-	parent                 parent
+	sb                     *Scoreboard
 	base                   string
 	id                     uint8
 	name                   string
@@ -21,10 +21,10 @@ type team struct {
 	stateIDs               map[string]string
 }
 
-func newTeam(p parent, id uint8) *team {
+func newTeam(sb *Scoreboard, id uint8) *team {
 	t := &team{
-		parent:   p,
-		base:     fmt.Sprintf("%s.Team(%d)", p.stateBase(), id),
+		sb:       sb,
+		base:     fmt.Sprintf("%s.Team(%d)", sb.stateBase(), id),
 		id:       id,
 		settings: make(map[string]*setting),
 		skaters:  make(map[string]*skater),
@@ -53,15 +53,62 @@ func newTeam(p parent, id uint8) *team {
 	statemanager.RegisterCommand(t.stateIDs["score"]+".Dec", t.decScore)
 	statemanager.RegisterCommand(t.stateIDs["lastScore"]+".Inc", t.incLastScore)
 	statemanager.RegisterCommand(t.stateIDs["lastScore"]+".Dec", t.decLastScore)
+	statemanager.RegisterCommand(t.stateIDs["timeouts"]+".Start", t.startTimeout)
+	statemanager.RegisterCommand(t.stateIDs["officialReviews"]+".Start", t.startOfficialReview)
+	statemanager.RegisterCommand(t.stateIDs["officialReviews"]+".Retained", t.retainOfficialReview)
 
-	t.setName(fmt.Sprintf("Team %d", id))
+	// Setup Updaters for skaters (functions located in skater.go)
+	statemanager.RegisterPatternUpdaterString(t.base+".Skater(*).ID", 0, t.sSetID)
+	statemanager.RegisterPatternUpdaterString(t.base+".Skater(*).Name", 0, t.sSetName)
+	statemanager.RegisterPatternUpdaterString(t.base+".Skater(*).LegalName", 0, t.sSetLegalName)
+	statemanager.RegisterPatternUpdaterString(t.base+".Skater(*).InsuranceNumber", 0, t.sSetInsuranceNumber)
+	statemanager.RegisterPatternUpdaterString(t.base+".Skater(*).Number", 0, t.sSetNumber)
+	statemanager.RegisterPatternUpdaterBool(t.base+".Skater(*).IsCaptain", 0, t.sSetIsCaptain)
+	statemanager.RegisterPatternUpdaterBool(t.base+".Skater(*).IsAlt", 0, t.sSetIsAlt)
+	statemanager.RegisterPatternUpdaterBool(t.base+".Skater(*).IsBenchStaff", 0, t.sSetIsBenchStaff)
+
+	t.reset()
+	return t
+}
+
+func (t *team) reset() {
+	t.setName(fmt.Sprintf("Team %d", t.id))
 	t.setScore(0)
 	t.setLastScore(0)
 	t.setTimeouts(3)
 	t.setOfficialReviews(1)
 	t.setOfficialReviewRetained(false)
+}
 
-	return t
+func (t *team) stateBase() string {
+	return t.base
+}
+
+func (t *team) startTimeout(_ []string) error {
+	state := stateTTO1
+	if t.id == 2 {
+		state = stateTTO2
+	}
+	return t.sb.timeout([]string{state})
+}
+
+func (t *team) startOfficialReview(_ []string) error {
+	state := stateOR1
+	if t.id == 2 {
+		state = stateOR2
+	}
+	return t.sb.timeout([]string{state})
+}
+
+func (t *team) retainOfficialReview(_ []string) error {
+	if t.officialReviews == 0 && !t.officialReviewRetained {
+		t.setOfficialReviews(1)
+		t.setOfficialReviewRetained(true)
+	} else if t.officialReviews == 1 && t.officialReviewRetained {
+		t.setOfficialReviews(0)
+		t.setOfficialReviewRetained(false)
+	}
+	return nil
 }
 
 func (t *team) setName(name string) error {

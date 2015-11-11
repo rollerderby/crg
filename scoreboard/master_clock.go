@@ -31,7 +31,7 @@ const (
 	clockIntermission = "Intermission"
 )
 
-const clockTicksPerSecond int64 = 5
+const clockTicksPerSecond int64 = 10
 const durationPerTick = time.Second / time.Duration(clockTicksPerSecond)
 
 var clockTimeTick = 1000 / clockTicksPerSecond
@@ -85,7 +85,7 @@ func newMasterClock(sb *Scoreboard) *masterClock {
 	mc.intermission = newClock(
 		sb,
 		clockIntermission,
-		0, 2,
+		1, 2,
 		0, minutes15,
 		true,
 		false,
@@ -105,12 +105,18 @@ func newMasterClock(sb *Scoreboard) *masterClock {
 	statemanager.RegisterUpdaterTime(mc.stateIDs["startTime"], 0, mc.setStartTime)
 	statemanager.RegisterUpdaterInt64(mc.stateIDs["ticks"], 0, mc.setTicks)
 
-	mc.setStartTime(time.Now())
-	mc.setTicks(0)
-
 	go mc.tickClocks()
 
 	return mc
+}
+
+func (mc *masterClock) reset() {
+	for _, c := range mc.clocks {
+		c.reset(true, false)
+	}
+
+	mc.setStartTime(time.Now())
+	mc.setTicks(0)
 }
 
 func (mc *masterClock) stateBase() string {

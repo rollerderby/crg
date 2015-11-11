@@ -70,7 +70,7 @@ func newStateSnapshot(sb *Scoreboard, idx int64, initializeValues bool) *stateSn
 		ss.setInProgress(true)
 		ss.setCanRevert(false)
 		ss.setStartTime(time.Now())
-		ss.setStartTicks(sb.clocks.ticks)
+		ss.setStartTicks(sb.masterClock.ticks)
 		ss.setLength(0)
 	}
 
@@ -85,7 +85,7 @@ func newStateSnapshot(sb *Scoreboard, idx int64, initializeValues bool) *stateSn
 		}
 	}
 
-	for id, clock := range sb.clocks.clocks {
+	for id, clock := range sb.masterClock.clocks {
 		c := &stateSnapshotClock{base: ss.base + ".Clock(" + id + ")"}
 		ss.clocks[id] = c
 
@@ -100,14 +100,14 @@ func newStateSnapshot(sb *Scoreboard, idx int64, initializeValues bool) *stateSn
 }
 
 func (ss *stateSnapshot) end(canRevert bool) {
-	ss.setEndTicks(ss.sb.clocks.ticks)
+	ss.setEndTicks(ss.sb.masterClock.ticks)
 	ss.setEndTime(time.Now())
 	ss.setCanRevert(canRevert)
 	ss.setInProgress(false)
 	ss.updateLength()
 
 	for id, c := range ss.clocks {
-		c.setEndTime(ss.sb.clocks.clocks[id].time.num)
+		c.setEndTime(ss.sb.masterClock.clocks[id].time.num)
 	}
 }
 
@@ -125,8 +125,8 @@ func (ss *stateSnapshot) unend() {
 }
 
 func (ss *stateSnapshot) updateLength() {
-	if ss.idx != 0 {
-		ss.setLength((ss.sb.clocks.ticks - ss.startTicks) * clockTimeTick)
+	if ss.state != "" {
+		ss.setLength((ss.sb.masterClock.ticks - ss.startTicks) * clockTimeTick)
 	}
 }
 
@@ -235,10 +235,6 @@ func (ss *stateSnapshot) findTeam(k string) *stateSnapshotTeam {
 }
 
 /* Helper functions to find the stateSnapshot for RegisterUpdaters */
-/*
-	teams      []*stateSnapshotTeam
-	clocks     map[string]*stateSnapshotClock
-*/
 func (sb *Scoreboard) findStateSnapshot(k string) *stateSnapshot {
 	k = k[len(sb.stateBase()+".Snapshot("):]
 	end := strings.IndexRune(k, ')')
