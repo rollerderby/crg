@@ -7,30 +7,28 @@ import "errors"
 // by UnregisterCommand
 type CommandFunc func([]string) error
 
-// ErrCommandNotFound is returned by Command when the requested
-// command is not currently registered with the system
-var ErrCommandNotFound = errors.New("Command Not Found")
-var ErrCommandArguments = errors.New("Incorrect Argument Count")
+var errCommandNotFound = errors.New("Command Not Found")
+var errCommandArguments = errors.New("Incorrect Argument Count")
 var commands = make(map[string]CommandFunc)
 
 // Command requests the command registered with name be called
 // and passed data as parameters.  Returns nil error on success,
-// ErrCommandNotFound, or an error from the registered command
-// function
+// errCommandNotFound, errCommandArguments, or an error from the
+// registered command function
 func Command(name string, data []string) error {
 	Lock()
 	defer Unlock()
 
 	if name == "Set" {
 		if len(data) != 2 {
-			return ErrCommandArguments
+			return errCommandArguments
 		}
 		return StateSet(data[0], data[1])
 	}
 
 	c, ok := commands[name]
 	if !ok {
-		return ErrCommandNotFound
+		return errCommandNotFound
 	}
 	return c(data)
 }

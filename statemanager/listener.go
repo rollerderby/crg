@@ -12,7 +12,7 @@ type Listener struct {
 	callback func(map[string]*string)
 	stateNum uint64
 	ch       chan map[string]*string
-	matchers []PatternMatcher
+	matchers []patternMatcher
 	paths    []string
 }
 
@@ -78,7 +78,7 @@ func (l *Listener) processUpdates() {
 	}
 }
 
-func (l *Listener) findPatternMatcher(path string) (int, PatternMatcher) {
+func (l *Listener) findPatternMatcher(path string) (int, patternMatcher) {
 	for idx, pm := range l.matchers {
 		if pm.Pattern() == path {
 			return idx, pm
@@ -104,7 +104,7 @@ func (l *Listener) RegisterPaths(paths []string) {
 		idx, _ := l.findPatternMatcher(p)
 		if idx == -1 {
 			l.paths = append(l.paths, p)
-			l.matchers = append(l.matchers, NewPatternMatcher(p))
+			l.matchers = append(l.matchers, newPatternMatcher(p))
 		}
 	}
 	l.flush(paths)

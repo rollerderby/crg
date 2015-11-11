@@ -243,19 +243,19 @@ func calculateClockOffset(master, slave *clock) int64 {
 	// figure out when to start the clock based on the master clock
 
 	// Calc master time to tick
-	m_ttt := master.time.num % 1000
+	masterTimeToTick := master.time.num % 1000
 	if !master.countdown {
-		m_ttt = (1000 - m_ttt) % 1000
+		masterTimeToTick = (1000 - masterTimeToTick) % 1000
 	}
 
 	// Calc slave time to tick
-	s_ttt := slave.time.num % 1000
+	slaveTimeToTick := slave.time.num % 1000
 	if !slave.countdown {
-		s_ttt = (1000 - s_ttt) % 1000
+		slaveTimeToTick = (1000 - slaveTimeToTick) % 1000
 	}
 
 	// Calc difference (normalizing between -500 and 500)
-	diff := m_ttt - s_ttt
+	diff := masterTimeToTick - slaveTimeToTick
 	if diff < -500 {
 		diff = diff + 1000
 	} else if diff > 500 {

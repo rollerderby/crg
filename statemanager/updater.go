@@ -34,7 +34,7 @@ type UpdaterPatternTimeFunc func(string, time.Time) error
 type stateUpdater struct {
 	updater       interface{}
 	name          string
-	pm            PatternMatcher
+	pm            patternMatcher
 	groupPriority uint8
 	isPattern     bool
 }
@@ -156,42 +156,42 @@ func StateSetGroup(values map[string]string) {
 
 // RegisterUpdaterString adds a string updater to the statemanager.
 func RegisterUpdaterString(name string, groupPriority uint8, u UpdaterStringFunc) {
-	updaters[name] = &stateUpdater{updater: u, name: name, groupPriority: groupPriority, pm: NewPatternMatcher(name)}
+	updaters[name] = &stateUpdater{updater: u, name: name, groupPriority: groupPriority, pm: newPatternMatcher(name)}
 }
 
 // RegisterUpdaterInt64 adds an int64 updater to the statemanager.
 func RegisterUpdaterInt64(name string, groupPriority uint8, u UpdaterInt64Func) {
-	updaters[name] = &stateUpdater{updater: u, name: name, groupPriority: groupPriority, pm: NewPatternMatcher(name)}
+	updaters[name] = &stateUpdater{updater: u, name: name, groupPriority: groupPriority, pm: newPatternMatcher(name)}
 }
 
 // RegisterUpdaterBool adds a bool updater to the statemanager.
 func RegisterUpdaterBool(name string, groupPriority uint8, u UpdaterBoolFunc) {
-	updaters[name] = &stateUpdater{updater: u, name: name, groupPriority: groupPriority, pm: NewPatternMatcher(name)}
+	updaters[name] = &stateUpdater{updater: u, name: name, groupPriority: groupPriority, pm: newPatternMatcher(name)}
 }
 
 // RegisterUpdaterTime adds a time updater to the statemanager.
 func RegisterUpdaterTime(name string, groupPriority uint8, u UpdaterTimeFunc) {
-	updaters[name] = &stateUpdater{updater: u, name: name, groupPriority: groupPriority, pm: NewPatternMatcher(name)}
+	updaters[name] = &stateUpdater{updater: u, name: name, groupPriority: groupPriority, pm: newPatternMatcher(name)}
 }
 
 // RegisterPatternUpdaterString adds a string updater to the statemanager.
 func RegisterPatternUpdaterString(name string, groupPriority uint8, u UpdaterPatternStringFunc) {
-	updaters[name] = &stateUpdater{updater: u, name: name, groupPriority: groupPriority, isPattern: true, pm: NewPatternMatcher(name)}
+	updaters[name] = &stateUpdater{updater: u, name: name, groupPriority: groupPriority, isPattern: true, pm: newPatternMatcher(name)}
 }
 
 // RegisterPatternUpdaterInt64 adds an int64 updater to the statemanager.
 func RegisterPatternUpdaterInt64(name string, groupPriority uint8, u UpdaterPatternInt64Func) {
-	updaters[name] = &stateUpdater{updater: u, name: name, groupPriority: groupPriority, isPattern: true, pm: NewPatternMatcher(name)}
+	updaters[name] = &stateUpdater{updater: u, name: name, groupPriority: groupPriority, isPattern: true, pm: newPatternMatcher(name)}
 }
 
 // RegisterPatternUpdaterBool adds a bool updater to the statemanager.
 func RegisterPatternUpdaterBool(name string, groupPriority uint8, u UpdaterPatternBoolFunc) {
-	updaters[name] = &stateUpdater{updater: u, name: name, groupPriority: groupPriority, isPattern: true, pm: NewPatternMatcher(name)}
+	updaters[name] = &stateUpdater{updater: u, name: name, groupPriority: groupPriority, isPattern: true, pm: newPatternMatcher(name)}
 }
 
 // RegisterPatternUpdaterTime adds a time updater to the statemanager.
 func RegisterPatternUpdaterTime(name string, groupPriority uint8, u UpdaterPatternTimeFunc) {
-	updaters[name] = &stateUpdater{updater: u, name: name, groupPriority: groupPriority, isPattern: true, pm: NewPatternMatcher(name)}
+	updaters[name] = &stateUpdater{updater: u, name: name, groupPriority: groupPriority, isPattern: true, pm: newPatternMatcher(name)}
 }
 
 // UnregisterUpdater removes an updater from the statemanager.

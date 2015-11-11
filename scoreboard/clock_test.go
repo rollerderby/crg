@@ -3,11 +3,11 @@ package scoreboard
 import "testing"
 
 type testCase struct {
-	master_time      int64
-	master_countdown bool
-	slave_time       int64
-	slave_countdown  bool
-	expectedOffset   int64
+	masterTime      int64
+	masterCountdown bool
+	slaveTime       int64
+	slaveCountdown  bool
+	expectedOffset  int64
 }
 
 func TestClockOffset(t *testing.T) {
@@ -235,8 +235,8 @@ func TestClockOffset(t *testing.T) {
 	}
 
 	for _, tc := range testCases {
-		m := &clock{nil, "master", "master", nil, &minMaxNumber{nil, "", tc.master_countdown, tc.master_time, 0, 90000, 1000, nil}, tc.master_countdown, true, false, nil}
-		s := &clock{nil, "slave", "slave", nil, &minMaxNumber{nil, "", tc.slave_countdown, tc.slave_time, 0, 90000, 1000, nil}, tc.slave_countdown, true, false, nil}
+		m := &clock{nil, "master", "master", nil, &minMaxNumber{nil, "", tc.masterCountdown, tc.masterTime, 0, 90000, 1000, nil}, tc.masterCountdown, true, false, nil}
+		s := &clock{nil, "slave", "slave", nil, &minMaxNumber{nil, "", tc.slaveCountdown, tc.slaveTime, 0, 90000, 1000, nil}, tc.slaveCountdown, true, false, nil}
 
 		offset := calculateClockOffset(m, s)
 		if offset != tc.expectedOffset {

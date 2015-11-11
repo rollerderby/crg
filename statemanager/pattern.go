@@ -2,7 +2,7 @@ package statemanager
 
 import "strings"
 
-type PatternMatcher interface {
+type patternMatcher interface {
 	Matches(string) bool
 	Pattern() string
 }
@@ -18,7 +18,7 @@ type complexMatcher struct {
 	pattern string
 }
 
-// NewPatternMatch will return a PatternMatcher capable of matching
+// newPatternMatch will return a PatternMatcher capable of matching
 // patterns to values
 //
 // Sample patterns
@@ -26,7 +26,7 @@ type complexMatcher struct {
 // key(*) will match anything inside the parens
 // key.* will match anything starting with "key."
 // key(*).* will match the combination of the two
-func NewPatternMatcher(pattern string) PatternMatcher {
+func newPatternMatcher(pattern string) patternMatcher {
 	if pattern == "" {
 		return &blankMatcher{pattern: pattern}
 	}

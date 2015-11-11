@@ -6,7 +6,7 @@ var cases = []*struct {
 	pattern  string
 	value    string
 	expected bool
-	pm       PatternMatcher
+	pm       patternMatcher
 }{
 	{"Scoreboard.Team(*)", "Scoreboard.Team(1)", true, nil},
 	{"Scoreboard.Team(*)", "Scoreboard.Team(2).Name", true, nil},
@@ -25,7 +25,7 @@ var cases = []*struct {
 
 func TestPatternMatcher(t *testing.T) {
 	for _, c := range cases {
-		c.pm = NewPatternMatcher(c.pattern)
+		c.pm = newPatternMatcher(c.pattern)
 		r := c.pm.Matches(c.value)
 		if r != c.expected {
 			t.Errorf("CheckPattern('%v', '%v') expected %v got %v", c.value, c.pattern, c.expected, r)
@@ -34,21 +34,21 @@ func TestPatternMatcher(t *testing.T) {
 }
 
 func BenchmarkBlankPatternMatcher(b *testing.B) {
-	var pm PatternMatcher = NewPatternMatcher("")
+	var pm = newPatternMatcher("")
 	for n := 0; n < b.N; n++ {
 		pm.Matches("Scoreboard.Team(1).Color(operator).Name.Key(blue).Color")
 	}
 }
 
 func BenchmarkSimplePatternMatcher(b *testing.B) {
-	var pm PatternMatcher = NewPatternMatcher("Scoreboard.Team(1).Color(operator).Name")
+	var pm = newPatternMatcher("Scoreboard.Team(1).Color(operator).Name")
 	for n := 0; n < b.N; n++ {
 		pm.Matches("Scoreboard.Team(1).Color(operator).Name.Key(blue).Color")
 	}
 }
 
 func BenchmarkComplexPatternMatcher(b *testing.B) {
-	var pm PatternMatcher = NewPatternMatcher("Scoreboard.Team(*).Color(*).Name.*")
+	var pm = newPatternMatcher("Scoreboard.Team(*).Color(*).Name.*")
 	for n := 0; n < b.N; n++ {
 		pm.Matches("Scoreboard.Team(1).Color(operator).Name.Key(blue).Color")
 	}
