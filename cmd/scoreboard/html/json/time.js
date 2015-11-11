@@ -22,7 +22,6 @@ function timeComputerToHuman(t) {
 	var min = t;
 
 	var ret = neg + min + ':' + pad(sec, 2) + '.' + subSec;
-	console.log(ret, _t);
 	return ret;
 }
 

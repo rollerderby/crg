@@ -8,6 +8,7 @@ import (
 
 	ws "github.com/gorilla/websocket"
 	"github.com/rollerderby/crg/statemanager"
+	"github.com/satori/go.uuid"
 )
 
 var upgrader = ws.Upgrader{
@@ -53,6 +54,17 @@ func (c *connection) Run() {
 		switch cmd.Action {
 		case "Register":
 			c.listener.RegisterPaths(cmd.Data)
+		case "NewObject":
+			u := uuid.NewV4().String()
+			fields := make(map[string]string)
+			for f, v := range cmd.FieldData {
+				k := fmt.Sprintf("%v(%v).%v", cmd.Field, u, f)
+				fields[k] = v
+			}
+
+			statemanager.Lock()
+			statemanager.StateSetGroup(fields)
+			statemanager.Unlock()
 		default:
 			// Try to send a command through the statemanager
 			err := statemanager.Command(cmd.Action, cmd.Data)

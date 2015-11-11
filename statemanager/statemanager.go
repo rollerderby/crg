@@ -37,6 +37,8 @@ var ErrUpdaterNotFound = errors.New("Updater Not Found")
 // one of the supported types (currently string, int64, bool)
 var ErrUnknownType = errors.New("Unknown State Type")
 
+func SetDebug(d bool) { debug = d }
+
 // Initialize starts up the statemanager
 func Initialize() {
 	cond = sync.NewCond(&lock)

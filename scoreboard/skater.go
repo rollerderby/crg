@@ -14,8 +14,9 @@ type skater struct {
 	legalName       string
 	insuranceNumber string
 	number          string
-	isCaptain       bool
 	isAlt           bool
+	isCaptain       bool
+	isAltCaptain    bool
 	isBenchStaff    bool
 	stateIDs        map[string]string
 }
@@ -34,30 +35,35 @@ func blankSkater(t *team, id string) *skater {
 	s.stateIDs["legalName"] = base + ".LegalName"
 	s.stateIDs["insuranceNumber"] = base + ".InsuranceNumber"
 	s.stateIDs["number"] = base + ".Number"
-	s.stateIDs["isCaptain"] = base + ".IsCaptain"
 	s.stateIDs["isAlt"] = base + ".IsAlt"
+	s.stateIDs["isCaptain"] = base + ".IsCaptain"
+	s.stateIDs["isAltCaptain"] = base + ".IsAltCaptain"
 	s.stateIDs["isBenchStaff"] = base + ".IsBenchStaff"
+	s.stateIDs["description"] = base + ".Description"
+	s.stateIDs["shortDescription"] = base + ".ShortDescription"
 
 	s.setID(id)
 	s.setName("")
 	s.setLegalName("")
 	s.setInsuranceNumber("")
 	s.setNumber("")
-	s.setIsCaptain(false)
 	s.setIsAlt(false)
+	s.setIsCaptain(false)
+	s.setIsAltCaptain(false)
 	s.setIsBenchStaff(false)
 
 	return s
 }
 
-func newSkater(t *team, id, name, legalName, insuranceNumber, number string, isCaptain, isAlt, isBenchStaff bool) *skater {
+func newSkater(t *team, id, name, legalName, insuranceNumber, number string, isAlt, isCaptain, isAltCaptain, isBenchStaff bool) *skater {
 	s := blankSkater(t, id)
 	s.setName(name)
 	s.setLegalName(legalName)
 	s.setInsuranceNumber(insuranceNumber)
 	s.setNumber(number)
-	s.setIsCaptain(isCaptain)
 	s.setIsAlt(isAlt)
+	s.setIsCaptain(isCaptain)
+	s.setIsAltCaptain(isAltCaptain)
 	s.setIsBenchStaff(isBenchStaff)
 
 	return s
@@ -88,19 +94,50 @@ func (s *skater) setNumber(v string) error {
 	return statemanager.StateUpdate(s.stateIDs["number"], v)
 }
 
+func (s *skater) setIsAlt(v bool) error {
+	s.isAlt = v
+	s.setDescription()
+	return statemanager.StateUpdate(s.stateIDs["isAlt"], v)
+}
+
 func (s *skater) setIsCaptain(v bool) error {
 	s.isCaptain = v
+	s.setDescription()
 	return statemanager.StateUpdate(s.stateIDs["isCaptain"], v)
 }
 
-func (s *skater) setIsAlt(v bool) error {
-	s.isAlt = v
-	return statemanager.StateUpdate(s.stateIDs["isAlt"], v)
+func (s *skater) setIsAltCaptain(v bool) error {
+	s.isAltCaptain = v
+	s.setDescription()
+	return statemanager.StateUpdate(s.stateIDs["isAltCaptain"], v)
 }
 
 func (s *skater) setIsBenchStaff(v bool) error {
 	s.isBenchStaff = v
+	s.setDescription()
 	return statemanager.StateUpdate(s.stateIDs["isBenchStaff"], v)
+}
+
+func (s *skater) setDescription() {
+	var long, short []string
+	if s.isAlt {
+		long = append(long, "Alternate")
+		short = append(short, "Alt")
+	}
+	if s.isCaptain {
+		long = append(long, "Captain")
+		short = append(short, "C")
+	}
+	if s.isAltCaptain {
+		long = append(long, "Alternate Captain")
+		short = append(short, "A")
+	}
+	if s.isBenchStaff {
+		long = append(long, "Bench Staff")
+		short = append(short, "B")
+	}
+	statemanager.StateUpdate(s.stateIDs["description"], strings.Join(long, ", "))
+	statemanager.StateUpdate(s.stateIDs["shortDescription"], strings.Join(short, ""))
 }
 
 /* Helper functions to find the skater for RegisterUpdaters */
@@ -115,6 +152,7 @@ func (t *team) findSkater(k string) *skater {
 	s, ok := t.skaters[id]
 	if !ok {
 		s = blankSkater(t, id)
+		t.skaters[id] = s
 	}
 	return s
 }
@@ -154,6 +192,13 @@ func (t *team) sSetNumber(k, v string) error {
 	}
 	return errSkaterNotFound
 }
+func (t *team) sSetIsAlt(k string, v bool) error {
+	if s := t.findSkater(k); s != nil {
+		s.setIsAlt(v)
+		return nil
+	}
+	return errSkaterNotFound
+}
 func (t *team) sSetIsCaptain(k string, v bool) error {
 	if s := t.findSkater(k); s != nil {
 		s.setIsCaptain(v)
@@ -161,9 +206,9 @@ func (t *team) sSetIsCaptain(k string, v bool) error {
 	}
 	return errSkaterNotFound
 }
-func (t *team) sSetIsAlt(k string, v bool) error {
+func (t *team) sSetIsAltCaptain(k string, v bool) error {
 	if s := t.findSkater(k); s != nil {
-		s.setIsAlt(v)
+		s.setIsAltCaptain(v)
 		return nil
 	}
 	return errSkaterNotFound

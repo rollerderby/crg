@@ -85,6 +85,18 @@ var WS = {
 		WS.send(JSON.stringify(req));
 	},
 
+	NewObject: function(name, data) {
+		req = {
+			action: "NewObject",
+			field: name,
+			fieldData: {}
+		};
+		for (var prop in data) {
+			req.fieldData[prop] = data[prop].toString();
+		}
+		WS.send(JSON.stringify(req));
+	},
+
 	Set: function(key, value) {
 		req = {
 			action: 'Set',
@@ -264,7 +276,6 @@ var WS = {
 			if (field != null) {
 				cmd = WS._getContext(elem, "sbCommandField") + "." + cmd;
 			}
-			console.log(cmd, data);
 			elem.click(function() { WS.Command(cmd); });
 		});
 	},

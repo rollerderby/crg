@@ -33,6 +33,7 @@
 				<div class="Row">
 					<div class="Logo" sbDisplay="Logo"></div>
 					<div class="Name" sbDisplay="Name"></div>
+					<div class="EditTeam"><button>Edit Team</button></div>
 				</div>
 				<div class="Row">
 					<div class="ScoreDown">
@@ -111,7 +112,7 @@
 						</div>
 					</div>
 					<div class="Jammer">
-						<select class="Jammer">
+						<select class="Skater Jammer">
 							<option value="">No Jammer</option>
 						</select>
 						<button class="SmallButton Box">Box</button>
@@ -125,10 +126,46 @@
 						</div>
 					</div>
 					<div class="Pivot">
-						<select class="Pivot">
+						<select class="Skater Pivot">
 							<option value="">No Pivot</option>
 						</select>
 						<button class="SmallButton Box">Box</button>
+					</div>
+				</div>
+				<div class="Editor">
+					<div class="Skaters">
+						Skaters
+						<table>
+							<thead>
+								<tr>
+									<td width="5%">Number</td>
+									<td width="20%">Name</td>
+									<td width="20%">Insurance</td>
+									<td width="20%">Legal Name</td>
+									<td width="20%"></td>
+									<td></td>
+								</tr>
+							</thead>
+							<tbody class="SkaterRows">
+								<tr class="AddRow">
+									<td><input type="text" class="Number" /></td>
+									<td><input type="text" class="Name" /></td>
+									<td><input type="text" class="InsuranceNumber" /></td>
+									<td><input type="text" class="LegalName" /></td>
+									<td>
+										<label><input type="checkbox" class="IsAlt" /> Alternate</label>
+										<label><input type="checkbox" class="IsCaptain" /> Captain</label>
+										<label><input type="checkbox" class="IsAltCaptain" /> Alt Captain</label>
+										<label><input type="checkbox" class="IsBenchStaff" /> Bench Staff</label>
+									</td>
+									<td>
+										<button class="Add">Add</button>
+										<button class="Save">Save</button>
+										<button class="Cancel">Cancel</button>
+									</td>
+								</tr>
+							</tbody>
+						</table>
 					</div>
 				</div>
 			</div>

@@ -26,6 +26,7 @@ const version = "$VERSION"
 END
 
 go get -u github.com/gorilla/websocket
+go get -u github.com/satori/go.uuid
 if [ $ZIP -eq 0 ]; then
 	rm -f scoreboard
 	go build -v
