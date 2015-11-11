@@ -18,6 +18,7 @@ android/assets/
 android/build/
 /rules/
 cmd/scoreboard/scoreboard*
+cmd/scoreboard/version.go
 *.json
 *.swp
 *.tar.gz
