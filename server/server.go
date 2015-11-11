@@ -83,6 +83,10 @@ func urlsHandler(w http.ResponseWriter, _ *http.Request) {
 	}
 }
 
+func setSettings(k, v string) error {
+	return statemanager.StateUpdate(k, v)
+}
+
 // Start initalizes all scoreboard subsystems and starts up a webserver on port
 func Start(ver string, port uint16) {
 	version = ver
@@ -93,9 +97,15 @@ func Start(ver string, port uint16) {
 	websocket.Initialize(mux)
 
 	// filename, base string, interval time.Duration, version bool
-	saver, savedState := statemanager.NewSaver("state.json", "ScoreBoard", time.Duration(5)*time.Second, true)
+	stateSaver, stateSavedState := statemanager.NewSaver("state.json", "ScoreBoard", time.Duration(5)*time.Second, true)
 	statemanager.Lock()
-	statemanager.StateSetGroup(savedState)
+	statemanager.StateSetGroup(stateSavedState)
+	statemanager.Unlock()
+
+	settingsSaver, settingsSavedState := statemanager.NewSaver("settings.json", "Settings", time.Duration(5)*time.Second, true)
+	statemanager.Lock()
+	statemanager.RegisterPatternUpdaterString("Settings", 0, setSettings)
+	statemanager.StateSetGroup(settingsSavedState)
 	statemanager.Unlock()
 
 	printStartup(port)
@@ -116,5 +126,6 @@ func Start(ver string, port uint16) {
 	signal.Notify(c, os.Interrupt, os.Kill)
 	s := <-c
 	log.Printf("Server received signal: %v.  Shutting down", s)
-	saver.Close()
+	stateSaver.Close()
+	settingsSaver.Close()
 }
