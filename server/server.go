@@ -14,7 +14,13 @@ import (
 	"github.com/rollerderby/crg/websocket"
 )
 
+var version string
+var urls []string
+
 func printStartup(port uint16) {
+	log.Print()
+	log.Printf("CRG Scoreboard and Game System Version %v", version)
+	log.Print()
 	log.Print("vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv")
 	log.Print("vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv")
 	log.Print("Double-click/open the 'start.html' file, or")
@@ -42,11 +48,14 @@ func printStartup(port uint16) {
 					if ip.IsLoopback() || ip.IsLinkLocalUnicast() {
 						continue
 					}
+					var url string
 					if ip.To4() != nil {
-						log.Printf("http://%v:%d/", ip, port)
+						url = fmt.Sprintf("http://%v:%d/", ip, port)
 					} else {
-						log.Printf("http://[%v]:%d/", ip, port)
+						url = fmt.Sprintf("http://[%v]:%d/", ip, port)
 					}
+					urls = append(urls, url)
+					log.Print(url)
 				}
 			}
 		}
@@ -63,8 +72,20 @@ func setDefaultHeaders(handler http.Handler) http.Handler {
 	})
 }
 
+func versionHandler(w http.ResponseWriter, _ *http.Request) {
+	w.Write([]byte(version))
+}
+
+func urlsHandler(w http.ResponseWriter, _ *http.Request) {
+	for _, url := range urls {
+		w.Write([]byte(url))
+		w.Write([]byte("\n"))
+	}
+}
+
 // Start initalizes all scoreboard subsystems and starts up a webserver on port
-func Start(port uint16) {
+func Start(ver string, port uint16) {
+	version = ver
 	mux := http.NewServeMux()
 	statemanager.Initialize()
 
@@ -88,6 +109,9 @@ func Start(port uint16) {
 		}
 		c <- os.Kill
 	}()
+
+	mux.Handle("/version", http.HandlerFunc(versionHandler))
+	mux.Handle("/urls", http.HandlerFunc(urlsHandler))
 
 	signal.Notify(c, os.Interrupt, os.Kill)
 	s := <-c
