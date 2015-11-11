@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 
 build() {
 	echo "Building for $1-$2 to $3"
@@ -22,9 +22,10 @@ echo
 cat > version.go <<END
 package main
 
-const VERSION = "$VERSION"
+const version = "$VERSION"
 END
 
+go get -u github.com/gorilla/websocket
 if [ $ZIP -eq 0 ]; then
 	rm -f scoreboard
 	go build -v
