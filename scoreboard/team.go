@@ -56,6 +56,7 @@ func newTeam(sb *Scoreboard, id uint8) *team {
 	statemanager.RegisterCommand(t.stateIDs["timeouts"]+".Start", t.startTimeout)
 	statemanager.RegisterCommand(t.stateIDs["officialReviews"]+".Start", t.startOfficialReview)
 	statemanager.RegisterCommand(t.stateIDs["officialReviews"]+".Retained", t.retainOfficialReview)
+	statemanager.RegisterCommand(t.base+".DeleteSkater", t.deleteSkater)
 
 	// Setup Updaters for skaters (functions located in skater.go)
 	statemanager.RegisterPatternUpdaterString(t.base+".Skater(*).ID", 0, t.sSetID)
@@ -79,6 +80,18 @@ func (t *team) reset() {
 	t.setTimeouts(3)
 	t.setOfficialReviews(1)
 	t.setOfficialReviewRetained(false)
+}
+
+func (t *team) deleteSkater(data []string) error {
+	if len(data) < 1 {
+		return errSkaterNotFound
+	}
+
+	if _, ok := t.skaters[data[0]]; !ok {
+		return errSkaterNotFound
+	}
+	delete(t.skaters, data[0])
+	return statemanager.StateUpdate(t.base+".Skater("+data[0]+")", nil)
 }
 
 func (t *team) stateBase() string {

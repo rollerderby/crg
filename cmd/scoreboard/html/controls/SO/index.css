@@ -37,7 +37,7 @@ div.Row>div {
 	margin: 0px;
 }
 
-.Team, .Clock {
+.Team, .Clock, .Skaters {
 	border-radius: 10px;
 	background-color: lightgrey;
 	margin: 2px !important;
@@ -168,4 +168,11 @@ button.active {
 .Editor label {
 	font-size: 70%;
 	display: block;
+}
+
+.Editor tr.Skater:not(.Edit) div {
+	display: none;
+}
+.Editor tr.Skater.Edit span {
+	display: none;
 }

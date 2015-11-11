@@ -5,6 +5,7 @@
 		<script type="text/javascript" src="/external/jquery/jquery.js"></script>
 		<script type="text/javascript" src="/external/jquery/jquery.js"></script>
 		<script type="text/javascript" src="/json/core.js"></script>
+		<script type="text/javascript" src="index.js"></script>
 		<link href="/external/jquery-ui/css/default/jquery-ui.css" type="text/css" rel="stylesheet" />
 	</head>
 	<body sbContext="ScoreBoard">
@@ -33,7 +34,7 @@
 				<div class="Row">
 					<div class="Logo" sbDisplay="Logo"></div>
 					<div class="Name" sbDisplay="Name"></div>
-					<div class="EditTeam"><button>Edit Team</button></div>
+					<div class="EditTeam"><button class="SmallButton">Edit Team</button></div>
 				</div>
 				<div class="Row">
 					<div class="ScoreDown">
@@ -133,9 +134,9 @@
 					</div>
 				</div>
 				<div class="Editor">
-					<div class="Skaters">
+					<div>
 						Skaters
-						<table>
+						<table class="Skaters">
 							<thead>
 								<tr>
 									<td width="5%">Number</td>
@@ -148,20 +149,18 @@
 							</thead>
 							<tbody class="SkaterRows">
 								<tr class="AddRow">
-									<td><input type="text" class="Number" /></td>
-									<td><input type="text" class="Name" /></td>
-									<td><input type="text" class="InsuranceNumber" /></td>
-									<td><input type="text" class="LegalName" /></td>
-									<td>
+									<td class="Number"><input type="text" class="Number" /></td>
+									<td class="Name"><input type="text" class="Name" /></td>
+									<td class="InsuranceNumber"><input type="text" class="InsuranceNumber" /></td>
+									<td class="LegalName"><input type="text" class="LegalName" /></td>
+									<td class="Description">
 										<label><input type="checkbox" class="IsAlt" /> Alternate</label>
 										<label><input type="checkbox" class="IsCaptain" /> Captain</label>
 										<label><input type="checkbox" class="IsAltCaptain" /> Alt Captain</label>
 										<label><input type="checkbox" class="IsBenchStaff" /> Bench Staff</label>
 									</td>
-									<td>
+									<td class="Buttons">
 										<button class="Add">Add</button>
-										<button class="Save">Save</button>
-										<button class="Cancel">Cancel</button>
 									</td>
 								</tr>
 							</tbody>

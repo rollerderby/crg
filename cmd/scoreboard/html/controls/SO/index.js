@@ -1,13 +1,6 @@
 $(init);
 
 function init() {
-	// $("div").each(function (idx, elem) {
-	// 	elem = $(elem);
-	// 	if (elem.children().length == 0) {
-	// 		elem.append($("<span>").text(elem.attr("class")));
-	// 	}
-	// });
-
 	$(window).resize(function () {
 		width = $(window).width();
 		height = $(window).height();
@@ -48,7 +41,6 @@ function init() {
 
 		var teamEditor = createEditorDialog(t);
 		$(".Team"+t+" .EditTeam button").click(function() {
-			console.log("open team "+t+" editor")
 			teamEditor.dialog("option", "title", WS.state["ScoreBoard.Team("+t+").Name"] + " Editor");
 			teamEditor.dialog("open");
 		});
@@ -180,40 +172,100 @@ function skater(t, k, v) {
 	id = id.substring(0, id.indexOf(")"));
 
 	var base = "ScoreBoard.Team("+t+").Skater("+id+")";
-	if (k == base && v == null) {
-		$(".Skater ."+id).remove();
+	var field = k.substring(base.length+1);
+
+	if (v == null) {
+		if (field == "ID") {
+			$(".Team"+t+ " select.Skater option").filterByData("key", id).remove();
+			$(".Team"+t+ " tr.Skater").filterByData("key", id).remove();
+		}
 		return;
 	}
 
 	addSkater(t, id);
-	var select = $(".Team"+t+ " select.Skater option[value="+id+"]");
-	var row = $(".Team"+t+ " tr.Skater[key="+id+"]");
+	var option = $(".Team"+t+ " select.Skater option").filterByData("key", id);
+	var row = $(".Team"+t+ " tr.Skater").filterByData("key", id);
 
-	var field = k.substring(base.length+1);
 	if (field == "Number") {
-		row.find(".Number").text(v);
-		select.text(v);
-		select.prop("sort", v);
-		sort($(".Team"+t+ " select.Skater"));
+		row.data("sort", v)
+		row.find(".Number span").text(v);
+		row.find(".Number input").val(v);
+
+		option.text(v);
+		option.data("sort", v);
+
+		sort($(".Team"+t+ " select.Skater"), id);
+		sort($(".Team"+t+ " table.Skaters tbody"), id);
 	} else {
-		row.find("."+field).text(v);
+		row.find("."+field+" span").text(v);
+		row.find("."+field+" input[type=text]").val(v);
+		row.find("input."+field+"[type=checkbox]").prop("checked", isTrue(v));
 	}
 }
 
-function sort(elem) {
+function sort(p, id) {
+	p.each(function(idx, p1) {
+		p1 = $(p1);
+		var elem = p1.children().filterByData("key", id);
+
+		d1 = elem.data("sort");
+		var inserted = false;
+		p1.children().each(function(idx, child) {
+			child = $(child);
+			var d2 = child.data("sort");
+			if (d2 != null && d1 < d2) {
+				inserted = true;
+				elem.insertBefore(child);
+				return false;
+			}
+		});
+		if (!inserted) {
+			p1.append(elem);
+		}
+	});
 }
 
 function addSkater(t, id) {
-	if ($(".Team"+t+" select.Skater option[value="+id+"]").length == 0) {
-		$("<option>").val(id).appendTo($(".Team"+t+" select.Skater"));
+	if ($(".Team"+t+" select.Skater option").filterByData("key", id).length == 0) {
+		var o = $("<option>").data("key", id).val(id).appendTo($(".Team"+t+" select.Skater"));
 	}
-	if ($(".Team"+t+" .SkaterRows tr.Skater[key="+id+"]").length == 0) {
-		var tr = $("<tr>").addClass("Skater").attr("key", id);
+	if ($(".Team"+t+" .SkaterRows tr.Skater").filterByData("key", id).length == 0) {
+		var tr = $(".Team"+t+".Editor table.Skaters tr.AddRow").clone();
+		tr.removeClass("AddRow").data("key", id).addClass("Skater");
+
+		tr.children().each(function(idx, elem) {
+			elem = $(elem);
+			var children = elem.children();
+			children.detach();
+			elem.append($("<span>"));
+			elem.append($("<div>").append(children));
+		});
+
+		console.log(tr);
+
+		// tr.find(".Number").append($("<span>"));
+		// tr.find(".Name").append($("<span>"));
+		// tr.find(".InsuranceNumber").append($("<span>"));
+		// tr.find(".Description").append($("<span>"));
+		/*
 		$("<td>").addClass("Number").appendTo(tr);
 		$("<td>").addClass("Name").appendTo(tr);
 		$("<td>").addClass("InsuranceNumber").appendTo(tr);
 		$("<td>").addClass("LegalName").appendTo(tr);
 		$("<td>").addClass("Description").appendTo(tr);
+		*/
+		tr.click(function() {
+			if (!tr.hasClass("Edit")) {
+				tr.addClass("Edit");
+				tr.find(".Number input").focus();
+			}
+		});
+
+		var deleteButton = $("<button>").text("X").click(function() {
+			WS.Command("ScoreBoard.Team("+t+").DeleteSkater", id);
+			return false;
+		});
+		tr.find(".Buttons").empty().append(deleteButton);
 		tr.appendTo($(".Team"+t+" .SkaterRows"));
 	}
 }
@@ -222,23 +274,39 @@ function createEditorDialog(t) {
 	var dialog = $(".Team"+t+" .Editor");
 	dialog.addClass("Team"+t);
 
-	var skaterAddRow = dialog.find(".Skaters table tr.AddRow");
+	var skaterAddRow = dialog.find("table.Skaters tr.AddRow");
+	var addName = skaterAddRow.find("input.Name");
+	var addNumber = skaterAddRow.find("input.Number");
+	var addButton = $("button.Add");
+	addName.add(addNumber).change(function(event) {
+		addButton.button("option", "disabled", (!addName.val() || !addNumber.val()));
+	});
+	skaterAddRow.find("input").keyup(function(event) {
+		if (!addButton.hasClass("disabled") && (13 == event.which)) // Enter
+			addButton.click();
+	});
+	addButton.button("option", "disabled", true);
+
 	skaterAddRow.find("button.Add").click(function() {
-		var number = skaterAddRow.find(".Number").val();
-		var name = skaterAddRow.find(".Name").val();
-		var legalName = skaterAddRow.find(".LegalName").val();
-		var insuranceNumber = skaterAddRow.find(".InsuranceNumber").val();
-		var isAlt = skaterAddRow.find(".IsAlt").prop("checked");
-		var isCaptain = skaterAddRow.find(".IsCaptain").prop("checked");
-		var isAltCaptain = skaterAddRow.find(".IsAltCaptain").prop("checked");
-		var isBenchStaff = skaterAddRow.find(".IsBenchStaff").prop("checked");
+		var number = skaterAddRow.find("input.Number").val();
+		var name = skaterAddRow.find("input.Name").val();
+		var legalName = skaterAddRow.find("input.LegalName").val();
+		var insuranceNumber = skaterAddRow.find("input.InsuranceNumber").val();
+		var isAlt = skaterAddRow.find("input.IsAlt").prop("checked");
+		var isCaptain = skaterAddRow.find("input.IsCaptain").prop("checked");
+		var isAltCaptain = skaterAddRow.find("input.IsAltCaptain").prop("checked");
+		var isBenchStaff = skaterAddRow.find("input.IsBenchStaff").prop("checked");
 
 		var obj = {
 			Name: name, Number: number, LegalName: legalName, InsuranceNumber: insuranceNumber, 
 			IsCaptain: isCaptain, IsAlt: isAlt, IsAltCaptain: isAltCaptain, IsBenchStaff: isBenchStaff
 		};
-		console.log("Adding Skater", obj);
 		WS.NewObject("ScoreBoard.Team("+t+").Skater", obj);
+
+		skaterAddRow.find("input[type=text]").val("");
+		skaterAddRow.find("input[type=checkbox]").prop("checked", false);
+		addButton.button("option", "disabled", true);
+		skaterAddRow.find(".Number").focus();
 	});
 
 	return dialog.dialog({

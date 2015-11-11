@@ -72,6 +72,12 @@ $(function() {
 	}
 });
 
+$.fn.filterByData = function(prop, val) {
+	return this.filter(
+		function() { return $(this).data(prop)==val; }
+	);
+}
+
 function isTrue(value) {
 	if (typeof value == "boolean")
 		return value;

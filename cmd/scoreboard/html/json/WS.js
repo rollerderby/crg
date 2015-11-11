@@ -78,6 +78,8 @@ var WS = {
 	},
 
 	Command: function(command, data) {
+		if (!Array.isArray(data))
+			data = [data];
 		req = {
 			action: command,
 			data: data
