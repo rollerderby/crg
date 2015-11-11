@@ -1,6 +1,7 @@
 package statemanager
 
 import (
+	"bytes"
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
@@ -63,7 +64,11 @@ func (s *Saver) processUpdates(updates map[string]*string) {
 	defer s.Unlock()
 
 	for key, value := range updates {
-		s.state[key] = value
+		if value == nil {
+			delete(s.state, key)
+		} else {
+			s.state[key] = value
+		}
 	}
 
 	now := time.Now()
@@ -134,5 +139,8 @@ func (s *Saver) saveState() {
 	if err != nil {
 		fmt.Println("error:", err)
 	}
-	w.Write(b)
+
+	var out bytes.Buffer
+	json.Indent(&out, b, "", "\t")
+	out.WriteTo(w)
 }
