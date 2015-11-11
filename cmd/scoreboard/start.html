@@ -1,0 +1,87 @@
+<html>
+<head>
+<title>
+CRG ScoreBoard Start Page
+</title>
+
+<script type="text/javascript" src="html/external/jquery/jquery.js" ></script>
+
+<script type="text/javascript" >
+
+function runningCheck() {
+  $.ajax({ url: "http://localhost:8000/running-test.js", dataType: "script" });
+}
+
+var nChecks = 0;
+$(function() {
+  var recheck = setInterval(function() {
+    if (window._crgScoreBoardIsRunning) {
+      $("p#Checking,p#NotStarted").hide();
+      $("p#Started").show();
+      clearInterval(recheck);
+      window.location.href = "http://localhost:8000/";
+    } else {
+      runningCheck();
+      if (nChecks++ > 4) {
+        $("p#Checking").hide();
+        $("p#NotStarted").show();
+      }
+    }
+  }, 500);
+  runningCheck();
+});
+
+</script>
+
+<style type="text/css" >
+
+p#header { text-align: center; font-weight: bold; font-size: 30px; }
+p#header>img { height: 150px; }
+
+p#NotStarted,p#Started { display: none; }
+
+</style>
+
+</head>
+
+<body>
+
+<p id="header" >
+<img src="html/Carolina.png" />
+<br/>
+<a>Carolina Rollergirls Browser-based Roller Derby Scoreboard</a>
+<hr/>
+</p>
+
+<p id="Checking" >
+Checking if the scoreboard is running...
+</p>
+
+<p id="NotStarted" >
+<b>It appears the CRG ScoreBoard is not running - this page will automatically update once you start the scoreboard.</b>
+<br/>
+Please check the instructions in the <a href="README">README</a> file on how to start the scoreboard.
+<br/>
+If you still have problems, please email the mailing list
+<a href="mailto:derbyscoreboard-devel@lists.sourceforge.net">
+derbyscoreboard-devel@lists.sourceforge.net
+</a>
+<br/>
+Also, you can try reading the
+<a href="http://sourceforge.net/mailarchive/forum.php?forum_name=derbyscoreboard-devel">
+mailing list archives</a>.
+<br/>
+You can also
+<a href="http://lists.sourceforge.net/lists/listinfo/derbyscoreboard-devel">
+join the mailing list
+</a>
+to keep up to date with new releases, bugfixes, and features.
+</p>
+
+<p id="Started" >
+<a href="http://localhost:8000/">CRG ScoreBoard</a> is running - redirecting you there.
+</p>
+
+</body>
+
+</html>
