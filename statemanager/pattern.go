@@ -2,17 +2,52 @@ package statemanager
 
 import "strings"
 
-// PatternMatch will check value to see if the pattern matches
+type PatternMatcher interface {
+	Matches(string) bool
+	Pattern() string
+}
+
+type blankMatcher struct {
+	pattern string
+}
+type simpleMatcher struct {
+	pattern    string
+	patternDot string
+}
+type complexMatcher struct {
+	pattern string
+}
+
+// NewPatternMatch will return a PatternMatcher capable of matching
+// patterns to values
 //
 // Sample patterns
+// "" will match anything
 // key(*) will match anything inside the parens
 // key.* will match anything starting with "key."
 // key(*).* will match the combination of the two
-func PatternMatch(value, pattern string) bool {
-	// Special case, if pattern is empty, it matches
+func NewPatternMatcher(pattern string) PatternMatcher {
 	if pattern == "" {
-		return true
+		return &blankMatcher{pattern: pattern}
 	}
+
+	if strings.Index(pattern, "(*)") == -1 && !strings.HasSuffix(pattern, ".*") {
+		return &simpleMatcher{pattern: pattern, patternDot: pattern + "."}
+	}
+	return &complexMatcher{pattern: pattern}
+}
+
+func (bm *blankMatcher) Matches(string) bool { return true }
+func (bm *blankMatcher) Pattern() string     { return bm.pattern }
+
+func (sm *simpleMatcher) Matches(value string) bool {
+	return value == sm.pattern || strings.HasPrefix(value, sm.patternDot)
+}
+func (sm *simpleMatcher) Pattern() string { return sm.pattern }
+
+func (cm *complexMatcher) Pattern() string { return cm.pattern }
+func (cm *complexMatcher) Matches(value string) bool {
+	pattern := cm.pattern
 	for {
 		id := strings.Index(pattern, "(*)")
 		if id == -1 {

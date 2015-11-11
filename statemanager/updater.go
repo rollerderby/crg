@@ -34,6 +34,7 @@ type UpdaterPatternTimeFunc func(string, time.Time) error
 type stateUpdater struct {
 	updater       interface{}
 	name          string
+	pm            PatternMatcher
 	groupPriority uint8
 	isPattern     bool
 }
@@ -41,13 +42,13 @@ type stateUpdaterArray []*stateUpdater
 
 var updaters = make(map[string]*stateUpdater)
 
-func findUpdater(keyName string) *stateUpdater {
+func findStateUpdater(keyName string) *stateUpdater {
 	updater, ok := updaters[keyName]
 	if !ok {
 		// not found, look for pattern match
 		for _, u := range updaters {
 			if u.isPattern {
-				result := PatternMatch(keyName, u.name)
+				result := u.pm.Matches(keyName)
 				if result {
 					updater = u
 					break
@@ -59,22 +60,14 @@ func findUpdater(keyName string) *stateUpdater {
 	return updater
 }
 
-// StateSet attempts to update the state to value
-// using keyName to lookup a handler.  It returns an
-// error on failure.
-func StateSet(keyName string, value string) error {
-	updater := findUpdater(keyName)
-	if updater == nil {
-		return ErrUpdaterNotFound
-	}
-
+func (su *stateUpdater) update(keyName, value string) error {
 	state, ok := states[keyName]
 	if ok && state.value != nil && *state.value == value {
 		// nothing to do, move along
 		return nil
 	}
 
-	switch cb := updater.updater.(type) {
+	switch cb := su.updater.(type) {
 	case UpdaterStringFunc:
 		return cb(value)
 	case UpdaterPatternStringFunc:
@@ -116,8 +109,20 @@ func StateSet(keyName string, value string) error {
 		}
 		return cb(keyName, v)
 	}
-	log.Printf("StateSet: Unknown type '%T' for %v", updater.updater, keyName)
+	log.Printf("StateSet: Unknown type '%T' for %v", su.updater, keyName)
 	return ErrUnknownType
+}
+
+// StateSet attempts to update the state to value
+// using keyName to lookup a handler.  It returns an
+// error on failure.
+func StateSet(keyName string, value string) error {
+	su := findStateUpdater(keyName)
+	if su == nil {
+		return ErrUpdaterNotFound
+	}
+
+	return su.update(keyName, value)
 }
 
 // StateSetGroup attempts to update the state using a
@@ -131,17 +136,17 @@ func StateSetGroup(values map[string]string) {
 	um := make(map[*stateUpdater][]string)
 
 	for keyName := range values {
-		updater := findUpdater(keyName)
-		if updater != nil {
-			u = append(u, updater)
-			um[updater] = append(um[updater], keyName)
+		su := findStateUpdater(keyName)
+		if su != nil {
+			u = append(u, su)
+			um[su] = append(um[su], keyName)
 		}
 	}
 
 	sort.Sort(stateUpdaterArray(u))
-	for _, updater := range u {
-		for _, keyName := range um[updater] {
-			err := StateSet(keyName, values[keyName])
+	for _, su := range u {
+		for _, keyName := range um[su] {
+			err := su.update(keyName, values[keyName])
 			if err != nil {
 				log.Print("StateSetGroup: Cannot set state: ", err)
 			}
@@ -151,42 +156,42 @@ func StateSetGroup(values map[string]string) {
 
 // RegisterUpdaterString adds a string updater to the statemanager.
 func RegisterUpdaterString(name string, groupPriority uint8, u UpdaterStringFunc) {
-	updaters[name] = &stateUpdater{updater: u, name: name, groupPriority: groupPriority}
+	updaters[name] = &stateUpdater{updater: u, name: name, groupPriority: groupPriority, pm: NewPatternMatcher(name)}
 }
 
 // RegisterUpdaterInt64 adds an int64 updater to the statemanager.
 func RegisterUpdaterInt64(name string, groupPriority uint8, u UpdaterInt64Func) {
-	updaters[name] = &stateUpdater{updater: u, name: name, groupPriority: groupPriority}
+	updaters[name] = &stateUpdater{updater: u, name: name, groupPriority: groupPriority, pm: NewPatternMatcher(name)}
 }
 
 // RegisterUpdaterBool adds a bool updater to the statemanager.
 func RegisterUpdaterBool(name string, groupPriority uint8, u UpdaterBoolFunc) {
-	updaters[name] = &stateUpdater{updater: u, name: name, groupPriority: groupPriority}
+	updaters[name] = &stateUpdater{updater: u, name: name, groupPriority: groupPriority, pm: NewPatternMatcher(name)}
 }
 
 // RegisterUpdaterTime adds a time updater to the statemanager.
 func RegisterUpdaterTime(name string, groupPriority uint8, u UpdaterTimeFunc) {
-	updaters[name] = &stateUpdater{updater: u, name: name, groupPriority: groupPriority}
+	updaters[name] = &stateUpdater{updater: u, name: name, groupPriority: groupPriority, pm: NewPatternMatcher(name)}
 }
 
 // RegisterPatternUpdaterString adds a string updater to the statemanager.
 func RegisterPatternUpdaterString(name string, groupPriority uint8, u UpdaterPatternStringFunc) {
-	updaters[name] = &stateUpdater{updater: u, name: name, groupPriority: groupPriority, isPattern: true}
+	updaters[name] = &stateUpdater{updater: u, name: name, groupPriority: groupPriority, isPattern: true, pm: NewPatternMatcher(name)}
 }
 
 // RegisterPatternUpdaterInt64 adds an int64 updater to the statemanager.
 func RegisterPatternUpdaterInt64(name string, groupPriority uint8, u UpdaterPatternInt64Func) {
-	updaters[name] = &stateUpdater{updater: u, name: name, groupPriority: groupPriority, isPattern: true}
+	updaters[name] = &stateUpdater{updater: u, name: name, groupPriority: groupPriority, isPattern: true, pm: NewPatternMatcher(name)}
 }
 
 // RegisterPatternUpdaterBool adds a bool updater to the statemanager.
 func RegisterPatternUpdaterBool(name string, groupPriority uint8, u UpdaterPatternBoolFunc) {
-	updaters[name] = &stateUpdater{updater: u, name: name, groupPriority: groupPriority, isPattern: true}
+	updaters[name] = &stateUpdater{updater: u, name: name, groupPriority: groupPriority, isPattern: true, pm: NewPatternMatcher(name)}
 }
 
 // RegisterPatternUpdaterTime adds a time updater to the statemanager.
 func RegisterPatternUpdaterTime(name string, groupPriority uint8, u UpdaterPatternTimeFunc) {
-	updaters[name] = &stateUpdater{updater: u, name: name, groupPriority: groupPriority, isPattern: true}
+	updaters[name] = &stateUpdater{updater: u, name: name, groupPriority: groupPriority, isPattern: true, pm: NewPatternMatcher(name)}
 }
 
 // UnregisterUpdater removes an updater from the statemanager.

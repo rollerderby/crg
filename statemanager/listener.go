@@ -12,7 +12,8 @@ type Listener struct {
 	callback func(map[string]*string)
 	stateNum uint64
 	ch       chan map[string]*string
-	paths    map[string]bool
+	matchers []PatternMatcher
+	paths    []string
 }
 
 var listeners []*Listener
@@ -29,7 +30,8 @@ func NewListener(name string, cb func(map[string]*string)) *Listener {
 		stateNum: 0,
 		callback: cb,
 		ch:       make(chan map[string]*string, 10),
-		paths:    make(map[string]bool),
+		matchers: nil,
+		paths:    nil,
 	}
 
 	listeners = append(listeners, l)
@@ -76,6 +78,15 @@ func (l *Listener) processUpdates() {
 	}
 }
 
+func (l *Listener) findPatternMatcher(path string) (int, PatternMatcher) {
+	for idx, pm := range l.matchers {
+		if pm.Pattern() == path {
+			return idx, pm
+		}
+	}
+	return -1, nil
+}
+
 // RegisterPaths adds the paths to the listener to get updates.  See PatternMatch for examples
 // of how the pattern matching is done.  The callback will immediately be called with and
 // matching paths before returning to the caller.
@@ -90,7 +101,11 @@ func (l *Listener) RegisterPaths(paths []string) {
 		if debug {
 			log.Printf("RegisterListenerPaths: %v", p)
 		}
-		l.paths[p] = true
+		idx, _ := l.findPatternMatcher(p)
+		if idx == -1 {
+			l.paths = append(l.paths, p)
+			l.matchers = append(l.matchers, NewPatternMatcher(p))
+		}
 	}
 	l.flush(paths)
 }
@@ -108,19 +123,25 @@ func (l *Listener) UnregisterPaths(paths []string) {
 		if debug {
 			log.Printf("UnregisterListenerPaths: %v", p)
 		}
-		delete(l.paths, p)
+		idx, _ := l.findPatternMatcher(p)
+		if idx != -1 {
+			// TODO: DELETE ENTRY FROM SLICE!
+			l.paths[idx] = ""
+			l.matchers[idx] = nil
+		}
 	}
 }
 
 func (l *Listener) flush(paths []string) {
+	var u map[string]*string
 	if l.stateNum < stateNum || paths != nil {
-		u := make(map[string]*string)
 		for _, s := range states {
 			needed := l.stateNum < s.stateNum
 			matched := false
 
-			for p := range l.paths {
-				if PatternMatch(s.name, p) {
+			for idx, pm := range l.matchers {
+				p := l.paths[idx]
+				if pm.Matches(s.name) {
 					matched = true
 
 					// Matched, now look for just registered
@@ -135,10 +156,13 @@ func (l *Listener) flush(paths []string) {
 			}
 
 			if matched && needed {
+				if u == nil {
+					u = make(map[string]*string)
+				}
 				u[s.name] = s.value
 			}
 		}
-		if len(u) != 0 {
+		if u != nil {
 			if paths == nil {
 				l.stateNum = stateNum
 			}
