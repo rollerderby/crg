@@ -14,5 +14,5 @@ func init() {
 
 func main() {
 	flag.Parse()
-	server.Start(version, uint16(port))
+	server.Start(uint16(port))
 }

@@ -14,7 +14,6 @@ import (
 	"github.com/rollerderby/crg/websocket"
 )
 
-var version string
 var urls []string
 
 func printStartup(port uint16) {
@@ -88,8 +87,7 @@ func setSettings(k, v string) error {
 }
 
 // Start initalizes all scoreboard subsystems and starts up a webserver on port
-func Start(ver string, port uint16) {
-	version = ver
+func Start(port uint16) {
 	mux := http.NewServeMux()
 	statemanager.Initialize()
 

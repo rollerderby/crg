@@ -3,7 +3,7 @@
 build() {
 	echo "Building for $1-$2 to $3"
 	GOOS=$1 GOARCH=$2 go install -v std
-	GOOS=$1 GOARCH=$2 go build -v -o crg-scoreboard_$VERSION/$3
+	GOOS=$1 GOARCH=$2 go build -v -o crg-scoreboard_$VERSION/$3 ./cmd/scoreboard
 	echo
 }
 
@@ -19,8 +19,8 @@ if [ $RELEASE -eq 0 ]; then VERSION=$VERSION-`date +%Y%m%d%H%M%S`; fi
 echo Building Version $VERSION
 echo
 
-cat > version.go <<END
-package main
+cat > server/version.go <<END
+package server
 
 const version = "$VERSION"
 END
@@ -28,8 +28,9 @@ END
 go get -u github.com/gorilla/websocket
 go get -u github.com/satori/go.uuid
 if [ $ZIP -eq 0 ]; then
-	rm -f scoreboard
-	go build -v
+	mkdir -p bin
+	rm -f ./bin/scoreboard
+	go build -v -o ./bin/scoreboard ./cmd/scoreboard
 else
 	rm -f scoreboard-*
 	mkdir -p release
