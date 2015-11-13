@@ -37,7 +37,11 @@ var ErrUpdaterNotFound = errors.New("Updater Not Found")
 // one of the supported types (currently string, int64, bool)
 var ErrUnknownType = errors.New("Unknown State Type")
 
-func SetDebug(d bool) { debug = d }
+var baseFilePath = ""
+
+func BaseFilePath() string     { return baseFilePath }
+func SetBaseFilePath(p string) { baseFilePath = p }
+func SetDebug(d bool)          { debug = d }
 
 // Initialize starts up the statemanager
 func Initialize() {
@@ -115,4 +119,18 @@ func StateUpdate(keyName string, value interface{}) error {
 		}
 	}
 	return nil
+}
+
+func ParseIDs(k string) []string {
+	var ret []string
+	startPos := -1
+	for idx, c := range k {
+		if startPos == -1 && c == '(' {
+			startPos = idx + 1
+		} else if startPos != -1 && c == ')' {
+			ret = append(ret, k[startPos:idx])
+			startPos = -1
+		}
+	}
+	return ret
 }

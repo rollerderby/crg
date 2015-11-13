@@ -7,6 +7,7 @@ import (
 	"io/ioutil"
 	"log"
 	"os"
+	"path/filepath"
 	"sync"
 	"time"
 )
@@ -29,9 +30,14 @@ type Saver struct {
 // interval: time between saves.  Zero if you want/need a save on every change, will only
 //           save if something has actually changed
 // version: save older versions of the file (move file to file.1, file.1 to file.2, etc) NOT IMPLEMENTED!
-func NewSaver(filename, base string, interval time.Duration, version bool) (*Saver, map[string]string) {
+func NewSaver(filename, base string, interval time.Duration, version, setFromFile bool) *Saver {
+	filename = filepath.Join(baseFilePath, filename)
+	os.MkdirAll(filepath.Dir(filename), 0775)
 	log.Printf("Saver(%v): Opening", filename)
-	savedState := loadState(filename)
+
+	if setFromFile {
+		StateSetGroup(loadState(filename))
+	}
 
 	s := &Saver{
 		state:       make(map[string]*string),
@@ -45,7 +51,7 @@ func NewSaver(filename, base string, interval time.Duration, version bool) (*Sav
 	s.listener.RegisterPaths([]string{base})
 	go s.saveLoop()
 
-	return s, savedState
+	return s
 }
 
 // Close unregisters the Saver from the statemanager and stops the saving go routine (issuing one last save
@@ -56,7 +62,6 @@ func (s *Saver) Close() {
 	s.saveState()
 	s.listener = nil
 	s.saveTrigger <- true
-	log.Printf("Saver(%v): Closed", s.filename)
 }
 
 func (s *Saver) processUpdates(updates map[string]*string) {
@@ -77,22 +82,6 @@ func (s *Saver) processUpdates(updates map[string]*string) {
 		s.saveTrigger <- true
 	}
 }
-
-// func saveInitialize() {
-// 	c := make(chan map[string]*string, 10)
-// 	go func() {
-// 		for {
-// 			updates := <-c
-// 			for key, value := range updates {
-// 				state[key] = value
-// 			}
-//
-// 			saveState()
-// 		}
-// 	}()
-// 	statemanager.RegisterListener(c)
-// 	statemanager.RegisterListenerPaths(c, []string{"ScoreBoard"})
-// }
 
 func loadState(filename string) map[string]string {
 	state := make(map[string]string)
@@ -127,7 +116,7 @@ func (s *Saver) saveLoop() {
 }
 
 func (s *Saver) saveState() {
-	w, err := os.Create(s.filename)
+	w, err := os.Create(fmt.Sprintf("%s.json", s.filename))
 	if err != nil {
 		log.Print("Cannot save state to disk.", err)
 	}

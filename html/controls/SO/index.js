@@ -59,6 +59,12 @@ function init() {
 		WS.Command("Set", ["ScoreBoard.Clock(Jam).Time.Max", "5000"]);
 		WS.Command("Set", ["ScoreBoard.Clock(Intermission).Time.Max", "45000"]);
 		WS.Command("ScoreBoard.Reset");
+
+		var obj = {
+			Name: "name", Number: "number", LegalName: "legalName", InsuranceNumber: "insuranceNumber", 
+		};
+		WS.NewObject("Leagues.Person", obj);
+		WS.NewObject("Settings.Skaters", obj);
 	});
 }
 

@@ -30,6 +30,7 @@ func TestPatternMatcher(t *testing.T) {
 		if r != c.expected {
 			t.Errorf("CheckPattern('%v', '%v') expected %v got %v", c.value, c.pattern, c.expected, r)
 		}
+		t.Logf("ParseIDs: %v %+v", c.value, ParseIDs(c.value))
 	}
 }
 

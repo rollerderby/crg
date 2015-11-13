@@ -27,6 +27,7 @@ END
 
 go get -u github.com/gorilla/websocket
 go get -u github.com/satori/go.uuid
+go get -u github.com/go-fsnotify/fsnotify
 if [ $ZIP -eq 0 ]; then
 	mkdir -p bin
 	rm -f ./bin/scoreboard
@@ -40,12 +41,12 @@ else
 	cp -r html crg-scoreboard_$VERSION
 	cp start.html crg-scoreboard_$VERSION
 
-	build "linux" "386" "scoreboard-linux-32"
-	build "linux" "amd64" "scoreboard-linux-64"
-	build "windows" "386" "scoreboard-windows-32.exe"
-	build "windows" "amd64" "scoreboard-windows-64.exe"
-	build "darwin" "386" "scoreboard-mac-32"
-	build "darwin" "amd64" "scoreboard-mac-64"
+	build "linux" "386" "scoreboard-Linux-32"
+	build "linux" "amd64" "scoreboard-Linux-64"
+	build "windows" "386" "scoreboard-Windows-32.exe"
+	build "windows" "amd64" "scoreboard-Windows-64.exe"
+	build "darwin" "386" "scoreboard-MacOS-32"
+	build "darwin" "amd64" "scoreboard-MacOS-64"
 
 	echo Zipping to release/crg-scoreboard_$VERSION.zip
 	zip -qr release/crg-scoreboard_$VERSION.zip crg-scoreboard_$VERSION

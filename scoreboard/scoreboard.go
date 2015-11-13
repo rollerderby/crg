@@ -42,9 +42,6 @@ type parent interface {
 // of the scoreboard is required from either a saved state or via
 // the web interface.  Returns a *Scoreboard
 func New() *Scoreboard {
-	statemanager.Lock()
-	defer statemanager.Unlock()
-
 	sb := &Scoreboard{}
 	sb.teams = append(sb.teams, newTeam(sb, 1), newTeam(sb, 2))
 	sb.masterClock = newMasterClock(sb)

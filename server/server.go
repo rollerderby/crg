@@ -7,8 +7,11 @@ import (
 	"net/http"
 	"os"
 	"os/signal"
+	"path/filepath"
 	"time"
 
+	"github.com/go-fsnotify/fsnotify"
+	"github.com/rollerderby/crg/leagues"
 	"github.com/rollerderby/crg/scoreboard"
 	"github.com/rollerderby/crg/statemanager"
 	"github.com/rollerderby/crg/websocket"
@@ -82,6 +85,57 @@ func urlsHandler(w http.ResponseWriter, _ *http.Request) {
 	}
 }
 
+func addDirWatcher(path string) (*fsnotify.Watcher, error) {
+	mediaType := filepath.Base(path)
+	fullpath := filepath.Join(statemanager.BaseFilePath(), path)
+	os.MkdirAll(fullpath, 0775)
+
+	watcher, err := fsnotify.NewWatcher()
+	if err != nil {
+		return nil, err
+	}
+	err = watcher.Add(fullpath)
+	if err != nil {
+		watcher.Close()
+		return nil, err
+	}
+
+	f, err := os.Open(fullpath)
+	if err != nil {
+		return nil, err
+	}
+	names, err := f.Readdirnames(-1)
+	f.Close()
+	for _, name := range names {
+		short := filepath.Base(name)
+		full := filepath.Join(path, short)
+
+		statemanager.StateUpdate(fmt.Sprintf("Media.Type(%v).File(%v)", mediaType, short), full)
+	}
+
+	go func() {
+		for {
+			select {
+			case event := <-watcher.Events:
+				short := filepath.Base(event.Name)
+				full := filepath.Join(path, short)
+
+				if event.Op&fsnotify.Create == fsnotify.Create {
+					statemanager.StateUpdate(fmt.Sprintf("Media.Type(%v).File(%v)", mediaType, short), full)
+				} else if event.Op&fsnotify.Rename == fsnotify.Rename {
+					statemanager.StateUpdate(fmt.Sprintf("Media.Type(%v).File(%v)", mediaType, short), nil)
+				} else if event.Op&fsnotify.Remove == fsnotify.Remove {
+					statemanager.StateUpdate(fmt.Sprintf("Media.Type(%v).File(%v)", mediaType, short), nil)
+				}
+			case err := <-watcher.Errors:
+				log.Println("error:", err)
+			}
+		}
+	}()
+
+	return watcher, nil
+}
+
 func setSettings(k, v string) error {
 	return statemanager.StateUpdate(k, v)
 }
@@ -89,22 +143,31 @@ func setSettings(k, v string) error {
 // Start initalizes all scoreboard subsystems and starts up a webserver on port
 func Start(port uint16) {
 	mux := http.NewServeMux()
+	var savers []*statemanager.Saver
+
+	// Initialize statemanager and load Settings.*
 	statemanager.Initialize()
-
-	scoreboard.New()
-	websocket.Initialize(mux)
-
-	// filename, base string, interval time.Duration, version bool
-	stateSaver, stateSavedState := statemanager.NewSaver("state.json", "ScoreBoard", time.Duration(5)*time.Second, true)
-	statemanager.Lock()
-	statemanager.StateSetGroup(stateSavedState)
-	statemanager.Unlock()
-
-	settingsSaver, settingsSavedState := statemanager.NewSaver("settings.json", "Settings", time.Duration(5)*time.Second, true)
 	statemanager.Lock()
 	statemanager.RegisterPatternUpdaterString("Settings", 0, setSettings)
-	statemanager.StateSetGroup(settingsSavedState)
 	statemanager.Unlock()
+	savers = append(savers, statemanager.NewSaver("config/settings", "Settings", time.Duration(5)*time.Second, true, true))
+
+	// Initialize leagues and load Leagues.*
+	leagues.Initialize()
+	savers = append(savers, statemanager.NewSaver("config/leagues", "Leagues", time.Duration(5)*time.Second, true, true))
+
+	// Initialize scoreboard and load ScoreBoard.*
+	statemanager.Lock()
+	scoreboard.New()
+	statemanager.Unlock()
+	savers = append(savers, statemanager.NewSaver("config/scoreboard", "ScoreBoard", time.Duration(5)*time.Second, true, true))
+
+	// Initialize websocket interface
+	websocket.Initialize(mux)
+
+	addDirWatcher("html/images/teamlogo")
+	addDirWatcher("html/images/sponsor_banner")
+	addDirWatcher("html/images/fullscreen")
 
 	printStartup(port)
 	mux.Handle("/", http.FileServer(http.Dir("html")))
@@ -124,6 +187,8 @@ func Start(port uint16) {
 	signal.Notify(c, os.Interrupt, os.Kill)
 	s := <-c
 	log.Printf("Server received signal: %v.  Shutting down", s)
-	stateSaver.Close()
-	settingsSaver.Close()
+
+	for _, saver := range savers {
+		saver.Close()
+	}
 }
