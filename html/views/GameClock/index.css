@@ -1,0 +1,32 @@
+.ConnectionError {
+	text-align: center;
+	position: absolute;
+	display: none;
+	z-index: 9999;
+	background-color: #A00000;
+	font-size: 40px;
+	width: 100%;
+	height: 100%;
+	opacity: 0.5;
+	top: 0;
+	left: 0;
+}
+.ConnectionError:not(.Connected) {
+	display: block;
+}
+
+body {
+	font-family: Arial,sans-serif;
+}
+ 
+.StateHistory table td {
+	border: 1px solid black;
+	margin: 0px;
+	padding-left: 5px;
+	padding-right: 5px;
+}
+
+.StateHistory td.StateClock {
+	font-family: monospace;
+	text-align: right;
+}
