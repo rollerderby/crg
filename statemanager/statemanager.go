@@ -6,6 +6,7 @@ package statemanager
 import (
 	"errors"
 	"log"
+	"path/filepath"
 	"strconv"
 	"strings"
 	"sync"
@@ -39,9 +40,9 @@ var ErrUnknownType = errors.New("Unknown State Type")
 
 var baseFilePath = ""
 
-func BaseFilePath() string     { return baseFilePath }
-func SetBaseFilePath(p string) { baseFilePath = p }
-func SetDebug(d bool)          { debug = d }
+func BaseFilePath() string        { return baseFilePath }
+func SetBaseFilePath(p ...string) { baseFilePath = filepath.Join(p...) }
+func SetDebug(d bool)             { debug = d }
 
 // Initialize starts up the statemanager
 func Initialize() {

@@ -16,7 +16,7 @@ import (
 type Saver struct {
 	sync.Mutex
 	state       map[string]*string
-	filename    string
+	name        string
 	interval    time.Duration
 	version     bool
 	listener    *Listener
@@ -25,29 +25,27 @@ type Saver struct {
 }
 
 // NewSaver creates a new saver.
-// filename: name of the file
+// name: name of the file
 // base: pattern to match (see PatternMatch for examples of matching)
 // interval: time between saves.  Zero if you want/need a save on every change, will only
 //           save if something has actually changed
 // version: save older versions of the file (move file to file.1, file.1 to file.2, etc) NOT IMPLEMENTED!
-func NewSaver(filename, base string, interval time.Duration, version, setFromFile bool) *Saver {
-	filename = filepath.Join(baseFilePath, filename)
-	os.MkdirAll(filepath.Dir(filename), 0775)
-	log.Printf("Saver(%v): Opening", filename)
+func NewSaver(name, base string, interval time.Duration, version, setFromFile bool) *Saver {
+	log.Printf("Saver(%v): Opening", name)
 
 	if setFromFile {
-		StateSetGroup(loadState(filename))
+		StateSetGroup(loadState(name))
 	}
 
 	s := &Saver{
 		state:       make(map[string]*string),
-		filename:    filename,
+		name:        name,
 		interval:    interval,
 		version:     version,
 		saveTrigger: make(chan bool),
 	}
 
-	s.listener = NewListener(fmt.Sprintf("Saver(%s)", filename), s.processUpdates)
+	s.listener = NewListener(fmt.Sprintf("Saver(%s)", name), s.processUpdates)
 	s.listener.RegisterPaths([]string{base})
 	go s.saveLoop()
 
@@ -57,7 +55,7 @@ func NewSaver(filename, base string, interval time.Duration, version, setFromFil
 // Close unregisters the Saver from the statemanager and stops the saving go routine (issuing one last save
 // in case there were changes since last save)
 func (s *Saver) Close() {
-	log.Printf("Saver(%v): Closing", s.filename)
+	log.Printf("Saver(%v): Closing", s.name)
 	s.listener.Close()
 	s.saveState()
 	s.listener = nil
@@ -83,10 +81,12 @@ func (s *Saver) processUpdates(updates map[string]*string) {
 	}
 }
 
-func loadState(filename string) map[string]string {
+func loadState(name string) map[string]string {
 	state := make(map[string]string)
 
-	b, err := ioutil.ReadFile(filename)
+	filename := filepath.Join(baseFilePath, name)
+	os.MkdirAll(filepath.Dir(filename), 0775)
+	b, err := ioutil.ReadFile(fmt.Sprintf("%s.json", filename))
 	if err != nil {
 		return nil
 	}
@@ -116,7 +116,9 @@ func (s *Saver) saveLoop() {
 }
 
 func (s *Saver) saveState() {
-	w, err := os.Create(fmt.Sprintf("%s.json", s.filename))
+	filename := filepath.Join(baseFilePath, s.name)
+	os.MkdirAll(filepath.Dir(filename), 0775)
+	w, err := os.Create(fmt.Sprintf("%s.json", filename))
 	if err != nil {
 		log.Print("Cannot save state to disk.", err)
 	}

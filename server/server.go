@@ -170,7 +170,7 @@ func Start(port uint16) {
 	addDirWatcher("html/images/fullscreen")
 
 	printStartup(port)
-	mux.Handle("/", http.FileServer(http.Dir("html")))
+	mux.Handle("/", http.FileServer(http.Dir(filepath.Join(statemanager.BaseFilePath(), "html"))))
 
 	c := make(chan os.Signal, 1)
 	go func() {
