@@ -40,9 +40,13 @@ var ErrUnknownType = errors.New("Unknown State Type")
 
 var baseFilePath = ""
 
-func BaseFilePath() string        { return baseFilePath }
-func SetBaseFilePath(p ...string) { baseFilePath = filepath.Join(p...) }
-func SetDebug(d bool)             { debug = d }
+func SetDebug(d bool)      { debug = d }
+func BaseFilePath() string { return baseFilePath }
+func SetBaseFilePath(p ...string) {
+	path := filepath.Join(p...)
+	log.Printf("statemanager: Setting BaseFilePath to '%v'", path)
+	baseFilePath = path
+}
 
 // Initialize starts up the statemanager
 func Initialize() {
