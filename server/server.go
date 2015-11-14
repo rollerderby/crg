@@ -2,6 +2,7 @@ package server
 
 import (
 	"fmt"
+	"io"
 	"log"
 	"net"
 	"net/http"
@@ -140,8 +141,27 @@ func setSettings(k, v string) error {
 	return statemanager.StateUpdate(k, v)
 }
 
+func openLog() *os.File {
+	path := filepath.Join(statemanager.BaseFilePath(), "logs", fmt.Sprintf("scoreboard-%v.log", time.Now().Format(time.RFC3339)))
+	os.MkdirAll(filepath.Dir(path), 0775)
+	f, err := os.OpenFile(path, os.O_RDWR|os.O_CREATE|os.O_APPEND, 0664)
+	if err != nil {
+		log.Printf("Error opening file %v: %v", path, err)
+		return nil
+	}
+
+	logger_writer := io.MultiWriter(f, os.Stdout)
+	log.SetOutput(logger_writer)
+	// log.SetFlags(log.Ldate | log.Ltime | log.Lmicroseconds | log.Llongfile)
+	return f
+}
+
 // Start initalizes all scoreboard subsystems and starts up a webserver on port
 func Start(port uint16) {
+	l := openLog()
+	if l != nil {
+		defer l.Close()
+	}
 	mux := http.NewServeMux()
 	var savers []*statemanager.Saver
 

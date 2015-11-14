@@ -16,6 +16,7 @@ GameData
 android/.gradle/
 android/assets/
 android/build/
+/logs/
 /rules/
 cmd/scoreboard/scoreboard*
 server/version.go
