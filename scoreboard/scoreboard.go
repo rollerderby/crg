@@ -99,7 +99,7 @@ func (sb *Scoreboard) reset(_ []string) error {
 }
 
 func (sb *Scoreboard) snapshotStateStart() {
-	sb.activeSnapshot = newStateSnapshot(sb, int64(len(sb.snapshots)), true)
+	sb.activeSnapshot = newStateSnapshot(sb, int64(len(sb.snapshots)), sb.masterClock.CurrentTime())
 	sb.snapshots = append(sb.snapshots, sb.activeSnapshot)
 }
 
@@ -109,7 +109,7 @@ func (sb *Scoreboard) snapshotStateEnd(canUndo bool) {
 		return
 	}
 
-	sb.activeSnapshot.end(canUndo)
+	sb.activeSnapshot.end(canUndo, sb.masterClock.CurrentTime())
 }
 
 func (sb *Scoreboard) clocksExpired() {

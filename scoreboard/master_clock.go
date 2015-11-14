@@ -143,13 +143,12 @@ func (mc *masterClock) ticker() {
 				}
 			}
 		}
+		mc.setTicks(mc.ticks + 1)
+		mc.sb.activeSnapshot.updateLength()
 		if clockExpired {
 			mc.sb.clocksExpired()
 		}
-		mc.sb.activeSnapshot.updateLength()
 	}
-
-	mc.setTicks(ticksFromStart)
 }
 
 func (mc *masterClock) tickClocks() {
@@ -277,4 +276,8 @@ func (mc *masterClock) triggerClockStart(c *clock) {
 	}
 
 	c.setRunning(true)
+}
+
+func (mc *masterClock) CurrentTime() time.Time {
+	return mc.startTime.Add(time.Duration(mc.ticks) * durationPerTick)
 }

@@ -46,7 +46,7 @@ var errSnapshotNotFound = errors.New("Snapshot Not Found")
 var errSnapshotClockNotFound = errors.New("Snapshot Clock Not Found")
 var errSnapshotTeamNotFound = errors.New("Snapshot Team Not Found")
 
-func newStateSnapshot(sb *Scoreboard, idx int64, initializeValues bool) *stateSnapshot {
+func blankStateSnapshot(sb *Scoreboard, idx int64) *stateSnapshot {
 	ss := &stateSnapshot{
 		sb:       sb,
 		idx:      idx,
@@ -65,43 +65,47 @@ func newStateSnapshot(sb *Scoreboard, idx int64, initializeValues bool) *stateSn
 	ss.stateIDs["startTime"] = ss.base + ".StartTime"
 	ss.stateIDs["endTime"] = ss.base + ".EndTime"
 
-	if initializeValues {
-		ss.setState(sb.state)
-		ss.setInProgress(true)
-		ss.setCanRevert(false)
-		ss.setStartTime(time.Now())
-		ss.setStartTicks(sb.masterClock.ticks)
-		ss.setLength(0)
-	}
-
-	for id, team := range sb.teams {
+	for id := range sb.teams {
 		t := &stateSnapshotTeam{base: fmt.Sprintf("%v.Team(%v)", ss.base, id)}
 		ss.teams[id] = t
-
-		if initializeValues {
-			t.setTimeouts(team.timeouts)
-			t.setOfficialReviews(team.officialReviews)
-			t.setOfficialReviewRetained(team.officialReviewRetained)
-		}
 	}
 
-	for id, clock := range sb.masterClock.clocks {
+	for id := range sb.masterClock.clocks {
 		c := &stateSnapshotClock{base: ss.base + ".Clock(" + id + ")"}
 		ss.clocks[id] = c
-
-		if initializeValues {
-			c.setNumber(clock.number.num)
-			c.setStartTime(clock.time.num)
-			c.setEndTime(0)
-			c.setRunning(clock.running)
-		}
 	}
 	return ss
 }
 
-func (ss *stateSnapshot) end(canRevert bool) {
+func newStateSnapshot(sb *Scoreboard, idx int64, startTime time.Time) *stateSnapshot {
+	ss := blankStateSnapshot(sb, idx)
+	ss.setState(sb.state)
+	ss.setInProgress(true)
+	ss.setCanRevert(false)
+	ss.setStartTime(startTime)
+	ss.setStartTicks(sb.masterClock.ticks)
+	ss.setLength(0)
+
+	for id, team := range sb.teams {
+		t := ss.teams[id]
+		t.setTimeouts(team.timeouts)
+		t.setOfficialReviews(team.officialReviews)
+		t.setOfficialReviewRetained(team.officialReviewRetained)
+	}
+
+	for id, clock := range sb.masterClock.clocks {
+		c := ss.clocks[id]
+		c.setNumber(clock.number.num)
+		c.setStartTime(clock.time.num)
+		c.setEndTime(0)
+		c.setRunning(clock.running)
+	}
+	return ss
+}
+
+func (ss *stateSnapshot) end(canRevert bool, endTime time.Time) {
 	ss.setEndTicks(ss.sb.masterClock.ticks)
-	ss.setEndTime(time.Now())
+	ss.setEndTime(endTime)
 	ss.setCanRevert(canRevert)
 	ss.setInProgress(false)
 	ss.updateLength()
@@ -236,19 +240,18 @@ func (ss *stateSnapshot) findTeam(k string) *stateSnapshotTeam {
 
 /* Helper functions to find the stateSnapshot for RegisterUpdaters */
 func (sb *Scoreboard) findStateSnapshot(k string) *stateSnapshot {
-	k = k[len(sb.stateBase()+".Snapshot("):]
-	end := strings.IndexRune(k, ')')
-	if end <= 0 {
+	ids := statemanager.ParseIDs(k)
+	if len(ids) == 0 {
 		return nil
 	}
-	id, err := strconv.ParseInt(k[:end], 10, 64)
+	id, err := strconv.ParseInt(ids[0], 10, 64)
 	if err != nil {
 		return nil
 	}
 
 	// Generate blank snapshots if needed
 	for i := int64(len(sb.snapshots)); i <= id; i++ {
-		sb.snapshots = append(sb.snapshots, newStateSnapshot(sb, i, false))
+		sb.snapshots = append(sb.snapshots, blankStateSnapshot(sb, i))
 	}
 
 	return sb.snapshots[id]
