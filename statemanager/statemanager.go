@@ -40,8 +40,13 @@ var ErrUnknownType = errors.New("Unknown State Type")
 
 var baseFilePath = ""
 
-func SetDebug(d bool)      { debug = d }
+// SetDebug turns debugging information on or off (sent to log)
+func SetDebug(d bool) { debug = d }
+
+// BaseFilePath returns the base directory for loading or saving files
 func BaseFilePath() string { return baseFilePath }
+
+// SetBaseFilePath sets the base directory for loading or saving files
 func SetBaseFilePath(p ...string) {
 	path := filepath.Join(p...)
 	log.Printf("statemanager: Setting BaseFilePath to '%v'", path)
@@ -126,6 +131,9 @@ func StateUpdate(keyName string, value interface{}) error {
 	return nil
 }
 
+// ParseIDs returns all values within () in the input string.
+// Example
+// ScoreBoard.Team(1).Skater(abc123).Name returns ["1", "abc123"]
 func ParseIDs(k string) []string {
 	var ret []string
 	startPos := -1

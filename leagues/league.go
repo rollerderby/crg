@@ -17,6 +17,7 @@ type League struct {
 var leagues = make(map[string]*League)
 var errLeagueNotFound = errors.New("League Not Found")
 
+// Initialize the leagues subsystem
 func Initialize() {
 	statemanager.RegisterPatternUpdaterString("Leagues.League(*).Name", 1, leagueSetName)
 

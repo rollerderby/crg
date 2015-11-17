@@ -21,9 +21,9 @@ import (
 var urls []string
 
 func printStartup(port uint16) {
-	log.Print()
+	log.Print("")
 	log.Printf("CRG Scoreboard and Game System Version %v", version)
-	log.Print()
+	log.Print("")
 	log.Print("vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv")
 	log.Print("vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv")
 	log.Print("Double-click/open the 'start.html' file, or")
@@ -150,9 +150,7 @@ func openLog() *os.File {
 		return nil
 	}
 
-	logger_writer := io.MultiWriter(f, os.Stdout)
-	log.SetOutput(logger_writer)
-	// log.SetFlags(log.Ldate | log.Ltime | log.Lmicroseconds | log.Llongfile)
+	log.SetOutput(io.MultiWriter(f, os.Stdout))
 	return f
 }
 
