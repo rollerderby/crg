@@ -41,6 +41,7 @@ func blankPerson(id string) *Person {
 	return p
 }
 
+// NewPerson creates a new person (unattached to any leagues at this point)
 func NewPerson(id, name, legalName, insuranceNumber, number string) *Person {
 	p := blankPerson(id)
 	p.SetName(name)
@@ -51,7 +52,10 @@ func NewPerson(id, name, legalName, insuranceNumber, number string) *Person {
 	return p
 }
 
+// ID returns the id
 func (p *Person) ID() string { return p.id }
+
+// SetID sets the ID to `v`
 func (p *Person) SetID(v string) error {
 	p.id = v
 	return statemanager.StateUpdate(p.stateIDs["id"], v)

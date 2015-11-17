@@ -8,6 +8,7 @@ type league struct {
 	// teams   []*team
 }
 
+// Initialize the leagues subsystem
 func Initialize() {
 	statemanager.RegisterPatternUpdaterString("Leagues.Person(*).ID", 0, personSetID)
 	statemanager.RegisterPatternUpdaterString("Leagues.Person(*).Name", 0, personSetName)
