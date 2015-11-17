@@ -95,36 +95,36 @@ func findPerson(k string) *Person {
 }
 
 func personSetID(k, v string) error {
-	if s := findPerson(k); s != nil {
-		s.SetID(v)
+	if p := findPerson(k); p != nil {
+		p.SetID(v)
 		return nil
 	}
 	return errPersonNotFound
 }
 func personSetName(k, v string) error {
-	if s := findPerson(k); s != nil {
-		s.SetName(v)
+	if p := findPerson(k); p != nil {
+		p.SetName(v)
 		return nil
 	}
 	return errPersonNotFound
 }
 func personSetLegalName(k, v string) error {
-	if s := findPerson(k); s != nil {
-		s.SetLegalName(v)
+	if p := findPerson(k); p != nil {
+		p.SetLegalName(v)
 		return nil
 	}
 	return errPersonNotFound
 }
 func personSetInsuranceNumber(k, v string) error {
-	if s := findPerson(k); s != nil {
-		s.SetInsuranceNumber(v)
+	if p := findPerson(k); p != nil {
+		p.SetInsuranceNumber(v)
 		return nil
 	}
 	return errPersonNotFound
 }
 func personSetNumber(k, v string) error {
-	if s := findPerson(k); s != nil {
-		s.SetNumber(v)
+	if p := findPerson(k); p != nil {
+		p.SetNumber(v)
 		return nil
 	}
 	return errPersonNotFound
