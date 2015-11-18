@@ -100,12 +100,7 @@ var WS = {
 	},
 
 	Set: function(key, value) {
-		req = {
-			action: 'Set',
-			key: key,
-			value: value
-		};
-		WS.send(JSON.stringify(req));
+		WS.Command("Set", [key, value]);
 	},
 
 	triggerCallback: function (k, v) {
@@ -289,6 +284,19 @@ var WS = {
 				if (elem.val() != null)
 					d.push(elem.val());
 				WS.Command(cmd, d); 
+			});
+		});
+		$.each($("[sbBind]"), function(idx, elem) {
+			elem = $(elem);
+			var field = WS._getContext(elem, "sbBind");
+			elem.click(function(ev) {
+				var e = $(ev.currentTarget);
+				WS.Set(field, e.val());
+			});
+			WS.Register(field, function(k, v) {
+				if (k == field) {
+					elem.val(v);
+				}
 			});
 		});
 	},

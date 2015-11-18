@@ -6,6 +6,12 @@ import (
 	"github.com/rollerderby/crg/statemanager"
 )
 
+const (
+	leadLead = "Lead"
+	leadNo   = "No"
+	leadLost = "Lost"
+)
+
 type team struct {
 	sb                     *Scoreboard
 	base                   string
@@ -16,6 +22,10 @@ type team struct {
 	timeouts               int64
 	officialReviews        int64
 	officialReviewRetained bool
+	lead                   string
+	starPass               bool
+	jammer                 string
+	pivot                  string
 	settings               map[string]*setting
 	skaters                map[string]*skater
 	stateIDs               map[string]string
@@ -39,6 +49,10 @@ func newTeam(sb *Scoreboard, id uint8) *team {
 	t.stateIDs["timeouts"] = fmt.Sprintf("%s.Timeouts", t.base)
 	t.stateIDs["officialReviews"] = fmt.Sprintf("%s.OfficialReviews", t.base)
 	t.stateIDs["officialReviewRetained"] = fmt.Sprintf("%s.OfficialReviewRetained", t.base)
+	t.stateIDs["lead"] = fmt.Sprintf("%s.Lead", t.base)
+	t.stateIDs["starPass"] = fmt.Sprintf("%s.StarPass", t.base)
+	t.stateIDs["jammer"] = fmt.Sprintf("%s.Jammer", t.base)
+	t.stateIDs["pivot"] = fmt.Sprintf("%s.Pivot", t.base)
 
 	statemanager.StateUpdate(t.stateIDs["id"], int64(id))
 
@@ -48,6 +62,10 @@ func newTeam(sb *Scoreboard, id uint8) *team {
 	statemanager.RegisterUpdaterInt64(t.stateIDs["timeouts"], 0, t.setTimeouts)
 	statemanager.RegisterUpdaterInt64(t.stateIDs["officialReviews"], 0, t.setOfficialReviews)
 	statemanager.RegisterUpdaterBool(t.stateIDs["officialReviewRetained"], 0, t.setOfficialReviewRetained)
+	statemanager.RegisterUpdaterString(t.stateIDs["lead"], 0, t.setLead)
+	statemanager.RegisterUpdaterBool(t.stateIDs["starPass"], 0, t.setStarPass)
+	statemanager.RegisterUpdaterString(t.stateIDs["jammer"], 1, t.setJammer) // Must be after skaters are loaded
+	statemanager.RegisterUpdaterString(t.stateIDs["pivot"], 1, t.setPivot)   // Must be after skaters are loaded
 
 	statemanager.RegisterCommand(t.stateIDs["score"]+".Inc", t.incScore)
 	statemanager.RegisterCommand(t.stateIDs["score"]+".Dec", t.decScore)
@@ -80,6 +98,10 @@ func (t *team) reset() {
 	t.setTimeouts(3)
 	t.setOfficialReviews(1)
 	t.setOfficialReviewRetained(false)
+	t.setLead(leadNo)
+	t.setStarPass(false)
+	t.setJammer("")
+	t.setPivot("")
 }
 
 func (t *team) deleteSkater(data []string) error {
@@ -171,8 +193,53 @@ func (t *team) setOfficialReviews(v int64) error {
 
 func (t *team) setOfficialReviewRetained(v bool) error {
 	t.officialReviewRetained = v
-	statemanager.StateUpdate(t.stateIDs["officialReviewRetained"], v)
-	return nil
+	return statemanager.StateUpdate(t.stateIDs["officialReviewRetained"], v)
+}
+
+func (t *team) setLead(v string) error {
+	t.lead = v
+	return statemanager.StateUpdate(t.stateIDs["lead"], v)
+}
+
+func (t *team) setStarPass(v bool) error {
+	t.starPass = v
+	return statemanager.StateUpdate(t.stateIDs["starPass"], v)
+}
+
+func (t *team) setJammer(v string) error {
+	s, ok := t.skaters[v]
+	if !ok {
+		t.jammer = ""
+		t.setPosition(t.stateIDs["jammer"], nil)
+		return statemanager.StateUpdate(t.stateIDs["jammer"], nil)
+	}
+	t.jammer = v
+	t.setPosition(t.stateIDs["jammer"], s)
+	return statemanager.StateUpdate(t.stateIDs["jammer"], v)
+}
+
+func (t *team) setPivot(v string) error {
+	s, ok := t.skaters[v]
+	if !ok {
+		t.pivot = ""
+		t.setPosition(t.stateIDs["pivot"], nil)
+		return statemanager.StateUpdate(t.stateIDs["pivot"], nil)
+	}
+	t.pivot = v
+	t.setPosition(t.stateIDs["pivot"], s)
+	return statemanager.StateUpdate(t.stateIDs["pivot"], v)
+}
+
+func (t *team) setPosition(base string, s *skater) {
+	statemanager.SetDebug(true)
+	defer statemanager.SetDebug(false)
+	if s != nil {
+		statemanager.StateUpdate(base+".Name", s.name)
+		statemanager.StateUpdate(base+".Number", s.number)
+	} else {
+		statemanager.StateUpdate(base+".Name", nil)
+		statemanager.StateUpdate(base+".Number", nil)
+	}
 }
 
 func (t *team) useTimeout() bool {
