@@ -12,7 +12,7 @@ function init() {
 	offsetWidth = tWidth - width;
 	offsetHeight = tHeight - height;
 	window.resizeTo(1366 + offsetWidth, 768 + offsetHeight);
-	
+
 
 	$("[sbCopyDiv]").each(function(idx, div) {
 		div = $(div);
@@ -20,7 +20,7 @@ function init() {
 	});
 	$("button").button();
 	$(".buttonset").buttonset();
-	
+
 	WS.Connect();
 	WS.AutoRegister();
 
@@ -61,7 +61,7 @@ function init() {
 		WS.Command("ScoreBoard.Reset");
 
 		var obj = {
-			Name: "name", Number: "number", LegalName: "legalName", InsuranceNumber: "insuranceNumber", 
+			Name: "name", Number: "number", LegalName: "legalName", InsuranceNumber: "insuranceNumber",
 		};
 		WS.NewObject("Leagues.Person", obj);
 		WS.NewObject("Settings.Skaters", obj);
@@ -84,7 +84,7 @@ function snapshot(k, v) {
 	var idx = k.replace("ScoreBoard.Snapshot(", "");
 	idx = idx.substring(0, idx.indexOf(")"));
 	var prefix = "ScoreBoard.Snapshot(" + idx + ")";
-	if (idx == 0) 
+	if (idx == 0)
 		return;
 
 	var period = WS.state[prefix + ".Clock(Period).Number"];
@@ -291,7 +291,7 @@ function createEditorDialog(t) {
 		var isBenchStaff = skaterAddRow.find("input.IsBenchStaff").prop("checked");
 
 		var obj = {
-			Name: name, Number: number, LegalName: legalName, InsuranceNumber: insuranceNumber, 
+			Name: name, Number: number, LegalName: legalName, InsuranceNumber: insuranceNumber,
 			IsCaptain: isCaptain, IsAlt: isAlt, IsAltCaptain: isAltCaptain, IsBenchStaff: isBenchStaff
 		};
 		WS.NewObject("ScoreBoard.Team("+t+").Skater", obj);

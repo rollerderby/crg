@@ -8,13 +8,13 @@
  */
 
 /* Change this background color to whatever your overlay chromakey is set to */
-body { background-color: #0f0; } 
+body { background-color: #0f0; }
 
 img { position: absolute; }
 div { position: absolute; }
 
-#mainDiv { 
-    width: 100vw; 
+#mainDiv {
+    width: 100vw;
     height: 56.25vw; /* height:width ratio = 9/16 = .5625  */
 /*    background: pink; */
     max-height: 100vh;
@@ -25,7 +25,7 @@ div { position: absolute; }
     left:0;right:0; /* horizontal center */
 }
 
-div.Full { width: 100%; height: 100%; } 
+div.Full { width: 100%; height: 100%; }
 img.Bar { width: 100%; top: 82.4%; }
 
 video.video_underlay {

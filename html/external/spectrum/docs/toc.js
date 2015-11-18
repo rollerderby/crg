@@ -32,7 +32,7 @@ $.fn.toc = function(options) {
       e.preventDefault();
       var elScrollTo = $(e.target).attr('href');
       var $el = $(elScrollTo);
-      
+
       scrollable.animate({ scrollTop: $el.offset().top }, 400, 'swing', function() {
         location.hash = elScrollTo;
       });
@@ -103,7 +103,7 @@ jQuery.fn.toc.defaults = {
   highlightOffset: 100,
   anchorName: function(i, heading, prefix) {
     return prefix+i;
-  } 
+  }
 };
 
 }(jQuery);

@@ -17,7 +17,7 @@ var WS = {
 		WS.connectTimeout = null;
 		var url = (document.location.protocol == "http:" ? "ws" : "wss") + "://";
 		url += document.location.host + "/ws";
-	
+
 		if(WS.Connected != true || !WS.socket) {
 			if(WS.debug) console.log("WS", "Connecting the websocket at " + url);
 
@@ -125,7 +125,7 @@ var WS = {
 
 	processUpdate: function (state) {
 		for (var prop in state) {
-			// update all incoming properties before triggers 
+			// update all incoming properties before triggers
 			// dependency issues causing problems
 			// console.log(prop, state[prop]);
 			WS.state[prop] = state[prop];
@@ -279,25 +279,37 @@ var WS = {
 			if (dataAttr != null) {
 				data = dataAttr.split(" ");
 			}
-			elem.click(function() { 
+			elem.click(function() {
 				var d = data.slice(0);
 				if (elem.val() != null)
 					d.push(elem.val());
-				WS.Command(cmd, d); 
+				WS.Command(cmd, d);
 			});
 		});
 		$.each($("[sbBind]"), function(idx, elem) {
 			elem = $(elem);
 			var field = WS._getContext(elem, "sbBind");
-			elem.click(function(ev) {
-				var e = $(ev.currentTarget);
-				WS.Set(field, e.val());
-			});
-			WS.Register(field, function(k, v) {
-				if (k == field) {
-					elem.val(v);
-				}
-			});
+
+			if (elem.is("button")) {
+				var data = elem.attr("sbData");
+				if (data == null)
+					return;
+				elem.click(function(ev) {
+					WS.Set(field, data);
+				});
+				WS.Register(field, function(k, v) {
+					elem.toggleClass("active", v == data);
+				});
+			} else {
+				elem.click(function(ev) {
+					WS.Set(field, elem.val());
+				});
+				WS.Register(field, function(k, v) {
+					if (k == field) {
+						elem.val(v);
+					}
+				});
+			}
 		});
 	},
 

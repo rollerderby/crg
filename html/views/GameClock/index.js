@@ -9,7 +9,7 @@ function snapshot(k, v) {
 	var idx = k.replace("ScoreBoard.Snapshot(", "");
 	idx = idx.substring(0, idx.indexOf(")"));
 	var prefix = "ScoreBoard.Snapshot(" + idx + ")";
-	if (idx == 0) 
+	if (idx == 0)
 		return;
 
 	var period = WS.state[prefix + ".Clock(Period).Number"];

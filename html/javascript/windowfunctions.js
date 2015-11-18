@@ -49,7 +49,7 @@ _windowFunctions = {
 	 * newChild will be appended).	The comparator should accept two
 	 * parameters (both actual DOM elements, not jQuery objects),
 	 * the first being the existing child to compare, and the second
-	 * being the newChild that is being inserted, and it should return 
+	 * being the newChild that is being inserted, and it should return
 	 * true to indicate the newChild is "before" the existing child,
 	 * and false to indicate the newChild is "after" the existing child.
 	 * This insertion function does not attempt to maintain ordering

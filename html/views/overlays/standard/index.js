@@ -23,10 +23,10 @@ function initialize() {
 	});
 
         WS.Register([
-		"ScoreBoard.State", 
-		"ScoreBoard.Team(1).Timeouts", 
+		"ScoreBoard.State",
+		"ScoreBoard.Team(1).Timeouts",
 		"ScoreBoard.Team(2).Timeouts",
-		"ScoreBoard.Team(1).OfficialReviews", 
+		"ScoreBoard.Team(1).OfficialReviews",
 		"ScoreBoard.Team(2).OfficialReviews"
 		    ], function(k, v) {
 			masterState = WS.state["ScoreBoard.State"];
