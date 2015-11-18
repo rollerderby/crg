@@ -3,7 +3,10 @@ if (_windowFunctions.checkParam("preview", "true"))
 	view = "Preview";
 var SettingsBase = "Settings." + view;
 $(function() {
-	WS.Register(SettingsBase);
+	WS.Register(SettingsBase, function() {});
+	WS.Register(
+		["ScoreBoard.State", "ScoreBoard.Team(*).Timeouts", "ScoreBoard.Team(*).OfficialReviews", "ScoreBoard.Team(*).OfficialReviewRetained"],
+		timeoutDisplay);
 });
 
 function jammer(k, v) {
@@ -60,10 +63,10 @@ function logoUpdate(k, v) {
 		nameAutoFit();
 }
 
-function smallDescriptionUpdate(k, v) {
+function timeoutDisplay(k, v) {
 	var state = WS.state["ScoreBoard.State"];
 
-	$.each(["1", "2"], function (idx, id) {
+	for (var id = 1; id <= 2; id++) {
 		var tto = WS.state["ScoreBoard.Team(" + id + ").Timeouts"];
 		var tor = WS.state["ScoreBoard.Team(" + id + ").OfficialReviews"];
 		var tror = isTrue(WS.state["ScoreBoard.Team(" + id + ").OfficialReviewRetained"]);
@@ -72,14 +75,28 @@ function smallDescriptionUpdate(k, v) {
 		$(".Team" + id + " .Timeout3").toggleClass("Used", tto < 3);
 		$(".Team" + id + " .OfficialReview1").toggleClass("Used", tor < 1);
 		$(".Team" + id + " .OfficialReview1").toggleClass("Retained", tror);
-	});
+	}
 
 	$(".Team .Dot").removeClass("Active");
-	$(".Clock.Description,.Team>.Timeouts,.Team>.OfficialReviews").removeClass("Red");
 
+	if (state == "TTO1" || state == "TTO2") {
+		var t = state.substring(3, 4);
+		var dotSel = ".Team" + t + " .Timeout" + (Number(WS.state["ScoreBoard.Team(" + t + ").Timeouts"]) + 1);
+		$(dotSel).addClass("Active");
+	}
+	if (state == "OR1" || state == "OR2") {
+		var t = state.substring(2, 3);
+		var dotSel = ".Team" + t + " .OfficialReview1";
+		$(dotSel).addClass("Active");
+	}
+}
+
+function smallDescriptionUpdate(k, v) {
+	var state = WS.state["ScoreBoard.State"];
+
+	$(".Clock.Description,.Team>.Timeouts,.Team>.OfficialReviews").removeClass("Red");
 	if (state == "Lineup")
 		return WS.state["ScoreBoard.Clock(Lineup).Name"];
-
 	if (state == "OTO") {
 		$(".Clock.Description").addClass("Red");
 		return WS.state["ScoreBoard.Clock(Timeout).Name"];
@@ -87,22 +104,14 @@ function smallDescriptionUpdate(k, v) {
 
 	if (state == "TTO1" || state == "TTO2") {
 		var t = state.substring(3, 4);
-		$(".Clock.Description").addClass("Red");
 		$(".Team" + t + ">.Timeouts").addClass("Red");
-		var dotSel = ".Team" + t + " .Timeout" + (Number(WS.state["ScoreBoard.Team(" + t + ").Timeouts"]) + 1);
-		$(dotSel).addClass("Active");
 		$(".Clock.Description").addClass("Red");
-
 		return "Team Timeout";
 	}
 	if (state == "OR1" || state == "OR2") {
 		var t = state.substring(2, 3);
-		$(".Clock.Description").addClass("Red");
 		$(".Team" + t + ">.OfficialReviews:not(.Header)").addClass("Red");
-		var dotSel = ".Team" + t + " .OfficialReview1";
-		$(dotSel).addClass("Active");
 		$(".Clock.Description").addClass("Red");
-
 		return "Official Review";
 	}
 

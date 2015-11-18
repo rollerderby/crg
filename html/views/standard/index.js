@@ -17,6 +17,9 @@ function initialize() {
 	});
 
 	WS.Register( SettingsBase+".CurrentView", function(k, v) {
+		if ($("div#"+v+".DisplayPane").length == 0) {
+			v = "scoreboard";
+		}
 		$("div#video>video").each(function() { this.pause(); });
 		$(".DisplayPane.Show").addClass("Hide");
 		$(".DisplayPane").removeClass("Show");
@@ -64,5 +67,4 @@ function initialize() {
 			$(window).trigger("resize");
 
 	});
-
 }
