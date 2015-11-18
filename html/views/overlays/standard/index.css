@@ -46,6 +46,7 @@ video.video_underlay {
 #WftdaT2LD.Show { left: 0%; }
 
 /* These probably DON'T need to be on seperate z-indexes.. But if they want to change the logos, they may. */
+.Team { position: initial; }
 
 #WftdaT1CV { z-index:85; }
 #WftdaT1OR { z-index:200; }
@@ -58,6 +59,19 @@ video.video_underlay {
 #WftdaT2T1 { z-index:140; }
 #WftdaT2T2 { z-index:130; }
 #WftdaT2T3 { z-index:120; }
+
+.Dot.Active {
+	opacity: 0;
+	animation: DotActive 0.75s infinite steps(6);
+	-moz-animation: DotActive 0.75s infinite steps(6);
+	-webkit-animation: DotActive 0.75s infinite steps(6);
+}
+.Dot.Used {
+	opacity: 0;
+}
+@-moz-keyframes DotActive    {  0% { opacity: 1; } 50% { opacity: 0; } 100% { opacity: 1; } }
+@-webkit-keyframes DotActive {  0% { opacity: 1; } 50% { opacity: 0; } 100% { opacity: 1; } }
+@keyframes DotActive         {  0% { opacity: 1; } 50% { opacity: 0; } 100% { opacity: 1; } }
 
 
 /*
