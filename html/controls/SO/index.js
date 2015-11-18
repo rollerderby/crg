@@ -77,7 +77,7 @@ function startClock(clock) {
 }
 
 function toTime(k, v) {
-	return _timeConversions.msToMinSec(v);
+	return timeComputerToHuman(v, true);
 }
 
 function snapshot(k, v) {
@@ -247,19 +247,6 @@ function addSkater(t, id) {
 			elem.append($("<div>").append(children));
 		});
 
-		console.log(tr);
-
-		// tr.find(".Number").append($("<span>"));
-		// tr.find(".Name").append($("<span>"));
-		// tr.find(".InsuranceNumber").append($("<span>"));
-		// tr.find(".Description").append($("<span>"));
-		/*
-		$("<td>").addClass("Number").appendTo(tr);
-		$("<td>").addClass("Name").appendTo(tr);
-		$("<td>").addClass("InsuranceNumber").appendTo(tr);
-		$("<td>").addClass("LegalName").appendTo(tr);
-		$("<td>").addClass("Description").appendTo(tr);
-		*/
 		tr.click(function() {
 			if (!tr.hasClass("Edit")) {
 				tr.addClass("Edit");

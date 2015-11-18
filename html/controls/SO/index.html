@@ -2,11 +2,12 @@
 <html>
 	<head>
 		<title>CRG Operator Controls</title>
+		<link type="text/css" rel="stylesheet" href="index.css" />
+		<link type="text/css" rel="stylesheet" href="/external/jquery-ui/css/default/jquery-ui.css" />
+
 		<script type="text/javascript" src="/external/jquery/jquery.js"></script>
-		<script type="text/javascript" src="/external/jquery/jquery.js"></script>
-		<script type="text/javascript" src="/json/core.js"></script>
+		<script type="text/javascript" src="/javascript/core.js"></script>
 		<script type="text/javascript" src="index.js"></script>
-		<link href="/external/jquery-ui/css/default/jquery-ui.css" type="text/css" rel="stylesheet" />
 	</head>
 	<body sbContext="ScoreBoard">
 		<div class="ConnectionError">Not connected</div>
@@ -14,17 +15,17 @@
 			<div class="MasterControls">
 				<div class="Row">
 					<div>
-						<button class="StartJam" sbCommand="ScoreBoard.StartJam">Start</button>
+						<button class="StartJam" sbCommand="StartJam">Start</button>
 					</div>
 					<div>
-						<button class="StopJam" sbCommand="ScoreBoard.StopJam">Stop</button>
+						<button class="StopJam" sbCommand="StopJam">Stop</button>
 					</div>
 					<div class="buttonset">
-						<button class="Timeout" sbCommand="ScoreBoard.Timeout">Timeout</button>
-						<button class="EndTimeout" sbCommand="ScoreBoard.EndTimeout">End Timeout</button>
+						<button class="Timeout" sbCommand="Timeout">Timeout</button>
+						<button class="EndTimeout" sbCommand="EndTimeout">End Timeout</button>
 					</div>
 					<div>
-						<button class="Undo" sbCommand="ScoreBoard.Undo">Undo</button>
+						<button class="Undo" sbCommand="Undo">Undo</button>
 					</div>
 				</div>
 			</div>
@@ -107,30 +108,30 @@
 				<div class="Row">
 					<div class="Lead">
 						<div class="buttonset">
-							<button class="SmallButton Lead">Lead</button>
-							<button class="SmallButton No">No</button>
-							<button class="SmallButton Lost">Lost</button>
+							<button class="SmallButton Lead" sbCommand="SetLead" sbData="Lead">Lead</button>
+							<button class="SmallButton No" sbCommand="SetLead" sbData="No">No</button>
+							<button class="SmallButton Lost" sbCommand="SetLead" sbData="Lost">Lost</button>
 						</div>
 					</div>
 					<div class="Jammer">
-						<select class="Skater Jammer">
+						<select class="Skater Jammer" sbCommand="SetSkater" sbData="Jammer">
 							<option value="">No Jammer</option>
 						</select>
-						<button class="SmallButton Box">Box</button>
+						<button class="SmallButton Box" sbCommand="ToggleBox" sbData="Jammer">Box</button>
 					</div>
 				</div>
 				<div class="Row">
 					<div class="StarPass">
 						<div class="buttonset">
-							<button class="SmallButton Yes">Star Pass</button>
-							<button class="SmallButton No">No</button>
+							<button class="SmallButton Yes" sbCommand="SetStarPass" sbData="True">Star Pass</button>
+							<button class="SmallButton No" sbCommand="SetStarPass" sbData="False">No</button>
 						</div>
 					</div>
 					<div class="Pivot">
-						<select class="Skater Pivot">
+						<select class="Skater Pivot" sbCommand="SetSkater" sbData="Pivot">
 							<option value="">No Pivot</option>
 						</select>
-						<button class="SmallButton Box">Box</button>
+						<button class="SmallButton Box" sbCommand="ToggleBox" sbData="Pivot">Box</button>
 					</div>
 				</div>
 				<div class="Editor">
