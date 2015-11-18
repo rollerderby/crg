@@ -9,6 +9,7 @@ import (
 	"os"
 	"os/signal"
 	"path/filepath"
+	"strings"
 	"time"
 
 	"github.com/go-fsnotify/fsnotify"
@@ -138,6 +139,10 @@ func addDirWatcher(path string) (*fsnotify.Watcher, error) {
 }
 
 func setSettings(k, v string) error {
+	v = strings.TrimSpace(v)
+	if v == "" {
+		return statemanager.StateUpdate(k, nil)
+	}
 	return statemanager.StateUpdate(k, v)
 }
 
