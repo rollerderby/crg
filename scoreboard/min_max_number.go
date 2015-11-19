@@ -48,7 +48,14 @@ func (mmn *minMaxNumber) sendNumStateUpdate() {
 	if mmn.countdown {
 		diff = -((mmn.updateOn - diff) % mmn.updateOn)
 	}
-	statemanager.StateUpdate(mmn.stateIDs["num"], mmn.num-diff)
+
+	num := mmn.num - diff
+	if num < mmn.min {
+		num = mmn.min
+	} else if num > mmn.max {
+		num = mmn.max
+	}
+	statemanager.StateUpdate(mmn.stateIDs["num"], num)
 }
 
 func (mmn *minMaxNumber) adjust(down bool, adjust int64) bool {
