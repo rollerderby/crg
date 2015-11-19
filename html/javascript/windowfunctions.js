@@ -1,13 +1,7 @@
-
-/**
- * Copyright (C) 2008-2012 Mr Temper <MrTemper@CarolinaRollergirls.com>
- *
- * This file is part of the Carolina Rollergirls (CRG) ScoreBoard.
- * The CRG ScoreBoard is licensed under either the GNU General Public
- * License version 3 (or later), or the Apache License 2.0, at your option.
- * See the file COPYING for details.
- */
-
+// Copyright 2015 The CRG Authors (see AUTHORS file).
+// All rights reserved.  Use of this source code is
+// governed by a GPL-style license that can be found
+// in the LICENSE file.
 
 _windowFunctions = {
 	/* Display area dimensions */

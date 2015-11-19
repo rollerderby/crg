@@ -40,7 +40,7 @@ else
 
 	mkdir -p crg-scoreboard_$VERSION
 	cp -r html crg-scoreboard_$VERSION
-	cp start.html crg-scoreboard_$VERSION
+	cp start.html AUTHORS LICENSE crg-scoreboard_$VERSION
 
 	build "linux" "386" "scoreboard-Linux-32"
 	build "linux" "amd64" "scoreboard-Linux-64"
