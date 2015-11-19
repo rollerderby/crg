@@ -14,15 +14,11 @@ function init() {
 	window.resizeTo(1366 + offsetWidth, 768 + offsetHeight);
 
 
-	$("[sbCopyDiv]").each(function(idx, div) {
-		div = $(div);
-		div.html($(div.attr("sbCopyDiv")).html());
-	});
-	$("button").button();
-	$(".buttonset").buttonset();
-
 	WS.Connect();
 	WS.AutoRegister();
+
+	$("button").button();
+	$(".buttonset").buttonset();
 
 	$(["Period", "Jam", "Lineup", "Timeout", "Intermission"]).each(function(idx, clock) {
 		WS.Register("ScoreBoard.Clock("+clock+").Running", function(k, v) {
@@ -58,13 +54,8 @@ function init() {
 		WS.Command("Set", ["ScoreBoard.Clock(Period).Time.Max", "10000"]);
 		WS.Command("Set", ["ScoreBoard.Clock(Jam).Time.Max", "5000"]);
 		WS.Command("Set", ["ScoreBoard.Clock(Intermission).Time.Max", "45000"]);
+		WS.Command("Set", ["Settings.View.HideJamTotals", ""]);
 		WS.Command("ScoreBoard.Reset");
-
-		var obj = {
-			Name: "name", Number: "number", LegalName: "legalName", InsuranceNumber: "insuranceNumber",
-		};
-		WS.NewObject("Leagues.Person", obj);
-		WS.NewObject("Settings.Skaters", obj);
 	});
 }
 

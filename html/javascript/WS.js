@@ -249,6 +249,10 @@ var WS = {
 	},
 
 	AutoRegister: function() {
+		$.each($("[sbCopyDiv]"), function(idx, div) {
+			div = $(div);
+			div.html($(div.attr("sbCopyDiv")).html());
+		});
 		$.each($("[sbDisplay]"), function(idx, elem) {
 			elem = $(elem);
 			var paths = WS.getPaths(elem, "sbDisplay");

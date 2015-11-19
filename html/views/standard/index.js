@@ -1,11 +1,6 @@
 $(initialize);
 
 function initialize() {
-	$("[sbCopyDiv]").each(function(idx, div) {
-		div = $(div);
-		div.html($(div.attr("sbCopyDiv")).html());
-	});
-
 	WS.Connect();
 	WS.AutoRegister();
 
