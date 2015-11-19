@@ -17,6 +17,7 @@ type team struct {
 	base                   string
 	id                     uint8
 	name                   string
+	color                  string
 	score                  int64
 	lastScore              int64
 	timeouts               int64
@@ -43,6 +44,7 @@ func newTeam(sb *Scoreboard, id uint8) *team {
 
 	t.stateIDs["id"] = fmt.Sprintf("%s.ID", t.base)
 	t.stateIDs["name"] = fmt.Sprintf("%s.Name", t.base)
+	t.stateIDs["color"] = fmt.Sprintf("%s.Color", t.base)
 	t.stateIDs["score"] = fmt.Sprintf("%s.Score", t.base)
 	t.stateIDs["lastScore"] = fmt.Sprintf("%s.LastScore", t.base)
 	t.stateIDs["jamScore"] = fmt.Sprintf("%s.JamScore", t.base)
@@ -57,6 +59,7 @@ func newTeam(sb *Scoreboard, id uint8) *team {
 	statemanager.StateUpdate(t.stateIDs["id"], int64(id))
 
 	statemanager.RegisterUpdaterString(t.stateIDs["name"], 0, t.setName)
+	statemanager.RegisterUpdaterString(t.stateIDs["color"], 0, t.setColor)
 	statemanager.RegisterUpdaterInt64(t.stateIDs["score"], 0, t.setScore)
 	statemanager.RegisterUpdaterInt64(t.stateIDs["lastScore"], 0, t.setLastScore)
 	statemanager.RegisterUpdaterInt64(t.stateIDs["timeouts"], 0, t.setTimeouts)
@@ -93,6 +96,11 @@ func newTeam(sb *Scoreboard, id uint8) *team {
 
 func (t *team) reset() {
 	t.setName(fmt.Sprintf("Team %d", t.id))
+	if t.id == 1 {
+		t.setColor("Black")
+	} else {
+		t.setColor("White")
+	}
 	t.setScore(0)
 	t.setLastScore(0)
 	t.setTimeouts(3)
@@ -147,10 +155,14 @@ func (t *team) retainOfficialReview(_ []string) error {
 	return nil
 }
 
-func (t *team) setName(name string) error {
-	t.name = name
-	statemanager.StateUpdate(t.stateIDs["name"], name)
-	return nil
+func (t *team) setName(v string) error {
+	t.name = v
+	return statemanager.StateUpdate(t.stateIDs["name"], v)
+}
+
+func (t *team) setColor(v string) error {
+	t.color = v
+	return statemanager.StateUpdate(t.stateIDs["color"], v)
 }
 
 func (t *team) setScore(v int64) error {
