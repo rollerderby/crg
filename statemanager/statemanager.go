@@ -138,7 +138,7 @@ func StateUpdate(keyName string, value interface{}) error {
 
 // ParseIDs returns all values within () in the input string.
 // Example
-// ScoreBoard.Team(1).Skater(abc123).Name returns ["1", "abc123"]
+// Scoreboard.Team(1).Skater(abc123).Name returns ["1", "abc123"]
 func ParseIDs(k string) []string {
 	var ret []string
 	startPos := -1

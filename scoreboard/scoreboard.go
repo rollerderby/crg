@@ -56,13 +56,13 @@ func New() *Scoreboard {
 
 	statemanager.RegisterUpdaterString(sb.stateIDs["state"], 0, sb.setState)
 
-	statemanager.RegisterCommand("ScoreBoard.StartJam", sb.startJam)
-	statemanager.RegisterCommand("ScoreBoard.StopJam", sb.stopJam)
-	statemanager.RegisterCommand("ScoreBoard.Timeout", sb.timeout)
-	statemanager.RegisterCommand("ScoreBoard.EndTimeout", sb.endTimeout)
-	statemanager.RegisterCommand("ScoreBoard.Undo", sb.undo)
+	statemanager.RegisterCommand("Scoreboard.StartJam", sb.startJam)
+	statemanager.RegisterCommand("Scoreboard.StopJam", sb.stopJam)
+	statemanager.RegisterCommand("Scoreboard.Timeout", sb.timeout)
+	statemanager.RegisterCommand("Scoreboard.EndTimeout", sb.endTimeout)
+	statemanager.RegisterCommand("Scoreboard.Undo", sb.undo)
 
-	statemanager.RegisterCommand("ScoreBoard.Reset", sb.reset)
+	statemanager.RegisterCommand("Scoreboard.Reset", sb.reset)
 
 	// Setup Updaters for stateSnapshots (functions located in state_snapshot.go)
 	statemanager.RegisterPatternUpdaterString(sb.stateBase()+".Snapshot(*).State", 0, sb.ssSetState)
@@ -165,7 +165,7 @@ func (sb *Scoreboard) endOfIntermission() {
 }
 
 func (sb *Scoreboard) stateBase() string {
-	return "ScoreBoard"
+	return "Scoreboard"
 }
 
 func (sb *Scoreboard) setState(state string) error {

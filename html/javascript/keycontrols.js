@@ -27,7 +27,7 @@ _crgKeyControls = {
 	 * This sets up the given button as a key control.
 	 * The button must have a (unique) id, and
 	 * the id must conform to the restrictions of
-	 * the ScoreBoard id restrictions (e.g. no (, ), ', or ")
+	 * the Scoreboard id restrictions (e.g. no (, ), ', or ")
 	 * Once setup, any button presses corresponding to the
 	 * button's key control will cause a button click.
 	 * If this button has already been setup, it will first be

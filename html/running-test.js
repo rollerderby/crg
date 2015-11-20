@@ -3,4 +3,4 @@
 // governed by a GPL-style license that can be found
 // in the LICENSE file.
 
-window._crgScoreBoardIsRunning = true;
+window._crgScoreboardIsRunning = true;

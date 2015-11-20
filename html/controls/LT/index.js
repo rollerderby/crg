@@ -26,28 +26,28 @@ function init() {
 	$(".buttonset").buttonset();
 
 	$(["Period", "Jam", "Lineup", "Timeout", "Intermission"]).each(function(idx, clock) {
-		WS.Register("ScoreBoard.Clock("+clock+").Running", function(k, v) {
+		WS.Register("Scoreboard.Clock("+clock+").Running", function(k, v) {
 			$(".Clock."+clock).toggleClass("Running", isTrue(v));
 		});
-		WS.Register("ScoreBoard.Clock("+clock+").Adjustable", function(k, v) {
+		WS.Register("Scoreboard.Clock("+clock+").Adjustable", function(k, v) {
 			$(".Clock."+clock+" button").prop("disabled", !isTrue(v));
 		});
 	});
 
-	WS.Register("ScoreBoard.Snapshot(*)", snapshot);
+	WS.Register("Scoreboard.Snapshot(*)", snapshot);
 	$(["1", "2"]).each(function(idx, t) {
-		WS.Register("ScoreBoard.Team("+t+").OfficialReviewRetained", function(k, v) {
+		WS.Register("Scoreboard.Team("+t+").OfficialReviewRetained", function(k, v) {
 			$(".Team"+t+" .OfficialReviewRetained").toggleClass("active", isTrue(v));
 		});
 
 		var teamEditor = createEditorDialog(t);
 		$(".Team"+t+" .EditTeam button").click(function() {
-			teamEditor.dialog("option", "title", WS.state["ScoreBoard.Team("+t+").Name"] + " Editor");
+			teamEditor.dialog("option", "title", WS.state["Scoreboard.Team("+t+").Name"] + " Editor");
 			teamEditor.dialog("open");
 		});
-		WS.Register("ScoreBoard.Team("+t+").Skater(*)", function(k, v) { skater(t, k, v); });
+		WS.Register("Scoreboard.Team("+t+").Skater(*)", function(k, v) { skater(t, k, v); });
 	});
-	WS.Register("ScoreBoard.State", function(k, v) {
+	WS.Register("Scoreboard.State", function(k, v) {
 		$(".MasterControls .Timeout").toggleClass("active", v == "OTO");
 		$(".Team1 .Timeout").toggleClass("active", v == "TTO1");
 		$(".Team1 .OfficialReview").toggleClass("active", v == "OR1");
@@ -56,11 +56,11 @@ function init() {
 	});
 
 	$("#debugClocks").click(function() {
-		WS.Command("Set", ["ScoreBoard.Clock(Period).Time.Max", "10000"]);
-		WS.Command("Set", ["ScoreBoard.Clock(Jam).Time.Max", "5000"]);
-		WS.Command("Set", ["ScoreBoard.Clock(Intermission).Time.Max", "45000"]);
+		WS.Command("Set", ["Scoreboard.Clock(Period).Time.Max", "10000"]);
+		WS.Command("Set", ["Scoreboard.Clock(Jam).Time.Max", "5000"]);
+		WS.Command("Set", ["Scoreboard.Clock(Intermission).Time.Max", "45000"]);
 		WS.Command("Set", ["Settings.View.HideJamTotals", ""]);
-		WS.Command("ScoreBoard.Reset");
+		WS.Command("Scoreboard.Reset");
 	});
 }
 
@@ -77,9 +77,9 @@ function toTime(k, v) {
 }
 
 function snapshot(k, v) {
-	var idx = k.replace("ScoreBoard.Snapshot(", "");
+	var idx = k.replace("Scoreboard.Snapshot(", "");
 	idx = idx.substring(0, idx.indexOf(")"));
-	var prefix = "ScoreBoard.Snapshot(" + idx + ")";
+	var prefix = "Scoreboard.Snapshot(" + idx + ")";
 	if (idx == 0)
 		return;
 
@@ -173,7 +173,7 @@ function skater(t, k, v) {
 	var id = k.substring(k.indexOf("Skater(")+7);
 	id = id.substring(0, id.indexOf(")"));
 
-	var base = "ScoreBoard.Team("+t+").Skater("+id+")";
+	var base = "Scoreboard.Team("+t+").Skater("+id+")";
 	var field = k.substring(base.length+1);
 
 	if (v == null) {
@@ -251,7 +251,7 @@ function addSkater(t, id) {
 		});
 
 		var deleteButton = $("<button>").text("X").click(function() {
-			WS.Command("ScoreBoard.Team("+t+").DeleteSkater", id);
+			WS.Command("Scoreboard.Team("+t+").DeleteSkater", id);
 			return false;
 		});
 		tr.find(".Buttons").empty().append(deleteButton);
@@ -290,7 +290,7 @@ function createEditorDialog(t) {
 			Name: name, Number: number, LegalName: legalName, InsuranceNumber: insuranceNumber,
 			IsCaptain: isCaptain, IsAlt: isAlt, IsAltCaptain: isAltCaptain, IsBenchStaff: isBenchStaff
 		};
-		WS.NewObject("ScoreBoard.Team("+t+").Skater", obj);
+		WS.NewObject("Scoreboard.Team("+t+").Skater", obj);
 
 		skaterAddRow.find("input[type=text]").val("");
 		skaterAddRow.find("input[type=checkbox]").prop("checked", false);

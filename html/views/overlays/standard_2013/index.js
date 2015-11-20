@@ -9,9 +9,9 @@ function initialize() {
 	WS.Connect();
 	WS.AutoRegister();
 
-	WS.Register([ "ScoreBoard.State", "ScoreBoard.Team(*).Timeouts", "ScoreBoard.Team(*).OfficialReviews" ], function(k, v) {
+	WS.Register([ "Scoreboard.State", "Scoreboard.Team(*).Timeouts", "Scoreboard.Team(*).OfficialReviews" ], function(k, v) {
 		var statusB = "";
-		var state = WS.state["ScoreBoard.State"];
+		var state = WS.state["Scoreboard.State"];
 		if (state == "Jam")
 			statusB = "Jam";
 		else if (state == "Lineup")

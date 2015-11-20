@@ -14,9 +14,9 @@ function initialize() {
 		$(".EventLogo").css("background-image", 'url("'+v+'")');
 	});
 
-	WS.Register([ "ScoreBoard.State", "ScoreBoard.Team(*).Timeouts", "ScoreBoard.Team(*).OfficialReviews" ], function(k, v) {
+	WS.Register([ "Scoreboard.State", "Scoreboard.Team(*).Timeouts", "Scoreboard.Team(*).OfficialReviews" ], function(k, v) {
 		var statusB = "";
-		var state = WS.state["ScoreBoard.State"];
+		var state = WS.state["Scoreboard.State"];
 		if (state == "Jam")
 			statusB = "Jam";
 		else if (state == "Lineup")
@@ -45,7 +45,7 @@ function initialize() {
 function lead(k, v) {
 	var t = getTeamId(k);
 	v = (v == "Lead");
-	$(".ScoreBoard .Team"+t+" .Lead div").toggleClass("Star", v);
+	$(".Scoreboard .Team"+t+" .Lead div").toggleClass("Star", v);
 }
 
 function setupMainDiv(div) {

@@ -184,11 +184,11 @@ func Start(port uint16) {
 	leagues.Initialize()
 	savers = append(savers, statemanager.NewSaver("config/leagues", "Leagues", time.Duration(5)*time.Second, true, true))
 
-	// Initialize scoreboard and load ScoreBoard.*
+	// Initialize scoreboard and load Scoreboard.*
 	statemanager.Lock()
 	scoreboard.New()
 	statemanager.Unlock()
-	savers = append(savers, statemanager.NewSaver("config/scoreboard", "ScoreBoard", time.Duration(5)*time.Second, true, true))
+	savers = append(savers, statemanager.NewSaver("config/scoreboard", "Scoreboard", time.Duration(5)*time.Second, true, true))
 
 	// Initialize websocket interface
 	websocket.Initialize(mux)

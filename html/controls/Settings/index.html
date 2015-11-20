@@ -14,11 +14,91 @@
 	</head>
 	<body>
 		<div class="ConnectionError">Not connected</div>
-		<div class="Settings">
-		</div>
-		<div class="Frames">
-			<iframe class="Live"></iframe>
-			<iframe class="Preview"></iframe>
-		</div>
+		<table>
+			<tr>
+				<th>Live</th>
+				<th>Preview</th>
+			</tr>
+			<tr>
+				<td>
+					<div class="Settings Live" sbContext="Settings.View">
+						<table>
+							<tr>
+								<td colspan="2">
+									<div class="buttonset">
+										<button class="small" sbBind="CurrentView" sbData="scoreboard">Scoreboard</button>
+										<button class="small" sbBind="CurrentView" sbData="image">Image</button>
+										<button class="small" sbBind="CurrentView" sbData="video">Video</button>
+										<button class="small" sbBind="CurrentView" sbData="html">Custom Page</button>
+									</div>
+								</td>
+							</tr>
+							<tr>
+								<td>Background</td>
+								<td>
+									<select sbBind="BackgroundStyle">
+										<option value="bg_blacktowhite">Black To White</option>
+										<option value="bg_whitetoblack">White to Black</option>
+										<option value="bg_black">Flat Black</option>
+									</select>
+								</td>
+							</tr>
+							<tr>
+								<td>Box Style</td>
+								<td>
+									<select sbBind="BoxStyle">
+										<option value="box_rounded">Rounded</option>
+										<option value="box_flat">Flat</option>
+									</select>
+								</td>
+							</tr>
+							<tr>
+								<td>Side Padding</td>
+								<td>
+									<select sbBind="SidePadding">
+										<option value="">None</option>
+										<option value="2">2%</option>
+										<option value="4">4%</option>
+										<option value="6">6%</option>
+										<option value="8">8%</option>
+										<option value="10">10%</option>
+									</select>
+								</td>
+							</tr>
+							<tr>
+								<td>Jam Points</td>
+								<td>
+									<select sbBind="HideJamTotals">
+										<option value="false">Show</option>
+										<option value="true">Hide</option>
+									</select>
+								</td>
+							</tr>
+							<tr>
+								<td>Swap Teams</td>
+								<td>
+									<select sbBind="SwapTeams">
+										<option value="false">Normal</option>
+										<option value="true">Swapped</option>
+									</select>
+								</td>
+							</tr>
+						</table>
+					</div>
+				</td>
+				<td>
+					<div class="Settings Preview" sbContext="Settings.Preview" sbCopyDiv=".Settings.Live">
+					</div>
+				</td>
+			</tr>
+			<tr>
+				<td>
+					<iframe class="Live" src="/views/standard/"></iframe>
+				</td>
+				<td>
+					<iframe class="Preview" src="/views/standard/?preview=true"></iframe>
+				</td>
+			</tr>
+		</table>
 	</body>
 </html>

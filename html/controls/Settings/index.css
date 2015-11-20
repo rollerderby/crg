@@ -19,4 +19,10 @@ body {
 	font-family: Arial,sans-serif;
 }
 
+button.active {
+	color: red;
+}
 
+.small {
+	font-size: 0.8em !important;
+}

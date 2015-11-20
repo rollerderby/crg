@@ -24,8 +24,8 @@ var cases = []*struct {
 	{"Scoreboard.Team(*).Color(operator).Name.Key(*)", "Scoreboard.Team(1).Color(overlay).Name.Key(blue)", false, nil},
 	{"Scoreboard.Team(*).Color(operator).Name.Key(*)", "Scoreboard.Team(1).Color(overlay)", false, nil},
 	{"", "Scoreboard.Team(1).Color(overlay)", true, nil},
-	{"ScoreBoard", "ScoreBoard.State", true, nil},
-	{"ScoreBoard", "ScoreBoard", true, nil},
+	{"Scoreboard", "Scoreboard.State", true, nil},
+	{"Scoreboard", "Scoreboard", true, nil},
 }
 
 func TestPatternMatcher(t *testing.T) {

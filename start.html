@@ -1,7 +1,7 @@
 <html>
 <head>
 <title>
-CRG ScoreBoard Start Page
+CRG Scoreboard Start Page
 </title>
 
 <script type="text/javascript" src="html/external/jquery/jquery.js" ></script>
@@ -15,7 +15,7 @@ function runningCheck() {
 var nChecks = 0;
 $(function() {
   var recheck = setInterval(function() {
-    if (window._crgScoreBoardIsRunning) {
+    if (window._crgScoreboardIsRunning) {
       $("p#Checking,p#NotStarted").hide();
       $("p#Started").show();
       clearInterval(recheck);
@@ -58,7 +58,7 @@ Checking if the scoreboard is running...
 </p>
 
 <p id="NotStarted" >
-<b>It appears the CRG ScoreBoard is not running - this page will automatically update once you start the scoreboard.</b>
+<b>It appears the CRG Scoreboard is not running - this page will automatically update once you start the scoreboard.</b>
 <br/>
 Please check the instructions in the <a href="README">README</a> file on how to start the scoreboard.
 <br/>
@@ -79,7 +79,7 @@ to keep up to date with new releases, bugfixes, and features.
 </p>
 
 <p id="Started" >
-<a href="http://localhost:8000/">CRG ScoreBoard</a> is running - redirecting you there.
+<a href="http://localhost:8000/">CRG Scoreboard</a> is running - redirecting you there.
 </p>
 
 </body>

@@ -27,8 +27,8 @@ function runTests() {
 	runTest("Scoreboard.Team(*).Color(operator).Name.Key(*)", "Scoreboard.Team(1).Color(overlay).Name.Key(blue)", false);
 	runTest("Scoreboard.Team(*).Color(operator).Name.Key(*)", "Scoreboard.Team(1).Color(overlay)", false);
 	runTest("", "Scoreboard.Team(1).Color(overlay)", true);
-	runTest("ScoreBoard", "ScoreBoard.State", true);
-	runTest("ScoreBoard", "ScoreBoard", true);
+	runTest("Scoreboard", "Scoreboard.State", true);
+	runTest("Scoreboard", "Scoreboard", true);
 }
 
 runTests();

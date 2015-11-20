@@ -7,13 +7,13 @@ $(init);
 
 function init() {
 	WS.Connect();
-	WS.Register("ScoreBoard.Snapshot(*)", snapshot);
+	WS.Register("Scoreboard.Snapshot(*)", snapshot);
 }
 
 function snapshot(k, v) {
-	var idx = k.replace("ScoreBoard.Snapshot(", "");
+	var idx = k.replace("Scoreboard.Snapshot(", "");
 	idx = idx.substring(0, idx.indexOf(")"));
-	var prefix = "ScoreBoard.Snapshot(" + idx + ")";
+	var prefix = "Scoreboard.Snapshot(" + idx + ")";
 	if (idx == 0)
 		return;
 

@@ -23,12 +23,12 @@ video.video_underlay {
 @-webkit-keyframes DotActive {  0% { opacity: 1; } 50% { opacity: 0; } 100% { opacity: 1; } }
 @keyframes DotActive         {  0% { opacity: 1; } 50% { opacity: 0; } 100% { opacity: 1; } }
 
-.ScoreBoard {
+.Scoreboard {
 	width: 100%;
 	height: 100%;
 }
 
-.ScoreBoard .EventLogo {
+.Scoreboard .EventLogo {
 	position: absolute;
 	bottom: 25px;
 	left: 100px;
@@ -37,22 +37,22 @@ video.video_underlay {
 	border: 0px;
 }
 
-.ScoreBoard .Team {
+.Scoreboard .Team {
 	position: absolute;
 	bottom: 25px;
 	width: 250px;
 	height: 75px;
 }
 
-.ScoreBoard .Team1 {
+.Scoreboard .Team1 {
 	left: 155px;
 }
 
-.ScoreBoard .Team2 {
+.Scoreboard .Team2 {
 	left: 410px;
 }
 
-.ScoreBoard .Team .JammerBox {
+.Scoreboard .Team .JammerBox {
 	background-color: #252425;
 	color: white;
 	font-family: LiberationSans;
@@ -64,7 +64,7 @@ video.video_underlay {
 	height: 20px;
 }
 
-.ScoreBoard .Team .JammerBox .Name {
+.Scoreboard .Team .JammerBox .Name {
 	position: absolute;
 	top: 0px;
 	left: 0px;
@@ -76,7 +76,7 @@ video.video_underlay {
 	overflow: hidden;
 }
 
-.ScoreBoard .Team .JammerBox .Lead {
+.Scoreboard .Team .JammerBox .Lead {
 	position: absolute;
 	top: 0px;
 	left: 220px;
@@ -84,7 +84,7 @@ video.video_underlay {
 	height: 100%;
 }
 
-.ScoreBoard .Team .MainBox {
+.Scoreboard .Team .MainBox {
 	position: absolute;
 	top: 20px;
 	left: 0px;
@@ -94,7 +94,7 @@ video.video_underlay {
 	background-color: #252425;
 }
 
-.ScoreBoard .Team .MainBox .Color {
+.Scoreboard .Team .MainBox .Color {
 	position: absolute;
 	top: 0px;
 	left: 0px;
@@ -109,7 +109,7 @@ video.video_underlay {
 		inset 0 -15px 30px rgba(0,0,0,0.3); /* Dark Background */
 }
 
-.ScoreBoard .Team .MainBox .Name {
+.Scoreboard .Team .MainBox .Name {
 	position: absolute;
 	top: 0px;
 	left: 10px;
@@ -127,7 +127,7 @@ video.video_underlay {
 		inset 0 -15px 30px rgba(0,0,0,0.3); /* Dark Background */
 }
 
-.ScoreBoard .Team .MainBox .Score {
+.Scoreboard .Team .MainBox .Score {
 	position: absolute;
 	top: 0px;
 	left: 210px;
@@ -150,7 +150,7 @@ video.video_underlay {
 		inset 0 -15px 30px rgba(0,0,0,0.3); /* Dark Background */
 }
 
-.ScoreBoard .Team .BottomBox {
+.Scoreboard .Team .BottomBox {
 	position: absolute;
 	top: 60px;
 	left: 0px;
@@ -159,7 +159,7 @@ video.video_underlay {
 	background-color: #252425;
 }
 
-.ScoreBoard .Team .BottomBox .Timeouts {
+.Scoreboard .Team .BottomBox .Timeouts {
 	position: absolute;
 	top: 0px;
 	left: 0px;
@@ -172,7 +172,7 @@ video.video_underlay {
 		inset 0 -15px 30px rgba(0,0,0,0.3); /* Dark Background */
 }
 
-.ScoreBoard .Team .BottomBox .Timeouts .Dot {
+.Scoreboard .Team .BottomBox .Timeouts .Dot {
 	margin-left: 4px;
 	margin-right: 0px;
 	margin-top: 3px;
@@ -187,7 +187,7 @@ video.video_underlay {
 		inset 0 -15px 5px rgba(0,0,0,0.3); /* Dark Background */
 }
 
-.ScoreBoard .Team .BottomBox .OfficialReviews .Dot {
+.Scoreboard .Team .BottomBox .OfficialReviews .Dot {
 	margin-left: 4px;
 	margin-right: 0px;
 	margin-top: 3px;
@@ -201,7 +201,7 @@ video.video_underlay {
 		inset 0 2px rgba(255,255,255,0.2), /* Top Light Shadow */
 		inset 0 -15px 5px rgba(0,0,0,0.3); /* Dark Background */
 }
-.ScoreBoard .Team .BottomBox .OfficialReviews {
+.Scoreboard .Team .BottomBox .OfficialReviews {
 	position: absolute;
 	top: 0px;
 	left: 180px;
@@ -214,7 +214,7 @@ video.video_underlay {
 		inset 0 -15px 30px rgba(0,0,0,0.3); /* Dark Background */
 }
 
-.ScoreBoard .Team .BottomBox .JamScore {
+.Scoreboard .Team .BottomBox .JamScore {
 	position: absolute;
 	top: 0px;
 	left: 210px;
