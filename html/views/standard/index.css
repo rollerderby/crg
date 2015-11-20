@@ -18,32 +18,29 @@ body {
 	color: #FFFFFF;
 	font-weight: bold;
 	font-family: 'LiberationSans',helvetica;
-	/*
-	background: #222222;
-	background: -moz-linear-gradient(top, #000000, #222222 50%, #777777 100%);
-	background: -webkit-gradient(linear, 0 0, 0 100%, from(#000000), color-stop(50%, #222222), color-stop(100%, #777777));
-	*/
+	background: black;
 	height: 100%;
 	width: 100%;
 	margin: 0;
 	padding: 0;
 }
 
-body>div.Background {
+body>div#scoreboard {
+	z-index: 1;
 	position: absolute;
 	left: 0; top: 0;
 	width: 100%;
 	height: 100%;
 	background: linear-gradient(#000000, #222222, #777777);
 }
-body.bg_whitetoblack>div.Background {
+body.bg_whitetoblack>div#scoreboard {
 	background: linear-gradient(#C0C0C0, #222222, #000000);
 }
-body.bg_black>div.Background {
+body.bg_black>div#scoreboard {
 	background: #000000;
 }
 
-#scoreboard {
+#scoreboard>div {
 	position: absolute;
 	left: 0px; top: 0px; width: 100%; height: 100%;
 }
@@ -54,6 +51,7 @@ body.bg_black>div.Background {
 	left: 0; top: 0;
 	width: 100%;
 	height: 100%;
+	z-index: 2;
 }
 .DisplayPane.Hide {
 	animation: HidePanel 1s;

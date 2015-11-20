@@ -21,8 +21,7 @@ function initialize() {
 			v = "scoreboard";
 		}
 		$("div#video>video").each(function() { this.pause(); });
-		$(".DisplayPane.Show").addClass("Hide");
-		$(".DisplayPane").removeClass("Show");
+		$(".DisplayPane.Show").removeClass("Show").addClass("Hide");
 		$("div#" + v + ".DisplayPane").addClass("Show");
 		$("div#" + v + ".DisplayPane>video").each(function() { this.currentTime = 0; this.play(); });
 	});
@@ -63,7 +62,7 @@ function initialize() {
 				left = sidePadding;
 				right = left;
 			}
-			$("div#scoreboard").css({ "left": left + "%", "width": (100 - left - right) + "%" });
+			$("div#scoreboard>div").css({ "left": left + "%", "width": (100 - left - right) + "%" });
 			$(window).trigger("resize");
 
 	});
