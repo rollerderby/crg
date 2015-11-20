@@ -14,6 +14,22 @@ function init() {
 
 	$("#aspect").change(setAspect);
 	setAspect();
+
+	$("#CopyToView").click(   function() { copy("Preview", "View"); });
+	$("#CopyToPreview").click(function() { copy("View", "Preview"); });
+}
+
+function copy(from, to) {
+	from = "Settings."+from;
+	to = "Settings."+to;
+	var div = $("[sbContext='"+from+"']");
+	var elems = div.find("[sbBind]");
+	elems.each(function(idx, elem) {
+		elem = $(elem);
+		var f = from + '.' + elem.attr('sbBind');
+		var t = to + '.' + elem.attr('sbBind');
+		WS.Set(t, WS.state[f]);
+	});
 }
 
 function setAspect() {

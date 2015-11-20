@@ -129,11 +129,11 @@ func Start(port uint16) {
 	// Initialize websocket interface
 	websocket.Initialize(mux)
 
-	addFileWatcher("html", "images/teamlogo")
-	addFileWatcher("html", "images/sponsor_banner")
-	addFileWatcher("html", "images/fullscreen")
-	addFileWatcher("html", "videos")
-	addFileWatcher("html", "customhtml")
+	addFileWatcher("TeamLogos", "html", "/images/teamlogo")
+	addFileWatcher("Sponsors", "html", "/images/sponsor_banner")
+	addFileWatcher("Image", "html", "/images/fullscreen")
+	addFileWatcher("Video", "html", "/videos")
+	addFileWatcher("CustomHtml", "html", "/customhtml")
 
 	printStartup(port)
 	mux.Handle("/", http.FileServer(http.Dir(filepath.Join(statemanager.BaseFilePath(), "html"))))

@@ -257,6 +257,11 @@ var WS = {
 			div = $(div);
 			div.html($(div.attr("sbCopyDiv")).html());
 		});
+		$.each($("[sbOptions]"), function(idx, elem) {
+			elem = $(elem);
+			var optionPath = elem.attr("sbOptions");
+			WS.Register(optionPath, function(k, v) { WS._optionsAddRemove(elem, k, v); });
+		});
 		$.each($("[sbDisplay]"), function(idx, elem) {
 			elem = $(elem);
 			var paths = WS.getPaths(elem, "sbDisplay");
@@ -346,7 +351,48 @@ var WS = {
 			ret = (ret != '' ? ret + '.' : '') + context;
 		return ret;
 	},
+
+	_optionsAddRemove: function(elem, k, v) {
+		var ids = WS._parseIDs(k);
+		var id = k;
+		if (ids.length > 0) {
+			id = ids[ids.length-1];
+		}
+
+		var options = elem.find("option[value='" + id + "']");
+		var option;
+		if (options.length == 0) {
+			if (v == null)
+				return; // was a delete anyway
+			option = $("<option>").val(id).text(v);
+			elem.append(option);
+		} else {
+			option = $(options[0]);
+		}
+
+		if (v == null)
+			option.remove();
+		else
+			option.text(v);
+	},
+
+	_parseIDs: function(k) {
+		var ret = new Array();
+		var startPos = -1;
+		for (var idx = 0; idx < k.length; idx++) {
+			var c = k[idx];
+			if (startPos == -1 && c == '(') {
+				startPos = idx + 1;
+			} else if (startPos != -1 && c == ')') {
+				ret.push(k.substring(startPos, idx));
+				startPos = -1;
+			}
+		}
+		return ret;
+	},
 };
+
+
 
 function patternMatch(value, pattern) {
 	// Special case, if pattern is empty, it matches

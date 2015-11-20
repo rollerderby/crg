@@ -15,7 +15,7 @@ import (
 	"github.com/rollerderby/crg/statemanager"
 )
 
-func addFileWatcher(prefix, path string) (*fsnotify.Watcher, error) {
+func addFileWatcher(mediaType, prefix, path string) (*fsnotify.Watcher, error) {
 	fullpath := filepath.Join(statemanager.BaseFilePath(), prefix, path)
 	os.MkdirAll(fullpath, 0775)
 
@@ -39,7 +39,7 @@ func addFileWatcher(prefix, path string) (*fsnotify.Watcher, error) {
 		short := filepath.Base(name)
 		full := filepath.Join(path, short)
 
-		statemanager.StateUpdate(fmt.Sprintf("Media.Type(%v).File(%v)", path, short), full)
+		statemanager.StateUpdate(fmt.Sprintf("Media.Type(%v).File(%v)", mediaType, full), short)
 	}
 
 	go func() {
@@ -50,11 +50,11 @@ func addFileWatcher(prefix, path string) (*fsnotify.Watcher, error) {
 				full := filepath.Join(path, short)
 
 				if event.Op&fsnotify.Create == fsnotify.Create {
-					statemanager.StateUpdate(fmt.Sprintf("Media.Type(%v).File(%v)", path, short), full)
+					statemanager.StateUpdate(fmt.Sprintf("Media.Type(%v).File(%v)", mediaType, full), short)
 				} else if event.Op&fsnotify.Rename == fsnotify.Rename {
-					statemanager.StateUpdate(fmt.Sprintf("Media.Type(%v).File(%v)", path, short), nil)
+					statemanager.StateUpdate(fmt.Sprintf("Media.Type(%v).File(%v)", mediaType, full), nil)
 				} else if event.Op&fsnotify.Remove == fsnotify.Remove {
-					statemanager.StateUpdate(fmt.Sprintf("Media.Type(%v).File(%v)", path, short), nil)
+					statemanager.StateUpdate(fmt.Sprintf("Media.Type(%v).File(%v)", mediaType, full), nil)
 				}
 			case err := <-watcher.Errors:
 				log.Println("error:", err)

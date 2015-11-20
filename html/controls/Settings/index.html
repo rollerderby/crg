@@ -14,14 +14,21 @@
 	</head>
 	<body>
 		<div class="ConnectionError">Not connected</div>
+		Aspect Ratio:
 		<select id="aspect">
 			<option value="aspect16x9">16x9</option>
 			<option value="aspect4x3">4x3</option>
 		</select>
 		<table>
 			<tr>
-				<th>Live</th>
-				<th>Preview</th>
+				<th>
+					Live
+					<button class="small" id="CopyToPreview">Copy To Preview</button>
+				</th>
+				<th>
+					Preview
+					<button class="small" id="CopyToView">Copy To Live</button>
+				</th>
 			</tr>
 			<tr>
 				<td>
@@ -85,6 +92,24 @@
 										<option value="false">Normal</option>
 										<option value="true">Swapped</option>
 									</select>
+								</td>
+							</tr>
+							<tr>
+								<td>Image View</td>
+								<td>
+									<select sbBind="Image" sbOptions="Media.Type(Image).File(*)"></select>
+								</td>
+							</tr>
+							<tr>
+								<td>Video View</td>
+								<td>
+									<select sbBind="Video" sbOptions="Media.Type(Video).File(*)"></select>
+								</td>
+							</tr>
+							<tr>
+								<td>Custom Page View</td>
+								<td>
+									<select sbBind="CustomHtml" sbOptions="Media.Type(CustomHtml).File(*)"></select>
 								</td>
 							</tr>
 						</table>
