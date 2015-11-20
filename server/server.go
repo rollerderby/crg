@@ -16,7 +16,6 @@ import (
 	"path/filepath"
 	"time"
 
-	"github.com/go-fsnotify/fsnotify"
 	"github.com/rollerderby/crg/leagues"
 	"github.com/rollerderby/crg/scoreboard"
 	"github.com/rollerderby/crg/statemanager"
@@ -91,57 +90,6 @@ func urlsHandler(w http.ResponseWriter, _ *http.Request) {
 	}
 }
 
-func addDirWatcher(path string) (*fsnotify.Watcher, error) {
-	mediaType := filepath.Base(path)
-	fullpath := filepath.Join(statemanager.BaseFilePath(), path)
-	os.MkdirAll(fullpath, 0775)
-
-	watcher, err := fsnotify.NewWatcher()
-	if err != nil {
-		return nil, err
-	}
-	err = watcher.Add(fullpath)
-	if err != nil {
-		watcher.Close()
-		return nil, err
-	}
-
-	f, err := os.Open(fullpath)
-	if err != nil {
-		return nil, err
-	}
-	names, err := f.Readdirnames(-1)
-	f.Close()
-	for _, name := range names {
-		short := filepath.Base(name)
-		full := filepath.Join(path, short)
-
-		statemanager.StateUpdate(fmt.Sprintf("Media.Type(%v).File(%v)", mediaType, short), full)
-	}
-
-	go func() {
-		for {
-			select {
-			case event := <-watcher.Events:
-				short := filepath.Base(event.Name)
-				full := filepath.Join(path, short)
-
-				if event.Op&fsnotify.Create == fsnotify.Create {
-					statemanager.StateUpdate(fmt.Sprintf("Media.Type(%v).File(%v)", mediaType, short), full)
-				} else if event.Op&fsnotify.Rename == fsnotify.Rename {
-					statemanager.StateUpdate(fmt.Sprintf("Media.Type(%v).File(%v)", mediaType, short), nil)
-				} else if event.Op&fsnotify.Remove == fsnotify.Remove {
-					statemanager.StateUpdate(fmt.Sprintf("Media.Type(%v).File(%v)", mediaType, short), nil)
-				}
-			case err := <-watcher.Errors:
-				log.Println("error:", err)
-			}
-		}
-	}()
-
-	return watcher, nil
-}
-
 func openLog() *os.File {
 	path := filepath.Join(statemanager.BaseFilePath(), "logs", fmt.Sprintf("scoreboard-%v.log", time.Now().Format(time.RFC3339)))
 	os.MkdirAll(filepath.Dir(path), 0775)
@@ -181,9 +129,11 @@ func Start(port uint16) {
 	// Initialize websocket interface
 	websocket.Initialize(mux)
 
-	addDirWatcher("html/images/teamlogo")
-	addDirWatcher("html/images/sponsor_banner")
-	addDirWatcher("html/images/fullscreen")
+	addFileWatcher("html", "images/teamlogo")
+	addFileWatcher("html", "images/sponsor_banner")
+	addFileWatcher("html", "images/fullscreen")
+	addFileWatcher("html", "videos")
+	addFileWatcher("html", "customhtml")
 
 	printStartup(port)
 	mux.Handle("/", http.FileServer(http.Dir(filepath.Join(statemanager.BaseFilePath(), "html"))))

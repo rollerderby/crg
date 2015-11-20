@@ -29,6 +29,9 @@ func initSettings(saveFile string) *statemanager.Saver {
 		{"CurrentView", "scoreboard"},
 		{"HideJamTotals", "false"},
 		{"SwapTeams", "false"},
+		{"Image", "/images/fullscreen/American Flag.jpg"},
+		{"Video", "/videos/American Flag.webm"},
+		{"CustomHtml", "/customhtml/example"},
 	}
 	views := []string{"View", "Preview"}
 	statemanager.Lock()
