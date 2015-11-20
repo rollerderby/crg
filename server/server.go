@@ -14,7 +14,6 @@ import (
 	"os"
 	"os/signal"
 	"path/filepath"
-	"strings"
 	"time"
 
 	"github.com/go-fsnotify/fsnotify"
@@ -143,14 +142,6 @@ func addDirWatcher(path string) (*fsnotify.Watcher, error) {
 	return watcher, nil
 }
 
-func setSettings(k, v string) error {
-	v = strings.TrimSpace(v)
-	if v == "" {
-		return statemanager.StateUpdate(k, nil)
-	}
-	return statemanager.StateUpdate(k, v)
-}
-
 func openLog() *os.File {
 	path := filepath.Join(statemanager.BaseFilePath(), "logs", fmt.Sprintf("scoreboard-%v.log", time.Now().Format(time.RFC3339)))
 	os.MkdirAll(filepath.Dir(path), 0775)
@@ -175,10 +166,7 @@ func Start(port uint16) {
 
 	// Initialize statemanager and load Settings.*
 	statemanager.Initialize()
-	statemanager.Lock()
-	statemanager.RegisterPatternUpdaterString("Settings", 0, setSettings)
-	statemanager.Unlock()
-	savers = append(savers, statemanager.NewSaver("config/settings", "Settings", time.Duration(5)*time.Second, true, true))
+	savers = append(savers, initSettings("config/settings"))
 
 	// Initialize leagues and load Leagues.*
 	leagues.Initialize()
