@@ -260,7 +260,19 @@ var WS = {
 		$.each($("[sbDisplay]"), function(idx, elem) {
 			elem = $(elem);
 			var paths = WS.getPaths(elem, "sbDisplay");
-			if (paths.length > 0)
+			var modifyFunc = window[elem.attr("sbModify")];
+			if (paths.length > 1 && modifyFunc == null) {
+				WS.Register(paths, function() {
+					var v = null;
+					for (var i = 0; i < paths.length; i++) {
+						var v2 = WS.state[paths[i]];
+						if (v2 != null && v2.trim() != "") {
+							v = v2.trim();
+						}
+					}
+					elem.text(v);
+				});
+			} else if (paths.length > 0)
 				WS.Register(paths, { element: elem, modifyFunc: window[elem.attr("sbModify")] });
 		});
 		$.each($("[sbTrigger]"), function(idx, elem) {

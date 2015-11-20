@@ -59,7 +59,7 @@ video.video_underlay {
 	font-weight: bold;
 	position: absolute;
 	top: 0px;
-	left: 5px; 
+	left: 5px;
 	width: 240px;
 	height: 20px;
 }
@@ -79,7 +79,7 @@ video.video_underlay {
 .ScoreBoard .Team .JammerBox .Lead {
 	position: absolute;
 	top: 0px;
-	left: 220px; 
+	left: 220px;
 	width: 20px;
 	height: 100%;
 }
@@ -102,7 +102,7 @@ video.video_underlay {
 	height: 40px;
 
 	background-color: #c58cc9;
-	box-shadow: 
+	box-shadow:
 		inset 0 1px rgba(255,255,255,0.3), /* Top light Line */
 		inset 0 2px rgba(255,255,255,0.2), /* Top Light Shadow */
 		inset 0 10px 20px rgba(255,255,255,0.25), /* Sides Light Shadow */
@@ -120,7 +120,7 @@ video.video_underlay {
 	font-size: 30px;
 	text-align: center;
 	color: white;
-	box-shadow: 
+	box-shadow:
 		inset 0 1px rgba(255,255,255,0.3), /* Top light Line */
 		inset 0 2px rgba(255,255,255,0.2), /* Top Light Shadow */
 		inset 0 10px 20px rgba(255,255,255,0.25), /* Sides Light Shadow */
@@ -143,7 +143,7 @@ video.video_underlay {
 	text-align: center;
 	vertical-align: middle;
 	color: black;
-	box-shadow: 
+	box-shadow:
 		inset 0 1px rgba(255,255,255,0.3), /* Top light Line */
 		inset 0 2px rgba(255,255,255,0.2), /* Top Light Shadow */
 		inset 0 10px 20px rgba(255,255,255,0.25), /* Sides Light Shadow */
@@ -165,7 +165,7 @@ video.video_underlay {
 	left: 0px;
 	width: 180px;
 	height: 15px;
-	box-shadow: 
+	box-shadow:
 		inset 0 1px rgba(255,255,255,0.3), /* Top light Line */
 		inset 0 2px rgba(255,255,255,0.2), /* Top Light Shadow */
 		inset 0 10px 20px rgba(255,255,255,0.25), /* Sides Light Shadow */
@@ -181,7 +181,7 @@ video.video_underlay {
 	background-color: #c58cc9;
 	border-radius: 5px;
 	float: left;
-	box-shadow: 
+	box-shadow:
 		inset 0 1px rgba(255,255,255,0.3), /* Top light Line */
 		inset 0 2px rgba(255,255,255,0.2), /* Top Light Shadow */
 		inset 0 -15px 5px rgba(0,0,0,0.3); /* Dark Background */
@@ -196,7 +196,7 @@ video.video_underlay {
 	background-color: #c58cc9;
 	border-radius: 5px;
 	float: left;
-	box-shadow: 
+	box-shadow:
 		inset 0 1px rgba(255,255,255,0.3), /* Top light Line */
 		inset 0 2px rgba(255,255,255,0.2), /* Top Light Shadow */
 		inset 0 -15px 5px rgba(0,0,0,0.3); /* Dark Background */
@@ -207,7 +207,7 @@ video.video_underlay {
 	left: 180px;
 	width: 30px;
 	height: 15px;
-	box-shadow: 
+	box-shadow:
 		inset 0 1px rgba(255,255,255,0.3), /* Top light Line */
 		inset 0 2px rgba(255,255,255,0.2), /* Top Light Shadow */
 		inset 0 10px 20px rgba(255,255,255,0.25), /* Sides Light Shadow */
@@ -229,7 +229,7 @@ video.video_underlay {
 	text-align: center;
 	vertical-align: middle;
 	color: black;
-	box-shadow: 
+	box-shadow:
 		inset 0 1px rgba(255,255,255,0.3), /* Top light Line */
 		inset 0 2px rgba(255,255,255,0.2), /* Top Light Shadow */
 		inset 0 10px 20px rgba(255,255,255,0.25), /* Sides Light Shadow */

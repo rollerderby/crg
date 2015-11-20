@@ -54,14 +54,6 @@ function init() {
 		$(".Team2 .Timeout").toggleClass("active", v == "TTO2");
 		$(".Team2 .OfficialReview").toggleClass("active", v == "OR2");
 	});
-
-	$("#debugClocks").click(function() {
-		WS.Command("Set", ["ScoreBoard.Clock(Period).Time.Max", "10000"]);
-		WS.Command("Set", ["ScoreBoard.Clock(Jam).Time.Max", "5000"]);
-		WS.Command("Set", ["ScoreBoard.Clock(Intermission).Time.Max", "45000"]);
-		WS.Command("Set", ["Settings.View.HideJamTotals", ""]);
-		WS.Command("ScoreBoard.Reset");
-	});
 }
 
 function registerButtonCommand(select, command, data) {
