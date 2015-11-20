@@ -29,13 +29,17 @@ body {
 	padding: 0;
 }
 
-body #scoreboard {
+body>div.Background {
+	position: absolute;
+	left: 0; top: 0;
+	width: 100%;
+	height: 100%;
 	background: linear-gradient(#000000, #222222, #777777);
 }
-body.bg_whitetoblack #scoreboard {
+body.bg_whitetoblack>div.Background {
 	background: linear-gradient(#C0C0C0, #222222, #000000);
 }
-body.bg_black #scoreboard {
+body.bg_black>div.Background {
 	background: #000000;
 }
 
