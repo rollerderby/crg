@@ -26,3 +26,17 @@ button.active {
 .small {
 	font-size: 0.8em !important;
 }
+
+iframe {
+	border: 0px;
+}
+
+.aspect4x3 {
+	width: 400px;
+	height: 300px;
+}
+
+.aspect16x9 {
+	width: 400px;
+	height: 225px;
+}

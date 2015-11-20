@@ -11,4 +11,13 @@ function init() {
 
 	$("button").button();
 	$(".buttonset").buttonset();
+
+	$("#aspect").change(setAspect);
+	setAspect();
+}
+
+function setAspect() {
+	var a = $("#aspect").val();
+	$("iframe").removeClass("aspect4x3").removeClass("aspect16x9");
+	$("iframe").addClass(a);
 }
