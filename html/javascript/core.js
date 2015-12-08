@@ -30,8 +30,8 @@ function _include(dir, files) {
 	$.each(files, function() { _includeUrl((dir?dir+"/":"")+this); });
 }
 
-_include("/external/jquery-ui", [ "jquery-ui.js", "css/default/jquery-ui.css" ]);
-
+_include("/external/jquery/jquery-migrate-1.2.1.js");
+_include("/external/jquery-ui", [ "jquery-ui.js", "blitzer/jquery-ui.min.css" ]);
 _include("/external/jquery-plugins/isjquery/jquery.isjquery.js");
 _include("/external/jquery-plugins/string/jquery.string.js");
 
