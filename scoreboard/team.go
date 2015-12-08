@@ -58,8 +58,6 @@ func newTeam(sb *Scoreboard, id uint8) *team {
 	t.stateIDs["officialReviewRetained"] = fmt.Sprintf("%s.OfficialReviewRetained", t.base)
 	t.stateIDs["lead"] = fmt.Sprintf("%s.Lead", t.base)
 	t.stateIDs["starPass"] = fmt.Sprintf("%s.StarPass", t.base)
-	t.stateIDs["jammer"] = fmt.Sprintf("%s.Jammer", t.base)
-	t.stateIDs["pivot"] = fmt.Sprintf("%s.Pivot", t.base)
 
 	statemanager.StateUpdate(t.stateIDs["id"], int64(id))
 
@@ -72,8 +70,10 @@ func newTeam(sb *Scoreboard, id uint8) *team {
 	statemanager.RegisterUpdaterBool(t.stateIDs["officialReviewRetained"], 0, t.setOfficialReviewRetained)
 	statemanager.RegisterUpdaterString(t.stateIDs["lead"], 0, t.setLead)
 	statemanager.RegisterUpdaterBool(t.stateIDs["starPass"], 0, t.setStarPass)
-	statemanager.RegisterUpdaterString(t.stateIDs["jammer"], 1, t.setJammer) // Must be after skaters are loaded
-	statemanager.RegisterUpdaterString(t.stateIDs["pivot"], 1, t.setPivot)   // Must be after skaters are loaded
+	statemanager.RegisterUpdaterString(t.stateIDs["jammer"], 1, t.setJammer)         // Must be after skaters are loaded
+	statemanager.RegisterUpdaterString(t.stateIDs["pivot"], 1, t.setPivot)           // Must be after skaters are loaded
+	statemanager.RegisterUpdaterBool(t.stateIDs["jammerInBox"], 1, t.setJammerInBox) // Must be after skaters are loaded
+	statemanager.RegisterUpdaterBool(t.stateIDs["pivotInBox"], 1, t.setPivotInBox)   // Must be after skaters are loaded
 
 	statemanager.RegisterCommand(t.stateIDs["score"]+".Inc", t.incScore)
 	statemanager.RegisterCommand(t.stateIDs["score"]+".Dec", t.decScore)
@@ -90,10 +90,12 @@ func newTeam(sb *Scoreboard, id uint8) *team {
 	statemanager.RegisterPatternUpdaterString(t.base+".Skater(*).LegalName", 0, t.sSetLegalName)
 	statemanager.RegisterPatternUpdaterString(t.base+".Skater(*).InsuranceNumber", 0, t.sSetInsuranceNumber)
 	statemanager.RegisterPatternUpdaterString(t.base+".Skater(*).Number", 0, t.sSetNumber)
+	statemanager.RegisterPatternUpdaterString(t.base+".Skater(*).Position", 0, t.sSetPosition)
 	statemanager.RegisterPatternUpdaterBool(t.base+".Skater(*).IsAlt", 0, t.sSetIsAlt)
 	statemanager.RegisterPatternUpdaterBool(t.base+".Skater(*).IsCaptain", 0, t.sSetIsCaptain)
 	statemanager.RegisterPatternUpdaterBool(t.base+".Skater(*).IsAltCaptain", 0, t.sSetIsAltCaptain)
 	statemanager.RegisterPatternUpdaterBool(t.base+".Skater(*).IsBenchStaff", 0, t.sSetIsBenchStaff)
+	statemanager.RegisterPatternUpdaterBool(t.base+".Skater(*).InBox", 0, t.sSetInBox)
 
 	t.reset()
 	return t
@@ -226,36 +228,54 @@ func (t *team) setStarPass(v bool) error {
 func (t *team) setJammer(v string) error {
 	s, ok := t.skaters[v]
 	if !ok {
-		t.jammer = ""
-		t.setPosition(t.stateIDs["jammer"], nil)
-		return statemanager.StateUpdate(t.stateIDs["jammer"], nil)
+		return errSkaterNotFound
 	}
-	t.jammer = v
-	t.setPosition(t.stateIDs["jammer"], s)
-	return statemanager.StateUpdate(t.stateIDs["jammer"], v)
+	return s.setPosition(positionJammer)
+}
+
+func (t *team) setJammerInBox(v bool) error {
+	s, ok := t.skaters[t.jammer]
+	if !ok {
+		return errSkaterNotFound
+	}
+	return s.setInBox(v)
 }
 
 func (t *team) setPivot(v string) error {
 	s, ok := t.skaters[v]
 	if !ok {
-		t.pivot = ""
-		t.setPosition(t.stateIDs["pivot"], nil)
-		return statemanager.StateUpdate(t.stateIDs["pivot"], nil)
+		return errSkaterNotFound
 	}
-	t.pivot = v
-	t.setPosition(t.stateIDs["pivot"], s)
-	return statemanager.StateUpdate(t.stateIDs["pivot"], v)
+	return s.setPosition(positionPivot)
 }
 
-func (t *team) setPosition(base string, s *skater) {
-	statemanager.SetDebug(true)
-	defer statemanager.SetDebug(false)
-	if s != nil {
-		statemanager.StateUpdate(base+".Name", s.name)
-		statemanager.StateUpdate(base+".Number", s.number)
-	} else {
-		statemanager.StateUpdate(base+".Name", nil)
-		statemanager.StateUpdate(base+".Number", nil)
+func (t *team) setPivotInBox(v bool) error {
+	s, ok := t.skaters[t.pivot]
+	if !ok {
+		return errSkaterNotFound
+	}
+	return s.setInBox(v)
+}
+
+func (t *team) updatePositions() {
+	t.jammer = ""
+	t.pivot = ""
+	statemanager.StateUpdate(t.stateIDs["jammer"], nil)
+	statemanager.StateUpdate(t.stateIDs["pivot"], nil)
+	for _, s := range t.skaters {
+		if s.position == positionJammer {
+			t.jammer = s.id
+			statemanager.StateUpdate(t.base+".Jammer.ID", s.id)
+			statemanager.StateUpdate(t.base+".Jammer.Name", s.name)
+			statemanager.StateUpdate(t.base+".Jammer.Number", s.number)
+			statemanager.StateUpdate(t.base+".Jammer.InBox", s.inBox())
+		} else if s.position == positionPivot {
+			t.pivot = s.id
+			statemanager.StateUpdate(t.base+".Pivot.ID", s.id)
+			statemanager.StateUpdate(t.base+".Pivot.Name", s.name)
+			statemanager.StateUpdate(t.base+".Pivot.Number", s.number)
+			statemanager.StateUpdate(t.base+".Pivot.InBox", s.inBox())
+		}
 	}
 }
 

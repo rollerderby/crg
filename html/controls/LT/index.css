@@ -19,41 +19,6 @@ body {
 	font-family: Arial,sans-serif;
 }
 
-div.Row {
-	display: flex;
-	flex-flow: row;
-	width: 100%;
-}
-
-.Reverse>div.Row {
-	flex-flow: row-reverse;
-}
-
-div.Row>div {
-	vertical-align: middle;
-	text-align: center;
-	flex-grow: 1;
-	padding: 3px;
-	margin: 0px;
-}
-
-.Team, .Clock, .Skaters {
-	border-radius: 10px;
-	background-color: lightgrey;
-	margin: 2px !important;
-}
-.Team>div.Row, .Clock>div.Row {
-	border-bottom: 1px dashed black;
-}
-.Team>div.Row:last-child, .Clock>div.Row:last-child {
-	border-bottom: none;
-}
-.PassScores input { width: 100%; }
-
-.ScoreUp, .ScoreDown, .Score, .Timeouts, .OfficialReviews {
-	flex-grow: 3 !important;
-}
-
 .ui-button-text {
 	padding: .1em 1em !important;
 }
@@ -62,117 +27,32 @@ div.Row>div {
 	font-size: 0.8em;
 }
 
-.Team .Name {
-	font-size: 150%;
-	font-weight: bold;
+tr.Template {
+	display: none;
 }
 
-.Team .JamScore, .Team .InstantScore {
-	font-size: 175%;
-	font-weight: bold;
-	vertical-align: middle;
+.Active>span {
+	background-color: green !important;
+	border-radius: 6px;
+	color: white;
 }
 
-.Team .Score {
-	font-size: 250%;
-	font-weight: bold;
-	vertical-align: middle;
-}
-
-table.ScoreKeeper {
+.MainTable {
 	width: 100%;
 }
-table.ScoreKeeper td {
-	margin: 0px;
-	padding: 0px;
+.MainTable>tbody>tr>td {
+	width: 50%;
 }
-table.ScoreKeeper thead tr {
-	height: 20px;
-}
-table.ScoreKeeper thead td:not(.Pass) {
-	transform: rotate(-90deg);
-}
-table.ScoreKeeper thead td {
-	font-size: 50%;
-}
-table.ScoreKeeper input {
-	margin: 0px;
-	padding: 0px;
-}
-table.ScoreKeeper .Pass input {
+
+.PaperWork {
 	width: 100%;
 }
-table.ScoreKeeper tbody tr.Template {
-	/*display: none;*/
+.PaperWork td.Jam, .PaperWork td.Jammer, .PaperWork td.Pivot, .PaperWork td.Blocker {
+	width: 10%;
+}
+.PaperWork td.NoPivot, .PaperWork td.Box {
+	width: 1.875%;
 }
 
-.Clocks {
-	width: 250px;
-	flex-grow: initial !important;
-}
-
-.Clock .Name {
-	font-size: 150%;
-	font-weight: bold;
-}
-.Clock .Num .Num {
-	font-size: 150%;
-	font-weight: bold;
-}
-.Clock .Time .Time {
-	font-family: monospace;
-	font-size: 200%;
-	font-weight: bold;
-}
-
-.Clock.Running>div.Row>div.Name {
-	background-color: lightgreen;
-	border-radius: 10px 10px 0px 0px;
-}
-
-.Clock:not(.Period):not(.Jam)>div.Num {
-	display: none;
-}
-
-button:disabled {
-	display: none;
-}
-
-.StateHistory {
-	max-height: 150px;
-	overflow-y: scroll;
-}
-
-.StateHistory table td {
-	border: 1px solid black;
-	margin: 0px;
-	padding-left: 5px;
-	padding-right: 5px;
-}
-
-.StateHistory td.StateClock {
-	font-family: monospace;
-	text-align: right;
-}
-
-button.active {
-	color: red;
-}
-
-.Editor table thead td {
-	text-align: center;
-}
-.Editor input[type=text] {
-	width: 100%;
-}
-.Editor label {
-	font-size: 70%;
-	display: block;
-}
-
-.Editor tr.Skater:not(.Edit) div {
-	display: none;
-}
-.Editor tr.Skater.Edit span {
-	display: none;
+.PaperWork .Box {
 }

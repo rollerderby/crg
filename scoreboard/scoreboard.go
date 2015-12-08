@@ -22,6 +22,7 @@ type Scoreboard struct {
 	state          string
 	snapshots      []*stateSnapshot
 	activeSnapshot *stateSnapshot
+	jams           []*jam
 }
 
 const (
@@ -93,12 +94,21 @@ func (sb *Scoreboard) reset(_ []string) error {
 	}
 	sb.masterClock.reset()
 
-	for idx := range sb.snapshots {
+	for idx, ss := range sb.snapshots {
 		statemanager.StateUpdate(fmt.Sprintf("%v.Snapshot(%v)", sb.stateBase(), idx), nil)
+		ss.sb = nil
+	}
+	for idx, j := range sb.jams {
+		statemanager.StateUpdate(fmt.Sprintf("%v.Jam(%v)", sb.stateBase(), idx), nil)
+		j.sb = nil
 	}
 	sb.snapshots = nil
+	sb.jams = nil
 	sb.activeSnapshot = nil
 	sb.snapshotStateStart()
+
+	newJam(sb)
+	log.Printf("sb.jams: %+v %v", sb.jams, len(sb.jams))
 
 	return nil
 }

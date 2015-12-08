@@ -12,40 +12,57 @@ import (
 	"github.com/rollerderby/crg/statemanager"
 )
 
+const (
+	positionBench   = "Bench"
+	positionJammer  = "Jammer"
+	positionPivot   = "Pivot"
+	positionBlocker = "Blocker"
+)
+
 type skater struct {
 	t               *team
 	id              string
+	base            string
 	name            string
 	legalName       string
 	insuranceNumber string
 	number          string
+	position        string
 	isAlt           bool
 	isCaptain       bool
 	isAltCaptain    bool
 	isBenchStaff    bool
+	boxTrips        []*boxTrip
+	curBoxTrip      *boxTrip
 	stateIDs        map[string]string
 }
 
 var errSkaterNotFound = errors.New("Skater Not Found")
+var errSkaterInBox = errors.New("Skater In Box")
+var errPositionFull = errors.New("Position Full")
+var errSkaterOnBench = errors.New("Skater On Bench")
+var errSkaterNotInBox = errors.New("Skater Not In Box")
 
 func blankSkater(t *team, id string) *skater {
 	s := &skater{
 		t:        t,
+		base:     t.stateBase() + ".Skater(" + id + ")",
 		stateIDs: make(map[string]string),
 	}
 
-	base := t.stateBase() + ".Skater(" + id + ")"
-	s.stateIDs["id"] = base + ".ID"
-	s.stateIDs["name"] = base + ".Name"
-	s.stateIDs["legalName"] = base + ".LegalName"
-	s.stateIDs["insuranceNumber"] = base + ".InsuranceNumber"
-	s.stateIDs["number"] = base + ".Number"
-	s.stateIDs["isAlt"] = base + ".IsAlt"
-	s.stateIDs["isCaptain"] = base + ".IsCaptain"
-	s.stateIDs["isAltCaptain"] = base + ".IsAltCaptain"
-	s.stateIDs["isBenchStaff"] = base + ".IsBenchStaff"
-	s.stateIDs["description"] = base + ".Description"
-	s.stateIDs["shortDescription"] = base + ".ShortDescription"
+	s.stateIDs["id"] = s.base + ".ID"
+	s.stateIDs["name"] = s.base + ".Name"
+	s.stateIDs["legalName"] = s.base + ".LegalName"
+	s.stateIDs["insuranceNumber"] = s.base + ".InsuranceNumber"
+	s.stateIDs["number"] = s.base + ".Number"
+	s.stateIDs["isAlt"] = s.base + ".IsAlt"
+	s.stateIDs["isCaptain"] = s.base + ".IsCaptain"
+	s.stateIDs["isAltCaptain"] = s.base + ".IsAltCaptain"
+	s.stateIDs["isBenchStaff"] = s.base + ".IsBenchStaff"
+	s.stateIDs["position"] = s.base + ".Position"
+	s.stateIDs["description"] = s.base + ".Description"
+	s.stateIDs["shortDescription"] = s.base + ".ShortDescription"
+	s.stateIDs["inBox"] = s.base + ".InBox"
 
 	s.setID(id)
 	s.setName("")
@@ -56,6 +73,7 @@ func blankSkater(t *team, id string) *skater {
 	s.setIsCaptain(false)
 	s.setIsAltCaptain(false)
 	s.setIsBenchStaff(false)
+	s.setPosition(positionBench)
 
 	return s
 }
@@ -123,6 +141,94 @@ func (s *skater) setIsBenchStaff(v bool) error {
 	return statemanager.StateUpdate(s.stateIDs["isBenchStaff"], v)
 }
 
+func (s *skater) inBox() bool {
+	return s.curBoxTrip != nil
+}
+
+func (s *skater) setInBox(v bool) error {
+	if s.position == positionBench && v {
+		return errSkaterOnBench
+	}
+
+	if !v {
+		if s.curBoxTrip == nil {
+			return errSkaterNotInBox
+		}
+		s.curBoxTrip.setOutJamIdx(int64(len(s.t.sb.jams) - 1))
+		s.curBoxTrip = nil
+	} else {
+		s.curBoxTrip = newBoxTrip(s, int64(len(s.t.sb.jams)-1), false, s.t.starPass)
+		s.boxTrips = append(s.boxTrips, s.curBoxTrip)
+	}
+
+	if s.position == positionJammer || s.position == positionPivot {
+		s.t.updatePositions()
+	}
+
+	return statemanager.StateUpdate(s.stateIDs["inBox"], v)
+}
+
+func (s *skater) setPosition(v string) error {
+	var set = func(v string) error {
+		updatePositions := v == positionJammer || v == positionPivot || s.position == positionJammer || s.position == positionPivot
+		s.position = v
+		if updatePositions {
+			s.t.updatePositions()
+		}
+		return statemanager.StateUpdate(s.stateIDs["position"], v)
+	}
+
+	if v == s.position {
+		// Nothing to see, move along
+		return nil
+	}
+
+	if s.inBox() {
+		return errSkaterInBox
+	}
+
+	if v == positionBench {
+		return set(v)
+	}
+	if v == positionJammer {
+		s2, ok := s.t.skaters[s.t.jammer]
+		if ok {
+			if err := s2.setPosition(positionBench); err != nil {
+				return err
+			}
+		}
+		return set(v)
+	}
+	if v == positionPivot {
+		s2, ok := s.t.skaters[s.t.pivot]
+		if ok {
+			to := positionBench
+			if s.position == positionBlocker {
+				to = positionBlocker
+			}
+			if err := s2.setPosition(to); err != nil {
+				return err
+			}
+		}
+		return set(v)
+	}
+
+	// Must be blocker
+	open := 3
+	if s.t.pivot == "" || s.position == positionPivot {
+		open = 4
+	}
+	for _, s2 := range s.t.skaters {
+		if s2.position == positionBlocker {
+			open = open - 1
+		}
+	}
+	if open < 1 {
+		return errPositionFull
+	}
+	return set(v)
+}
+
 func (s *skater) setDescription() {
 	var long, short []string
 	if s.isAlt {
@@ -147,12 +253,11 @@ func (s *skater) setDescription() {
 
 /* Helper functions to find the skater for RegisterUpdaters */
 func (t *team) findSkater(k string) *skater {
-	k = k[len(t.base+".Skater("):]
-	end := strings.IndexRune(k, ')')
-	if end <= 0 {
+	ids := statemanager.ParseIDs(k)
+	if len(ids) < 2 {
 		return nil
 	}
-	id := k[:end]
+	id := ids[1]
 
 	s, ok := t.skaters[id]
 	if !ok {
@@ -221,6 +326,20 @@ func (t *team) sSetIsAltCaptain(k string, v bool) error {
 func (t *team) sSetIsBenchStaff(k string, v bool) error {
 	if s := t.findSkater(k); s != nil {
 		s.setIsBenchStaff(v)
+		return nil
+	}
+	return errSkaterNotFound
+}
+func (t *team) sSetPosition(k string, v string) error {
+	if s := t.findSkater(k); s != nil {
+		s.setPosition(v)
+		return nil
+	}
+	return errSkaterNotFound
+}
+func (t *team) sSetInBox(k string, v bool) error {
+	if s := t.findSkater(k); s != nil {
+		s.setInBox(v)
 		return nil
 	}
 	return errSkaterNotFound

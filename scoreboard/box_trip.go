@@ -7,12 +7,13 @@ package scoreboard
 
 import (
 	"fmt"
+	"strconv"
 
 	"github.com/rollerderby/crg/statemanager"
 )
 
 type boxTrip struct {
-	t        *team
+	sb       *Scoreboard
 	s        *skater
 	in       boxTripTime
 	out      boxTripTime
@@ -20,20 +21,27 @@ type boxTrip struct {
 }
 
 type boxTripTime struct {
-	period        int64
-	jam           int64
+	jamIdx        int64
 	betweenJams   bool
 	afterStarPass bool
 }
 
-func blankBoxTrip(t *team, idx int64) *boxTrip {
-	bt := &boxTrip{stateIDs: make(map[string]string)}
-	base := fmt.Sprintf("%v.BoxTrip(%v)", t.base, idx)
+func blankBoxTrip(s *skater) *boxTrip {
+	bt := &boxTrip{
+		sb:       s.t.sb,
+		s:        s,
+		stateIDs: make(map[string]string),
+	}
+	idx := len(s.boxTrips)
+	base := fmt.Sprintf("%v.BoxTrip(%v)", s.base, idx)
+
 	bt.stateIDs["skater"] = base + ".Skater"
+	bt.stateIDs["in.jamIdx"] = base + ".In.JamIdx"
 	bt.stateIDs["in.period"] = base + ".In.Period"
 	bt.stateIDs["in.jam"] = base + ".In.Jam"
 	bt.stateIDs["in.betweenJams"] = base + ".In.BetweenJams"
 	bt.stateIDs["in.afterStarPass"] = base + ".In.AfterStarPass"
+	bt.stateIDs["out.jamIdx"] = base + ".Out.JamIdx"
 	bt.stateIDs["out.period"] = base + ".Out.Period"
 	bt.stateIDs["out.jam"] = base + ".Out.Jam"
 	bt.stateIDs["out.betweenJams"] = base + ".Out.BetweenJams"
@@ -42,16 +50,14 @@ func blankBoxTrip(t *team, idx int64) *boxTrip {
 	return bt
 }
 
-func newBoxTrip(t *team, idx int64, s *skater, period, jam int64, betweenJams, afterStarPass bool) *boxTrip {
-	bt := blankBoxTrip(t, idx)
+func newBoxTrip(s *skater, jamIdx int64, betweenJams, afterStarPass bool) *boxTrip {
+	bt := blankBoxTrip(s)
 
 	bt.setSkater(s)
-	bt.setInPeriod(period)
-	bt.setInJam(jam)
+	bt.setInJamIdx(jamIdx)
 	bt.setInBetweenJams(betweenJams)
 	bt.setInAfterStarPass(afterStarPass)
-	bt.setOutPeriod(0)
-	bt.setOutJam(0)
+	bt.setOutJamIdx(-1)
 	bt.setOutBetweenJams(false)
 	bt.setOutAfterStarPass(false)
 
@@ -63,14 +69,21 @@ func (bt *boxTrip) setSkater(s *skater) {
 	statemanager.StateUpdate(bt.stateIDs["skater"], s.id)
 }
 
-func (bt *boxTrip) setInPeriod(v int64) {
-	bt.in.period = v
-	statemanager.StateUpdate(bt.stateIDs["in.period"], v)
-}
+func (bt *boxTrip) setInJamIdx(v int64) error {
+	if v >= 0 && v < int64(len(bt.sb.jams)) {
+		jam := bt.sb.jams[v]
+		bt.in.jamIdx = jam.idx
+		statemanager.StateUpdate(bt.stateIDs["in.jamIdx"], jam.idx)
+		statemanager.StateUpdate(bt.stateIDs["in.period"], jam.period)
+		statemanager.StateUpdate(bt.stateIDs["in.jam"], jam.jam)
+		return nil
+	}
 
-func (bt *boxTrip) setInJam(v int64) {
-	bt.in.jam = v
-	statemanager.StateUpdate(bt.stateIDs["in.jam"], v)
+	bt.in.jamIdx = -1
+	statemanager.StateUpdate(bt.stateIDs["in.jamIdx"], nil)
+	statemanager.StateUpdate(bt.stateIDs["in.period"], nil)
+	statemanager.StateUpdate(bt.stateIDs["in.jam"], nil)
+	return nil
 }
 
 func (bt *boxTrip) setInBetweenJams(v bool) {
@@ -83,14 +96,18 @@ func (bt *boxTrip) setInAfterStarPass(v bool) {
 	statemanager.StateUpdate(bt.stateIDs["in.afterStarPass"], v)
 }
 
-func (bt *boxTrip) setOutPeriod(v int64) {
-	bt.out.period = v
-	statemanager.StateUpdate(bt.stateIDs["out.period"], v)
-}
+func (bt *boxTrip) setOutJamIdx(v int64) {
+	if v >= 0 && v < int64(len(bt.sb.jams)) {
+		jam := bt.sb.jams[v]
+		bt.out.jamIdx = jam.idx
+		statemanager.StateUpdate(bt.stateIDs["out.jamIdx"], jam.idx)
+		statemanager.StateUpdate(bt.stateIDs["out.period"], jam.period)
+		statemanager.StateUpdate(bt.stateIDs["out.jam"], jam.jam)
+	}
 
-func (bt *boxTrip) setOutJam(v int64) {
-	bt.out.jam = v
-	statemanager.StateUpdate(bt.stateIDs["out.jam"], v)
+	statemanager.StateUpdate(bt.stateIDs["out.jamIdx"], nil)
+	statemanager.StateUpdate(bt.stateIDs["out.period"], nil)
+	statemanager.StateUpdate(bt.stateIDs["out.jam"], nil)
 }
 
 func (bt *boxTrip) setOutBetweenJams(v bool) {
@@ -101,4 +118,23 @@ func (bt *boxTrip) setOutBetweenJams(v bool) {
 func (bt *boxTrip) setOutAfterStarPass(v bool) {
 	bt.out.afterStarPass = v
 	statemanager.StateUpdate(bt.stateIDs["out.afterStarPass"], v)
+}
+
+/* Helper functions to find the jam for RegisterUpdaters */
+func (s *skater) findBoxTrip(k string) *boxTrip {
+	ids := statemanager.ParseIDs(k)
+	if len(ids) == 0 {
+		return nil
+	}
+	id, err := strconv.ParseInt(ids[0], 10, 64)
+	if err != nil {
+		return nil
+	}
+
+	// Generate blank snapshots if needed
+	for i := int64(len(s.boxTrips)); i <= id; i++ {
+		s.boxTrips = append(s.boxTrips, blankBoxTrip(s))
+	}
+
+	return s.boxTrips[id]
 }

@@ -353,7 +353,7 @@ var WS = {
 	},
 
 	_optionsAddRemove: function(elem, k, v) {
-		var ids = WS._parseIDs(k);
+		var ids = WS.ParseIDs(k);
 		var id = k;
 		if (ids.length > 0) {
 			id = ids[ids.length-1];
@@ -376,7 +376,7 @@ var WS = {
 			option.text(v);
 	},
 
-	_parseIDs: function(k) {
+	ParseIDs: function(k) {
 		var ret = new Array();
 		var startPos = -1;
 		for (var idx = 0; idx < k.length; idx++) {
