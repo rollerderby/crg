@@ -66,11 +66,11 @@ func findStateUpdater(keyName string) *stateUpdater {
 }
 
 func (su *stateUpdater) update(keyName, value string) error {
-	state, ok := states[keyName]
-	if ok && state.value != nil && *state.value == value {
-		// nothing to do, move along
-		return nil
-	}
+	// state, ok := states[keyName]
+	// if ok && state.value != nil && *state.value == value {
+	// 	// nothing to do, move along
+	// 	return nil
+	// }
 
 	switch cb := su.updater.(type) {
 	case UpdaterStringFunc:

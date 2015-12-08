@@ -94,51 +94,51 @@ func newSkater(t *team, id, name, legalName, insuranceNumber, number string, isA
 
 func (s *skater) setID(v string) error {
 	s.id = v
-	return statemanager.StateUpdate(s.stateIDs["id"], v)
+	return statemanager.StateUpdateString(s.stateIDs["id"], v)
 }
 
 func (s *skater) setName(v string) error {
 	s.name = v
-	return statemanager.StateUpdate(s.stateIDs["name"], v)
+	return statemanager.StateUpdateString(s.stateIDs["name"], v)
 }
 
 func (s *skater) setLegalName(v string) error {
 	s.legalName = v
-	return statemanager.StateUpdate(s.stateIDs["legalName"], v)
+	return statemanager.StateUpdateString(s.stateIDs["legalName"], v)
 }
 
 func (s *skater) setInsuranceNumber(v string) error {
 	s.insuranceNumber = v
-	return statemanager.StateUpdate(s.stateIDs["insuranceNumber"], v)
+	return statemanager.StateUpdateString(s.stateIDs["insuranceNumber"], v)
 }
 
 func (s *skater) setNumber(v string) error {
 	s.number = v
-	return statemanager.StateUpdate(s.stateIDs["number"], v)
+	return statemanager.StateUpdateString(s.stateIDs["number"], v)
 }
 
 func (s *skater) setIsAlt(v bool) error {
 	s.isAlt = v
 	s.setDescription()
-	return statemanager.StateUpdate(s.stateIDs["isAlt"], v)
+	return statemanager.StateUpdateBool(s.stateIDs["isAlt"], v)
 }
 
 func (s *skater) setIsCaptain(v bool) error {
 	s.isCaptain = v
 	s.setDescription()
-	return statemanager.StateUpdate(s.stateIDs["isCaptain"], v)
+	return statemanager.StateUpdateBool(s.stateIDs["isCaptain"], v)
 }
 
 func (s *skater) setIsAltCaptain(v bool) error {
 	s.isAltCaptain = v
 	s.setDescription()
-	return statemanager.StateUpdate(s.stateIDs["isAltCaptain"], v)
+	return statemanager.StateUpdateBool(s.stateIDs["isAltCaptain"], v)
 }
 
 func (s *skater) setIsBenchStaff(v bool) error {
 	s.isBenchStaff = v
 	s.setDescription()
-	return statemanager.StateUpdate(s.stateIDs["isBenchStaff"], v)
+	return statemanager.StateUpdateBool(s.stateIDs["isBenchStaff"], v)
 }
 
 func (s *skater) inBox() bool {
@@ -165,7 +165,7 @@ func (s *skater) setInBox(v bool) error {
 		s.t.updatePositions()
 	}
 
-	return statemanager.StateUpdate(s.stateIDs["inBox"], v)
+	return statemanager.StateUpdateBool(s.stateIDs["inBox"], v)
 }
 
 func (s *skater) setPosition(v string) error {
@@ -175,7 +175,7 @@ func (s *skater) setPosition(v string) error {
 		if updatePositions {
 			s.t.updatePositions()
 		}
-		return statemanager.StateUpdate(s.stateIDs["position"], v)
+		return statemanager.StateUpdateString(s.stateIDs["position"], v)
 	}
 
 	if v == s.position {
@@ -247,8 +247,8 @@ func (s *skater) setDescription() {
 		long = append(long, "Bench Staff")
 		short = append(short, "B")
 	}
-	statemanager.StateUpdate(s.stateIDs["description"], strings.Join(long, ", "))
-	statemanager.StateUpdate(s.stateIDs["shortDescription"], strings.Join(short, ""))
+	statemanager.StateUpdateString(s.stateIDs["description"], strings.Join(long, ", "))
+	statemanager.StateUpdateString(s.stateIDs["shortDescription"], strings.Join(short, ""))
 }
 
 /* Helper functions to find the skater for RegisterUpdaters */

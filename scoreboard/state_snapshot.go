@@ -129,7 +129,7 @@ func (ss *stateSnapshot) unend() {
 
 	for name, c := range ss.clocks {
 		c.setEndTime(0)
-		statemanager.StateUpdate(ss.stateIDs[name+".endTime"], c.endTime)
+		statemanager.StateUpdateInt64(ss.stateIDs[name+".endTime"], c.endTime)
 	}
 }
 
@@ -140,7 +140,7 @@ func (ss *stateSnapshot) updateLength() {
 }
 
 func (ss *stateSnapshot) delete() {
-	statemanager.StateUpdate(ss.base, nil)
+	statemanager.StateDelete(ss.base)
 }
 
 func (ss *stateSnapshot) period() int64 {
@@ -153,77 +153,77 @@ func (ss *stateSnapshot) jam() int64 {
 
 func (ss *stateSnapshot) setState(v string) {
 	ss.state = v
-	statemanager.StateUpdate(ss.stateIDs["state"], v)
+	statemanager.StateUpdateString(ss.stateIDs["state"], v)
 }
 
 func (ss *stateSnapshot) setInProgress(v bool) {
 	ss.inProgress = v
-	statemanager.StateUpdate(ss.stateIDs["inProgress"], v)
+	statemanager.StateUpdateBool(ss.stateIDs["inProgress"], v)
 }
 
 func (ss *stateSnapshot) setCanRevert(v bool) {
 	ss.canRevert = v
-	statemanager.StateUpdate(ss.stateIDs["canRevert"], v)
+	statemanager.StateUpdateBool(ss.stateIDs["canRevert"], v)
 }
 
 func (ss *stateSnapshot) setStartTicks(v int64) {
 	ss.startTicks = v
-	statemanager.StateUpdate(ss.stateIDs["startTicks"], v)
+	statemanager.StateUpdateInt64(ss.stateIDs["startTicks"], v)
 }
 
 func (ss *stateSnapshot) setEndTicks(v int64) {
 	ss.endTicks = v
-	statemanager.StateUpdate(ss.stateIDs["endTicks"], v)
+	statemanager.StateUpdateInt64(ss.stateIDs["endTicks"], v)
 }
 
 func (ss *stateSnapshot) setStartTime(v time.Time) {
 	ss.startTime = v
-	statemanager.StateUpdate(ss.stateIDs["startTime"], v)
+	statemanager.StateUpdateTime(ss.stateIDs["startTime"], v)
 }
 
 func (ss *stateSnapshot) setEndTime(v time.Time) {
 	ss.endTime = v
-	statemanager.StateUpdate(ss.stateIDs["endTime"], v)
+	statemanager.StateUpdateTime(ss.stateIDs["endTime"], v)
 }
 
 func (ss *stateSnapshot) setLength(v int64) {
 	ss.length = v
-	statemanager.StateUpdate(ss.stateIDs["length"], v)
+	statemanager.StateUpdateInt64(ss.stateIDs["length"], v)
 }
 
 func (c *stateSnapshotClock) setNumber(v int64) {
 	c.number = v
-	statemanager.StateUpdate(c.base+".Number", v)
+	statemanager.StateUpdateInt64(c.base+".Number", v)
 }
 
 func (c *stateSnapshotClock) setStartTime(v int64) {
 	c.startTime = v
-	statemanager.StateUpdate(c.base+".StartTime", v)
+	statemanager.StateUpdateInt64(c.base+".StartTime", v)
 }
 
 func (c *stateSnapshotClock) setEndTime(v int64) {
 	c.endTime = v
-	statemanager.StateUpdate(c.base+".EndTime", v)
+	statemanager.StateUpdateInt64(c.base+".EndTime", v)
 }
 
 func (c *stateSnapshotClock) setRunning(v bool) {
 	c.running = v
-	statemanager.StateUpdate(c.base+".Running", v)
+	statemanager.StateUpdateBool(c.base+".Running", v)
 }
 
 func (t *stateSnapshotTeam) setTimeouts(v int64) {
 	t.timeouts = v
-	statemanager.StateUpdate(t.base+".Timeouts", v)
+	statemanager.StateUpdateInt64(t.base+".Timeouts", v)
 }
 
 func (t *stateSnapshotTeam) setOfficialReviews(v int64) {
 	t.officialReviews = v
-	statemanager.StateUpdate(t.base+".OfficialReviews", v)
+	statemanager.StateUpdateInt64(t.base+".OfficialReviews", v)
 }
 
 func (t *stateSnapshotTeam) setOfficialReviewRetained(v bool) {
 	t.officialReviewRetained = v
-	statemanager.StateUpdate(t.base+".OfficialReviewRetained", v)
+	statemanager.StateUpdateBool(t.base+".OfficialReviewRetained", v)
 }
 
 func (ss *stateSnapshot) findClock(k string) *stateSnapshotClock {

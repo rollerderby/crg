@@ -63,7 +63,7 @@ func (l *Listener) Close() {
 func (l *Listener) processUpdates() {
 	for {
 		updates := <-l.ch
-		if debug {
+		if debugFlag {
 			var values []string
 			for k, v := range updates {
 				if v != nil {
@@ -103,7 +103,7 @@ func (l *Listener) RegisterPaths(paths []string) {
 	lock.Lock()
 	defer lock.Unlock()
 	for _, p := range paths {
-		if debug {
+		if debugFlag {
 			log.Printf("RegisterListenerPaths: %v", p)
 		}
 		idx, _ := l.findPatternMatcher(p)
@@ -125,7 +125,7 @@ func (l *Listener) UnregisterPaths(paths []string) {
 	defer lock.Unlock()
 
 	for _, p := range paths {
-		if debug {
+		if debugFlag {
 			log.Printf("UnregisterListenerPaths: %v", p)
 		}
 		idx, _ := l.findPatternMatcher(p)
@@ -164,7 +164,11 @@ func (l *Listener) flush(paths []string) {
 				if u == nil {
 					u = make(map[string]*string)
 				}
-				u[s.name] = s.value
+				if v, e := s.Value(); !e {
+					u[s.name] = &v
+				} else {
+					u[s.name] = nil
+				}
 			}
 		}
 		if u != nil {

@@ -60,13 +60,13 @@ func NewLeague(id, name, legalName, insuranceNumber, number string) *League {
 func (l *League) ID() string { return l.id }
 func (l *League) SetID(v string) error {
 	l.id = v
-	return statemanager.StateUpdate(l.stateIDs["id"], v)
+	return statemanager.StateUpdateString(l.stateIDs["id"], v)
 }
 
 func (l *League) Name() string { return l.name }
 func (l *League) SetName(v string) error {
 	l.name = v
-	return statemanager.StateUpdate(l.stateIDs["name"], v)
+	return statemanager.StateUpdateString(l.stateIDs["name"], v)
 }
 
 /* Helper functions to find the League for RegisterUpdaters */

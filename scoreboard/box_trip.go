@@ -66,58 +66,58 @@ func newBoxTrip(s *skater, jamIdx int64, betweenJams, afterStarPass bool) *boxTr
 
 func (bt *boxTrip) setSkater(s *skater) {
 	bt.s = s
-	statemanager.StateUpdate(bt.stateIDs["skater"], s.id)
+	statemanager.StateUpdateString(bt.stateIDs["skater"], s.id)
 }
 
 func (bt *boxTrip) setInJamIdx(v int64) error {
 	if v >= 0 && v < int64(len(bt.sb.jams)) {
 		jam := bt.sb.jams[v]
 		bt.in.jamIdx = jam.idx
-		statemanager.StateUpdate(bt.stateIDs["in.jamIdx"], jam.idx)
-		statemanager.StateUpdate(bt.stateIDs["in.period"], jam.period)
-		statemanager.StateUpdate(bt.stateIDs["in.jam"], jam.jam)
+		statemanager.StateUpdateInt64(bt.stateIDs["in.jamIdx"], jam.idx)
+		statemanager.StateUpdateInt64(bt.stateIDs["in.period"], jam.period)
+		statemanager.StateUpdateInt64(bt.stateIDs["in.jam"], jam.jam)
 		return nil
 	}
 
 	bt.in.jamIdx = -1
-	statemanager.StateUpdate(bt.stateIDs["in.jamIdx"], nil)
-	statemanager.StateUpdate(bt.stateIDs["in.period"], nil)
-	statemanager.StateUpdate(bt.stateIDs["in.jam"], nil)
+	statemanager.StateDelete(bt.stateIDs["in.jamIdx"])
+	statemanager.StateDelete(bt.stateIDs["in.period"])
+	statemanager.StateDelete(bt.stateIDs["in.jam"])
 	return nil
 }
 
 func (bt *boxTrip) setInBetweenJams(v bool) {
 	bt.in.betweenJams = v
-	statemanager.StateUpdate(bt.stateIDs["in.betweenJams"], v)
+	statemanager.StateUpdateBool(bt.stateIDs["in.betweenJams"], v)
 }
 
 func (bt *boxTrip) setInAfterStarPass(v bool) {
 	bt.in.afterStarPass = v
-	statemanager.StateUpdate(bt.stateIDs["in.afterStarPass"], v)
+	statemanager.StateUpdateBool(bt.stateIDs["in.afterStarPass"], v)
 }
 
 func (bt *boxTrip) setOutJamIdx(v int64) {
 	if v >= 0 && v < int64(len(bt.sb.jams)) {
 		jam := bt.sb.jams[v]
 		bt.out.jamIdx = jam.idx
-		statemanager.StateUpdate(bt.stateIDs["out.jamIdx"], jam.idx)
-		statemanager.StateUpdate(bt.stateIDs["out.period"], jam.period)
-		statemanager.StateUpdate(bt.stateIDs["out.jam"], jam.jam)
+		statemanager.StateUpdateInt64(bt.stateIDs["out.jamIdx"], jam.idx)
+		statemanager.StateUpdateInt64(bt.stateIDs["out.period"], jam.period)
+		statemanager.StateUpdateInt64(bt.stateIDs["out.jam"], jam.jam)
 	}
 
-	statemanager.StateUpdate(bt.stateIDs["out.jamIdx"], nil)
-	statemanager.StateUpdate(bt.stateIDs["out.period"], nil)
-	statemanager.StateUpdate(bt.stateIDs["out.jam"], nil)
+	statemanager.StateDelete(bt.stateIDs["out.jamIdx"])
+	statemanager.StateDelete(bt.stateIDs["out.period"])
+	statemanager.StateDelete(bt.stateIDs["out.jam"])
 }
 
 func (bt *boxTrip) setOutBetweenJams(v bool) {
 	bt.out.betweenJams = v
-	statemanager.StateUpdate(bt.stateIDs["out.betweenJams"], v)
+	statemanager.StateUpdateBool(bt.stateIDs["out.betweenJams"], v)
 }
 
 func (bt *boxTrip) setOutAfterStarPass(v bool) {
 	bt.out.afterStarPass = v
-	statemanager.StateUpdate(bt.stateIDs["out.afterStarPass"], v)
+	statemanager.StateUpdateBool(bt.stateIDs["out.afterStarPass"], v)
 }
 
 /* Helper functions to find the jam for RegisterUpdaters */

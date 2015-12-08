@@ -56,12 +56,12 @@ func newJam(sb *Scoreboard) *jam {
 
 func (j *jam) setPeriod(v int64) error {
 	j.period = v
-	return statemanager.StateUpdate(j.stateIDs["period"], v)
+	return statemanager.StateUpdateInt64(j.stateIDs["period"], v)
 }
 
 func (j *jam) setJam(v int64) error {
 	j.jam = v
-	return statemanager.StateUpdate(j.stateIDs["jam"], v)
+	return statemanager.StateUpdateInt64(j.stateIDs["jam"], v)
 }
 
 /* helper functions to find the jam for registerupdaters */

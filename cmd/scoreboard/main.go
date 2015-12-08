@@ -7,8 +7,11 @@ package main
 
 import (
 	"flag"
+	"log"
+	_ "net/http/pprof"
 	"os"
 	"path/filepath"
+	"runtime/pprof"
 
 	"github.com/kardianos/osext"
 	"github.com/rollerderby/crg/server"
@@ -16,9 +19,11 @@ import (
 )
 
 var port int
+var cpuProf bool
 
 func init() {
 	flag.IntVar(&port, "port", 8000, "Server Port")
+	flag.BoolVar(&cpuProf, "cpuprof", false, "Dump CPU Profile")
 }
 
 func exists(dir bool, path ...string) bool {
@@ -45,5 +50,15 @@ func main() {
 		}
 	}
 	flag.Parse()
+
+	if cpuProf {
+		f, err := os.Create(filepath.Join(statemanager.BaseFilePath(), "profile.cpu"))
+		if err != nil {
+			log.Print(err)
+		} else {
+			pprof.StartCPUProfile(f)
+			defer pprof.StopCPUProfile()
+		}
+	}
 	server.Start(uint16(port))
 }

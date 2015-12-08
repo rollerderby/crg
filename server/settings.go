@@ -16,9 +16,9 @@ import (
 func setSettings(k, v string) error {
 	v = strings.TrimSpace(v)
 	if v == "" {
-		return statemanager.StateUpdate(k, nil)
+		return statemanager.StateDelete(k)
 	}
-	return statemanager.StateUpdate(k, v)
+	return statemanager.StateUpdateString(k, v)
 }
 
 // setup default settings
@@ -37,7 +37,7 @@ func initSettings(saveFile string) *statemanager.Saver {
 	statemanager.Lock()
 	for _, v := range views {
 		for _, d := range defaults {
-			statemanager.StateUpdate(fmt.Sprintf("Settings.%v.%v", v, d.name), d.value)
+			statemanager.StateUpdateString(fmt.Sprintf("Settings.%v.%v", v, d.name), d.value)
 		}
 	}
 	statemanager.RegisterPatternUpdaterString("Settings", 0, setSettings)

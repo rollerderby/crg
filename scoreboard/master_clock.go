@@ -135,13 +135,17 @@ func (mc *masterClock) ticker() {
 	now := time.Now()
 	ticksFromStart := int64(now.Sub(mc.startTime) / durationPerTick)
 	ticksToDo := ticksFromStart - mc.ticks
+	var clocks []*clock
+	for _, c := range mc.clocks {
+		clocks = append(clocks, c)
+	}
 
 	if ticksToDo > 1 {
 		log.Printf("Ticking %v times, now: %v, ticksFromStart: %v", ticksToDo, now, ticksFromStart)
 	}
 	for i := int64(0); i < ticksToDo; i++ {
 		clockExpired := false
-		for _, c := range mc.clocks {
+		for _, c := range clocks {
 			if c.isRunning() {
 				if c.tick(clockTimeTick) {
 					clockExpired = true
@@ -167,13 +171,13 @@ func (mc *masterClock) tickClocks() {
 
 func (mc *masterClock) setStartTime(v time.Time) error {
 	mc.startTime = v
-	statemanager.StateUpdate(mc.stateIDs["startTime"], v)
+	statemanager.StateUpdateTime(mc.stateIDs["startTime"], v)
 	return nil
 }
 
 func (mc *masterClock) setTicks(v int64) error {
 	mc.ticks = v
-	statemanager.StateUpdate(mc.stateIDs["ticks"], v)
+	statemanager.StateUpdateInt64(mc.stateIDs["ticks"], v)
 	return nil
 }
 

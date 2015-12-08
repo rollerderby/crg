@@ -59,7 +59,7 @@ func newTeam(sb *Scoreboard, id uint8) *team {
 	t.stateIDs["lead"] = fmt.Sprintf("%s.Lead", t.base)
 	t.stateIDs["starPass"] = fmt.Sprintf("%s.StarPass", t.base)
 
-	statemanager.StateUpdate(t.stateIDs["id"], int64(id))
+	statemanager.StateUpdateInt64(t.stateIDs["id"], int64(id))
 
 	statemanager.RegisterUpdaterString(t.stateIDs["name"], 0, t.setName)
 	statemanager.RegisterUpdaterString(t.stateIDs["color"], 0, t.setColor)
@@ -128,7 +128,7 @@ func (t *team) deleteSkater(data []string) error {
 		return errSkaterNotFound
 	}
 	delete(t.skaters, data[0])
-	return statemanager.StateUpdate(t.base+".Skater("+data[0]+")", nil)
+	return statemanager.StateDelete(t.base + ".Skater(" + data[0] + ")")
 }
 
 func (t *team) stateBase() string {
@@ -164,12 +164,12 @@ func (t *team) retainOfficialReview(_ []string) error {
 
 func (t *team) setName(v string) error {
 	t.name = v
-	return statemanager.StateUpdate(t.stateIDs["name"], v)
+	return statemanager.StateUpdateString(t.stateIDs["name"], v)
 }
 
 func (t *team) setColor(v string) error {
 	t.color = v
-	return statemanager.StateUpdate(t.stateIDs["color"], v)
+	return statemanager.StateUpdateString(t.stateIDs["color"], v)
 }
 
 func (t *team) setScore(v int64) error {
@@ -180,8 +180,8 @@ func (t *team) setScore(v int64) error {
 	if v < t.lastScore {
 		t.setLastScore(v)
 	}
-	statemanager.StateUpdate(t.stateIDs["score"], v)
-	statemanager.StateUpdate(t.stateIDs["jamScore"], t.score-t.lastScore)
+	statemanager.StateUpdateInt64(t.stateIDs["score"], v)
+	statemanager.StateUpdateInt64(t.stateIDs["jamScore"], t.score-t.lastScore)
 	return nil
 }
 
@@ -193,36 +193,36 @@ func (t *team) setLastScore(v int64) error {
 		return nil
 	}
 	t.lastScore = v
-	statemanager.StateUpdate(t.stateIDs["lastScore"], v)
-	statemanager.StateUpdate(t.stateIDs["jamScore"], t.score-t.lastScore)
+	statemanager.StateUpdateInt64(t.stateIDs["lastScore"], v)
+	statemanager.StateUpdateInt64(t.stateIDs["jamScore"], t.score-t.lastScore)
 	return nil
 }
 
 func (t *team) setTimeouts(v int64) error {
 	t.timeouts = v
-	statemanager.StateUpdate(t.stateIDs["timeouts"], v)
+	statemanager.StateUpdateInt64(t.stateIDs["timeouts"], v)
 	return nil
 }
 
 func (t *team) setOfficialReviews(v int64) error {
 	t.officialReviews = v
-	statemanager.StateUpdate(t.stateIDs["officialReviews"], v)
+	statemanager.StateUpdateInt64(t.stateIDs["officialReviews"], v)
 	return nil
 }
 
 func (t *team) setOfficialReviewRetained(v bool) error {
 	t.officialReviewRetained = v
-	return statemanager.StateUpdate(t.stateIDs["officialReviewRetained"], v)
+	return statemanager.StateUpdateBool(t.stateIDs["officialReviewRetained"], v)
 }
 
 func (t *team) setLead(v string) error {
 	t.lead = v
-	return statemanager.StateUpdate(t.stateIDs["lead"], v)
+	return statemanager.StateUpdateString(t.stateIDs["lead"], v)
 }
 
 func (t *team) setStarPass(v bool) error {
 	t.starPass = v
-	return statemanager.StateUpdate(t.stateIDs["starPass"], v)
+	return statemanager.StateUpdateBool(t.stateIDs["starPass"], v)
 }
 
 func (t *team) setJammer(v string) error {
@@ -260,21 +260,21 @@ func (t *team) setPivotInBox(v bool) error {
 func (t *team) updatePositions() {
 	t.jammer = ""
 	t.pivot = ""
-	statemanager.StateUpdate(t.stateIDs["jammer"], nil)
-	statemanager.StateUpdate(t.stateIDs["pivot"], nil)
+	statemanager.StateDelete(t.stateIDs["jammer"])
+	statemanager.StateDelete(t.stateIDs["pivot"])
 	for _, s := range t.skaters {
 		if s.position == positionJammer {
 			t.jammer = s.id
-			statemanager.StateUpdate(t.base+".Jammer.ID", s.id)
-			statemanager.StateUpdate(t.base+".Jammer.Name", s.name)
-			statemanager.StateUpdate(t.base+".Jammer.Number", s.number)
-			statemanager.StateUpdate(t.base+".Jammer.InBox", s.inBox())
+			statemanager.StateUpdateString(t.base+".Jammer.ID", s.id)
+			statemanager.StateUpdateString(t.base+".Jammer.Name", s.name)
+			statemanager.StateUpdateString(t.base+".Jammer.Number", s.number)
+			statemanager.StateUpdateBool(t.base+".Jammer.InBox", s.inBox())
 		} else if s.position == positionPivot {
 			t.pivot = s.id
-			statemanager.StateUpdate(t.base+".Pivot.ID", s.id)
-			statemanager.StateUpdate(t.base+".Pivot.Name", s.name)
-			statemanager.StateUpdate(t.base+".Pivot.Number", s.number)
-			statemanager.StateUpdate(t.base+".Pivot.InBox", s.inBox())
+			statemanager.StateUpdateString(t.base+".Pivot.ID", s.id)
+			statemanager.StateUpdateString(t.base+".Pivot.Name", s.name)
+			statemanager.StateUpdateString(t.base+".Pivot.Number", s.number)
+			statemanager.StateUpdateBool(t.base+".Pivot.InBox", s.inBox())
 		}
 	}
 }

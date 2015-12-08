@@ -29,6 +29,8 @@ function initialize() {
 		else if (state == "PreGame" || state == "")
 			statusB = "Prebout";
 
+		console.log('status', statusB);
+
 		$(".Status").removeClass("Show");
 		$(".Status.ShowIn" + statusB).addClass("Show");
 	});

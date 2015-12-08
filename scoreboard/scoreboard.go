@@ -95,11 +95,11 @@ func (sb *Scoreboard) reset(_ []string) error {
 	sb.masterClock.reset()
 
 	for idx, ss := range sb.snapshots {
-		statemanager.StateUpdate(fmt.Sprintf("%v.Snapshot(%v)", sb.stateBase(), idx), nil)
+		statemanager.StateDelete(fmt.Sprintf("%v.Snapshot(%v)", sb.stateBase(), idx))
 		ss.sb = nil
 	}
 	for idx, j := range sb.jams {
-		statemanager.StateUpdate(fmt.Sprintf("%v.Jam(%v)", sb.stateBase(), idx), nil)
+		statemanager.StateDelete(fmt.Sprintf("%v.Jam(%v)", sb.stateBase(), idx))
 		j.sb = nil
 	}
 	sb.snapshots = nil
@@ -181,7 +181,7 @@ func (sb *Scoreboard) stateBase() string {
 func (sb *Scoreboard) setState(state string) error {
 	log.Printf("scoreboard: setState(%+v)", state)
 	sb.state = state
-	statemanager.StateUpdate(sb.stateIDs["state"], state)
+	statemanager.StateUpdateString(sb.stateIDs["state"], state)
 
 	adjustable := false
 	if isTimeoutState(state) {

@@ -48,7 +48,7 @@ func newMinMaxNumber(p parent, id string, countdown bool, min, max, num, updateO
 }
 
 func (mmn *minMaxNumber) sendNumStateUpdate() {
-	statemanager.StateUpdate(mmn.stateIDs["precise"], mmn.num)
+	statemanager.StateUpdateInt64(mmn.stateIDs["precise"], mmn.num)
 	diff := mmn.num % mmn.updateOn
 	if mmn.countdown {
 		diff = -((mmn.updateOn - diff) % mmn.updateOn)
@@ -60,7 +60,7 @@ func (mmn *minMaxNumber) sendNumStateUpdate() {
 	} else if num > mmn.max {
 		num = mmn.max
 	}
-	statemanager.StateUpdate(mmn.stateIDs["num"], num)
+	statemanager.StateUpdateInt64(mmn.stateIDs["num"], num)
 }
 
 func (mmn *minMaxNumber) adjust(down bool, adjust int64) bool {
@@ -96,7 +96,7 @@ func (mmn *minMaxNumber) setMin(v int64) error {
 		mmn.setNum(mmn.num)
 	}
 
-	statemanager.StateUpdate(mmn.stateIDs["min"], mmn.min)
+	statemanager.StateUpdateInt64(mmn.stateIDs["min"], mmn.min)
 	return nil
 }
 
@@ -109,7 +109,7 @@ func (mmn *minMaxNumber) setMax(v int64) error {
 		mmn.setNum(mmn.max)
 	}
 
-	statemanager.StateUpdate(mmn.stateIDs["max"], mmn.max)
+	statemanager.StateUpdateInt64(mmn.stateIDs["max"], mmn.max)
 	return nil
 }
 

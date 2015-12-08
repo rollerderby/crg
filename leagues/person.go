@@ -63,31 +63,31 @@ func (p *Person) ID() string { return p.id }
 // SetID sets the ID to `v`
 func (p *Person) SetID(v string) error {
 	p.id = v
-	return statemanager.StateUpdate(p.stateIDs["id"], v)
+	return statemanager.StateUpdateString(p.stateIDs["id"], v)
 }
 
 func (p *Person) Name() string { return p.name }
 func (p *Person) SetName(v string) error {
 	p.name = v
-	return statemanager.StateUpdate(p.stateIDs["name"], v)
+	return statemanager.StateUpdateString(p.stateIDs["name"], v)
 }
 
 func (p *Person) LegalName() string { return p.legalName }
 func (p *Person) SetLegalName(v string) error {
 	p.legalName = v
-	return statemanager.StateUpdate(p.stateIDs["legalName"], v)
+	return statemanager.StateUpdateString(p.stateIDs["legalName"], v)
 }
 
 func (p *Person) InsuranceNumber() string { return p.insuranceNumber }
 func (p *Person) SetInsuranceNumber(v string) error {
 	p.insuranceNumber = v
-	return statemanager.StateUpdate(p.stateIDs["insuranceNumber"], v)
+	return statemanager.StateUpdateString(p.stateIDs["insuranceNumber"], v)
 }
 
 func (p *Person) Number() string { return p.number }
 func (p *Person) SetNumber(v string) error {
 	p.number = v
-	return statemanager.StateUpdate(p.stateIDs["number"], v)
+	return statemanager.StateUpdateString(p.stateIDs["number"], v)
 }
 
 /* Helper functions to find the Person for RegisterUpdaters */

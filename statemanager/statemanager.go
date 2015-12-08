@@ -19,16 +19,20 @@ import (
 )
 
 type state struct {
-	stateNum  uint64
-	name      string
-	value     *string
-	valueType string
+	stateNum    uint64
+	name        string
+	isEmpty     bool
+	valueString string
+	valueInt64  int64
+	valueBool   bool
+	valueTime   time.Time
+	t           string
 }
 
 var states map[string]*state
 var lock sync.Mutex
 var cond *sync.Cond
-var debug = false
+var debugFlag = false
 
 var stateNum = uint64(1)
 var stateUpdated = false
@@ -46,7 +50,7 @@ var ErrUnknownType = errors.New("Unknown State Type")
 var baseFilePath = ""
 
 // SetDebug turns debugging information on or off (sent to log)
-func SetDebug(d bool) { debug = d }
+func SetDebug(d bool) { debugFlag = d }
 
 // BaseFilePath returns the base directory for loading or saving files
 func BaseFilePath() string { return baseFilePath }
@@ -79,59 +83,135 @@ func Unlock() {
 	lock.Unlock()
 }
 
+func (s *state) Value() (string, bool) {
+	if s.isEmpty {
+		return "", true
+	}
+	switch s.t {
+	case "string":
+		return s.valueString, false
+	case "int64":
+		return strconv.FormatInt(s.valueInt64, 10), false
+	case "bool":
+		return strconv.FormatBool(s.valueBool), false
+	case "time":
+		return s.valueTime.UTC().Format(time.RFC3339), false
+	}
+
+	// Unknown type, return empty
+	return "", true
+}
+
 // StateUpdate sets the state for keyName to value.
 // Passing nil as value will mark the state to nil
 // and all states that starts with keyName + "."
-func StateUpdate(keyName string, value interface{}) error {
-	s, ok := states[keyName]
-	if !ok {
-		s = &state{name: keyName}
-		states[keyName] = s
-	}
-	if debug {
-		if s.value == nil {
-			log.Printf("StateUpdate(%s, %v, %T) s.value=%v", keyName, value, value, s.value)
-		} else {
-			log.Printf("StateUpdate(%s, %v, %T) s.value='%v'", keyName, value, value, *s.value)
+func stateUpdate(k string, v interface{}) error {
+	log.Printf("StateUpdate(%v): Using Old Interface", k)
+	if v == nil {
+		if debugFlag {
+			log.Printf("StateUpdate: DELETING SUBTREE %s", k)
 		}
-	}
-
-	if value == nil {
 		for key := range states {
-			if key == keyName || strings.Index(key, keyName+".") == 0 {
+			if key == k || strings.Index(key, k+".") == 0 {
 				s := states[key]
 				s.stateNum = stateNum
-				s.value = nil
+				s.isEmpty = true
 				stateUpdated = true
 			}
 		}
-	} else {
-		var newValue string
-		switch v := value.(type) {
-		case string:
-			newValue = v
-			s.valueType = "string"
-		case int64:
-			newValue = strconv.FormatInt(v, 10)
-			s.valueType = "int64"
-		case bool:
-			newValue = strconv.FormatBool(v)
-			s.valueType = "bool"
-		case time.Time:
-			newValue = v.UTC().Format(time.RFC3339)
-			s.valueType = "time"
-		default:
-			log.Printf("StateUpdate: Unknown type '%T' for %v", value, keyName)
-			return ErrUnknownType
-		}
-		if s.value == nil || *s.value != newValue {
-			if debug {
-				log.Printf("StateUpdate: setting %s to %v", keyName, value)
-			}
+		return nil
+	}
+
+	switch v := v.(type) {
+	case string:
+		return StateUpdateString(k, v)
+	case int64:
+		return StateUpdateInt64(k, v)
+	case bool:
+		return StateUpdateBool(k, v)
+	case time.Time:
+		return StateUpdateTime(k, v)
+	default:
+		log.Printf("StateUpdate: Unknown type '%T' for %v", v, k)
+		return ErrUnknownType
+	}
+}
+
+func StateDelete(k string) error {
+	if debugFlag {
+		log.Printf("StateDelete: %s", k)
+	}
+	for key := range states {
+		if key == k || strings.Index(key, k+".") == 0 {
+			s := states[key]
 			s.stateNum = stateNum
-			s.value = &newValue
+			s.isEmpty = true
 			stateUpdated = true
 		}
+	}
+	return nil
+}
+
+func StateUpdateString(k string, v string) error {
+	s, ok := states[k]
+	if !ok {
+		s = &state{name: k, isEmpty: true}
+		states[k] = s
+	}
+	if s.isEmpty || s.t != "string" || s.valueString != v {
+		s.t = "string"
+		s.valueString = v
+		s.isEmpty = false
+		s.stateNum = stateNum
+		stateUpdated = true
+	}
+	return nil
+}
+
+func StateUpdateInt64(k string, v int64) error {
+	s, ok := states[k]
+	if !ok {
+		s = &state{name: k, isEmpty: true}
+		states[k] = s
+	}
+	if s.isEmpty || s.t != "int64" || s.valueInt64 != v {
+		s.t = "int64"
+		s.valueInt64 = v
+		s.isEmpty = false
+		s.stateNum = stateNum
+		stateUpdated = true
+	}
+	return nil
+}
+
+func StateUpdateBool(k string, v bool) error {
+	s, ok := states[k]
+	if !ok {
+		s = &state{name: k, isEmpty: true}
+		states[k] = s
+	}
+	if s.isEmpty || s.t != "bool" || s.valueBool != v {
+		s.t = "bool"
+		s.valueBool = v
+		s.isEmpty = false
+		s.stateNum = stateNum
+		stateUpdated = true
+	}
+	return nil
+}
+
+func StateUpdateTime(k string, v time.Time) error {
+	s, ok := states[k]
+	if !ok {
+		s = &state{name: k, isEmpty: true}
+		states[k] = s
+	}
+	if s.isEmpty || s.t != "time" || s.valueTime != v {
+		s.t = "time"
+		s.valueTime = v
+		s.isEmpty = false
+		s.stateNum = stateNum
+		stateUpdated = true
 	}
 	return nil
 }
