@@ -6,7 +6,6 @@
 package scoreboard
 
 import (
-	"fmt"
 	"log"
 
 	"github.com/rollerderby/crg/statemanager"
@@ -21,8 +20,9 @@ type Scoreboard struct {
 	masterClock    *masterClock
 	state          string
 	snapshots      []*stateSnapshot
-	activeSnapshot *stateSnapshot
 	jams           []*jam
+	activeSnapshot *stateSnapshot
+	activeJam      *jam
 }
 
 const (
@@ -94,17 +94,16 @@ func (sb *Scoreboard) reset(_ []string) error {
 	}
 	sb.masterClock.reset()
 
-	for idx, ss := range sb.snapshots {
-		statemanager.StateDelete(fmt.Sprintf("%v.Snapshot(%v)", sb.stateBase(), idx))
-		ss.sb = nil
+	for _, ss := range sb.snapshots {
+		ss.delete()
 	}
-	for idx, j := range sb.jams {
-		statemanager.StateDelete(fmt.Sprintf("%v.Jam(%v)", sb.stateBase(), idx))
-		j.sb = nil
+	for _, j := range sb.jams {
+		j.delete()
 	}
 	sb.snapshots = nil
 	sb.jams = nil
 	sb.activeSnapshot = nil
+	sb.activeJam = nil
 	sb.snapshotStateStart()
 
 	newJam(sb)
@@ -211,6 +210,7 @@ func (sb *Scoreboard) startJam(_ []string) error {
 	sb.masterClock.jam.reset(false, true)
 	// Start clocks Period, Jam
 	sb.masterClock.setRunningClocks(clockPeriod, clockJam)
+	sb.activeJam.updateJam()
 	return nil
 }
 
@@ -229,6 +229,7 @@ func (sb *Scoreboard) stopJam(_ []string) error {
 	sb.snapshotStateEnd(sb.masterClock.jam.time.num != sb.masterClock.jam.time.min)
 	defer sb.snapshotStateStart()
 	sb.setState(stateLineup)
+	newJam(sb)
 
 	// Reset lineup clock
 	sb.masterClock.lineup.reset(false, false)
@@ -317,6 +318,12 @@ func (sb *Scoreboard) undo(_ []string) error {
 			return nil
 		}
 		log.Printf("Scoreboard.undo: REVERTING")
+
+		if sb.state != stateJam && lastSnapshot.state == stateJam {
+			sb.activeJam.delete()
+			sb.activeJam = sb.jams[len(sb.jams)-2]
+			sb.jams = sb.jams[:len(sb.jams)-2]
+		}
 
 		for name, c := range lastSnapshot.clocks {
 			clock := sb.masterClock.clocks[name]

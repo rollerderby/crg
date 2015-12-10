@@ -58,6 +58,10 @@ func newTeam(sb *Scoreboard, id uint8) *team {
 	t.stateIDs["officialReviewRetained"] = fmt.Sprintf("%s.OfficialReviewRetained", t.base)
 	t.stateIDs["lead"] = fmt.Sprintf("%s.Lead", t.base)
 	t.stateIDs["starPass"] = fmt.Sprintf("%s.StarPass", t.base)
+	t.stateIDs["jammer"] = fmt.Sprintf("%s.Jammer.ID", t.base)
+	t.stateIDs["jammerInBox"] = fmt.Sprintf("%s.Jammer.InBox", t.base)
+	t.stateIDs["pivot"] = fmt.Sprintf("%s.Pivot.ID", t.base)
+	t.stateIDs["pivotInBox"] = fmt.Sprintf("%s.Pivot.InBox", t.base)
 
 	statemanager.StateUpdateInt64(t.stateIDs["id"], int64(id))
 
@@ -70,6 +74,7 @@ func newTeam(sb *Scoreboard, id uint8) *team {
 	statemanager.RegisterUpdaterBool(t.stateIDs["officialReviewRetained"], 0, t.setOfficialReviewRetained)
 	statemanager.RegisterUpdaterString(t.stateIDs["lead"], 0, t.setLead)
 	statemanager.RegisterUpdaterBool(t.stateIDs["starPass"], 0, t.setStarPass)
+
 	statemanager.RegisterUpdaterString(t.stateIDs["jammer"], 1, t.setJammer)         // Must be after skaters are loaded
 	statemanager.RegisterUpdaterString(t.stateIDs["pivot"], 1, t.setPivot)           // Must be after skaters are loaded
 	statemanager.RegisterUpdaterBool(t.stateIDs["jammerInBox"], 1, t.setJammerInBox) // Must be after skaters are loaded
@@ -260,9 +265,11 @@ func (t *team) setPivotInBox(v bool) error {
 func (t *team) updatePositions() {
 	t.jammer = ""
 	t.pivot = ""
-	statemanager.StateDelete(t.stateIDs["jammer"])
-	statemanager.StateDelete(t.stateIDs["pivot"])
+	statemanager.StateDelete(t.base + ".Jammer")
+	statemanager.StateDelete(t.base + ".Pivot")
+	t.sb.activeJam.clearTeamPositions(t)
 	for _, s := range t.skaters {
+		t.sb.activeJam.setTeamPosition(s)
 		if s.position == positionJammer {
 			t.jammer = s.id
 			statemanager.StateUpdateString(t.base+".Jammer.ID", s.id)

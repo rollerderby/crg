@@ -44,6 +44,18 @@ tr.Template {
 	width: 50%;
 }
 
+.Skater .Number {
+	font-family: "Courier New", Courier, monospace;
+	font-weight: bold;
+	padding-right: 10px;
+}
+
+tr.JamRow td {
+	font-family: "Courier New", Courier, monospace;
+	font-weight: bold;
+	text-align: center;
+}
+
 .PaperWork {
 	width: 100%;
 }

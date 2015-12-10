@@ -255,6 +255,7 @@ var WS = {
 	AutoRegister: function() {
 		$.each($("[sbCopyDiv]"), function(idx, div) {
 			div = $(div);
+			console.log(div, $(div.attr("sbCopyDiv")));
 			div.html($(div.attr("sbCopyDiv")).html());
 		});
 		$.each($("[sbOptions]"), function(idx, elem) {

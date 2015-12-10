@@ -103,7 +103,7 @@ table.ScoreKeeper .Pass input {
 	width: 100%;
 }
 table.ScoreKeeper tbody tr.Template {
-	/*display: none;*/
+	display: none;
 }
 
 .Clocks {

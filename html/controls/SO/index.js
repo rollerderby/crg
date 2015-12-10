@@ -46,7 +46,15 @@ function init() {
 			teamEditor.dialog("open");
 		});
 		WS.Register("Scoreboard.Team("+t+").Skater(*)", function(k, v) { skater(t, k, v); });
+
+		$(["Jammer", "Pivot"]).each(function(idx, p) {
+			var btn = $(".Team"+t+" ."+p+" Button.Box");
+			var key = "Scoreboard.Team("+t+")."+p+".InBox";
+			btn.click(function() { WS.Set(key, (!btn.hasClass("active")).toString()); });
+			WS.Register(key, function(k, v) { btn.toggleClass("active", isTrue(v)); });
+		});
 	});
+	WS.Register("Scoreboard.Jam(*)", jam);
 	WS.Register("Scoreboard.State", function(k, v) {
 		$(".MasterControls .Timeout").toggleClass("active", v == "OTO");
 		$(".Team1 .Timeout").toggleClass("active", v == "TTO1");
@@ -191,9 +199,11 @@ function skater(t, k, v) {
 		sort($(".Team"+t+ " select.Skater"), id);
 		sort($(".Team"+t+ " table.Skaters tbody"), id);
 	} else {
-		row.find("."+field+" span").text(v);
-		row.find("."+field+" input[type=text]").val(v);
-		row.find("input."+field+"[type=checkbox]").prop("checked", isTrue(v));
+		if (field.substring(0, 7) != "BoxTrip") {
+			row.find("."+field+" span").text(v);
+			row.find("."+field+" input[type=text]").val(v);
+			row.find("input."+field+"[type=checkbox]").prop("checked", isTrue(v));
+		}
 	}
 }
 
@@ -248,6 +258,41 @@ function addSkater(t, id) {
 		});
 		tr.find(".Buttons").empty().append(deleteButton);
 		tr.appendTo($(".Team"+t+" .SkaterRows"));
+	}
+}
+
+function jam(k, v) {
+	var ids = WS.ParseIDs(k);
+	if (ids.length < 1)
+		return;
+
+	var id = ids[0];
+
+	var base = "Scoreboard.Jam("+id+")";
+	var field = k.substring(base.length+1);
+
+	if (v == null) {
+		if (field == "Jam") {
+			$("table.ScoreKeeper tbody tr").filterByData("key", id).remove();
+		}
+		return;
+	}
+
+	addJam(base, id);
+	var row = $("table.ScoreKeeper tbody tr").filterByData("key", id);
+
+	if (field == "Jam" || field == "Period") {
+		row.find("td.Jam span."+field).text(v);
+	} else {
+		row.find("."+field).text(v);
+	}
+}
+
+function addJam(base, id) {
+	if ($("table.ScoreKeeper tbody tr").filterByData("key", id).length == 0) {
+		var tr = $(".Team1 table.ScoreKeeper tbody tr.Template").clone();
+		tr.removeClass("Template").data("key", id).addClass("JamRow").data("key", id);
+		tr.appendTo($("table.ScoreKeeper tbody"));
 	}
 }
 

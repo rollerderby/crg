@@ -68,10 +68,23 @@ function skater(k, v) {
 	} else if (field == "Position") {
 		row.find("button.Position").removeClass("Active");
 		row.find("button.Position."+v).addClass("Active");
+
+		if (v == "Bench")
+			row.find("button.Box").hide();
+		else
+			row.find("button.Box").show();
 	} else if (field == "InBox") {
 		row.find("button.Box").toggleClass("Active", isTrue(v));
+	} else if (field == "InLastJam") {
+		if (isTrue(v))
+			row.find("button.BetweenJams").show();
+		else
+			row.find("button.BetweenJams").hide();
+		row.find("button.BetweenJams").toggleClass("Active", isTrue(v));
 	} else {
-		row.find("."+field).text(v);
+		if (field.substring(0, 7) != "BoxTrip") {
+			row.find("."+field).text(v);
+		}
 	}
 }
 
@@ -103,7 +116,6 @@ function jam(k, v) {
 		if (field == "Jam") {
 			$("table.PaperWork tbody tr").filterByData("key", id).remove();
 		}
-		return;
 	}
 
 	addJam(base, id);
@@ -112,17 +124,36 @@ function jam(k, v) {
 	if (field == "Jam" || field == "Period") {
 		row.find("td.Jam span."+field).text(v);
 	} else {
-		row.find("."+field).text(v);
+		var t = ids[1];
+		var b = ids[2];
+		row = $(".Team"+t+" table.PaperWork tbody tr").filterByData("key", id);
+		var number = WS.state["Scoreboard.Team("+t+").Skater("+v+").Number"];
+		console.log(t, field, v, number, b);
+		switch (field) {
+			case "Team("+t+").Jammer":
+				row.find(".Jammer").text(number);
+				break;
+			case "Team("+t+").Pivot":
+				row.find(".Pivot").text(number);
+				break;
+			case "Team("+t+").Blocker("+b+")":
+				var c = ".Blocker"+(Number(b)+1).toString();
+				if (b == 3) {
+					c = ".Pivot";
+					row.find(".NoPivot").text(v == null ? "" : "X");
+				}
+				console.log(c);
+				row.find(c).text(number);
+				break;
+		}
+		// row.find("."+field).text(v);
 	}
 }
 
 function addJam(base, id) {
 	if ($("table.PaperWork tbody tr").filterByData("key", id).length == 0) {
-		var tr = $(".Team1 table.PaperWork tbody tr").clone();
-		tr.removeClass("Template").data("key", id).addClass("JamRow").attr("boo", id);
+		var tr = $(".Team1 table.PaperWork tbody tr.Template").clone();
+		tr.removeClass("Template").data("key", id).addClass("JamRow").data("key", id);
 		tr.appendTo($("table.PaperWork tbody"));
-		console.log("Adding Jam("+id+")");
-		// sort($(".Team1 table.PaperWork tbody tr"), id);
-		// sort($(".Team2 table.PaperWork tbody tr"), id);
 	}
 }

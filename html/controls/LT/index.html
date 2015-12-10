@@ -7,7 +7,6 @@
 			governed by a GPL-style license that can be found
 			in the LICENSE file. -->
 		<link type="text/css" rel="stylesheet" href="index.css" />
-		<link type="text/css" rel="stylesheet" href="/external/jquery-ui/css/default/jquery-ui.css" />
 
 		<script type="text/javascript" src="/external/jquery/jquery.js"></script>
 		<script type="text/javascript" src="/javascript/core.js"></script>
@@ -17,14 +16,13 @@
 		<div class="ConnectionError">Not connected</div>
 		<div class="Tabs">
 			<ul>
-				<li><a href="#Team1"><span sbDisplay="Team(1).Name,Team(1).Color"></a></li>
-				<li><a href="#Team2"><span sbDisplay="Team(2).Name,Team(2).Color"></a></li>
+				<li><a href="#Team1Skaters"><span sbDisplay="Team(1).Name,Team(1).Color"></span> Skaters</a></li>
+				<li><a href="#Team1Paperwork"><span sbDisplay="Team(1).Name,Team(1).Color"></span> Paperwork</a></li>
+				<li><a href="#Team2Skaters"><span sbDisplay="Team(2).Name,Team(2).Color"></span> Skaters</a></li>
+				<li><a href="#Team2Paperwork"><span sbDisplay="Team(2).Name,Team(2).Color"></span> Paperwork</a></li>
 			</ul>
-			<div class="Team Team1" id="Team1" sbContext="Team(1)">
+			<div class="Team Team1" id="Team1Skaters" sbContext="Team(1)">
 				<div class="Name" sbDisplay="Name,Color"></div>
-				<table class="MainTable">
-					<tr>
-						<td valign="top">
 				<table class="Skaters">
 					<tbody>
 						<tr class="Template">
@@ -38,53 +36,51 @@
 						</tr>
 					</tbody>
 				</table>
-						</td>
-						<td valign="top">
-							<table class="PaperWork" border="1px" cellspacing="0" cellpadding="0">
-								<thead>
-									<tr>
-										<th>Jam</th>
-										<th>NP</th>
-										<th colspan="4">Jammer</th>
-										<th colspan="4">Pivot</th>
-										<th colspan="4">Blocker</th>
-										<th colspan="4">Blocker</th>
-										<th colspan="4">Blocker</th>
-									</tr>
-								</thead>
-								<tbody>
-									<tr class="Template">
-										<td class="Jam"><span class="Period"></span> - <span class="Jam"></span></td>
-										<td class="NoPivot"></td>
-										<td class="Jammer"></td>
-										<td class="JammerBox1 Box"></td>
-										<td class="JammerBox2 Box"></td>
-										<td class="JammerBox3 Box"></td>
-										<td class="Pivot"></td>
-										<td class="PivotBox1 Box"></td>
-										<td class="PivotBox2 Box"></td>
-										<td class="PivotBox3 Box"></td>
-										<td class="Blocker Blocker1"></td>
-										<td class="Blocker Blocker1Box1 Box"></td>
-										<td class="Blocker Blocker1Box2 Box"></td>
-										<td class="Blocker Blocker1Box3 Box"></td>
-										<td class="Blocker Blocker2"></td>
-										<td class="Blocker Blocker2Box1 Box"></td>
-										<td class="Blocker Blocker2Box2 Box"></td>
-										<td class="Blocker Blocker2Box3 Box"></td>
-										<td class="Blocker Blocker3"></td>
-										<td class="Blocker Blocker3Box1 Box"></td>
-										<td class="Blocker Blocker3Box2 Box"></td>
-										<td class="Blocker Blocker3Box3 Box"></td>
-									</tr>
-								</tbody>
-							</table>
-						</td>
-					</tr>
+			</div>
+			<div class="Team Team1" id="Team1Paperwork" sbContext="Team(1)">
+				<div class="Name" sbDisplay="Name,Color"></div>
+				<table class="PaperWork" border="1px" cellspacing="0" cellpadding="0">
+					<thead>
+						<tr>
+							<th>Jam</th>
+							<th>NP</th>
+							<th colspan="4">Jammer</th>
+							<th colspan="4">Pivot</th>
+							<th colspan="4">Blocker</th>
+							<th colspan="4">Blocker</th>
+							<th colspan="4">Blocker</th>
+						</tr>
+					</thead>
+					<tbody>
+						<tr class="Template">
+							<td class="Jam"><span class="Period"></span> - <span class="Jam"></span></td>
+							<td class="NoPivot"></td>
+							<td class="Jammer"></td>
+							<td class="JammerBox1 Box"></td>
+							<td class="JammerBox2 Box"></td>
+							<td class="JammerBox3 Box"></td>
+							<td class="Pivot"></td>
+							<td class="PivotBox1 Box"></td>
+							<td class="PivotBox2 Box"></td>
+							<td class="PivotBox3 Box"></td>
+							<td class="Blocker Blocker1"></td>
+							<td class="Blocker Blocker1Box1 Box"></td>
+							<td class="Blocker Blocker1Box2 Box"></td>
+							<td class="Blocker Blocker1Box3 Box"></td>
+							<td class="Blocker Blocker2"></td>
+							<td class="Blocker Blocker2Box1 Box"></td>
+							<td class="Blocker Blocker2Box2 Box"></td>
+							<td class="Blocker Blocker2Box3 Box"></td>
+							<td class="Blocker Blocker3"></td>
+							<td class="Blocker Blocker3Box1 Box"></td>
+							<td class="Blocker Blocker3Box2 Box"></td>
+							<td class="Blocker Blocker3Box3 Box"></td>
+						</tr>
+					</tbody>
 				</table>
 			</div>
-			<div class="Team Team2" id="Team2" sbContext="Team(2)" sbCopyDiv=".Team1">
-			</div>
+			<div class="Team Team2" id="Team2Skaters" sbContext="Team(2)" sbCopyDiv="#Team1Skaters"></div>
+			<div class="Team Team2" id="Team2Paperwork" sbContext="Team(2)" sbCopyDiv="#Team1Paperwork"></div>
 		</div>
 	</body>
 </html>

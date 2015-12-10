@@ -63,6 +63,7 @@ func blankSkater(t *team, id string) *skater {
 	s.stateIDs["description"] = s.base + ".Description"
 	s.stateIDs["shortDescription"] = s.base + ".ShortDescription"
 	s.stateIDs["inBox"] = s.base + ".InBox"
+	s.stateIDs["inLastJam"] = s.base + ".InLastJam"
 
 	s.setID(id)
 	s.setName("")
@@ -74,6 +75,7 @@ func blankSkater(t *team, id string) *skater {
 	s.setIsAltCaptain(false)
 	s.setIsBenchStaff(false)
 	s.setPosition(positionBench)
+	s.setInLastJam(false)
 
 	return s
 }
@@ -145,6 +147,10 @@ func (s *skater) inBox() bool {
 	return s.curBoxTrip != nil
 }
 
+func (s *skater) setInLastJam(v bool) error {
+	return statemanager.StateUpdateBool(s.stateIDs["inLastJam"], v)
+}
+
 func (s *skater) setInBox(v bool) error {
 	if s.position == positionBench && v {
 		return errSkaterOnBench
@@ -170,11 +176,8 @@ func (s *skater) setInBox(v bool) error {
 
 func (s *skater) setPosition(v string) error {
 	var set = func(v string) error {
-		updatePositions := v == positionJammer || v == positionPivot || s.position == positionJammer || s.position == positionPivot
 		s.position = v
-		if updatePositions {
-			s.t.updatePositions()
-		}
+		s.t.updatePositions()
 		return statemanager.StateUpdateString(s.stateIDs["position"], v)
 	}
 

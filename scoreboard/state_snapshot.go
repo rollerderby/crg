@@ -108,6 +108,11 @@ func newStateSnapshot(sb *Scoreboard, idx int64, startTime time.Time) *stateSnap
 	return ss
 }
 
+func (ss *stateSnapshot) delete() {
+	statemanager.StateDelete(ss.base)
+	ss.sb = nil
+}
+
 func (ss *stateSnapshot) end(canRevert bool, endTime time.Time) {
 	ss.setEndTicks(ss.sb.masterClock.ticks)
 	ss.setEndTime(endTime)
@@ -137,10 +142,6 @@ func (ss *stateSnapshot) updateLength() {
 	if ss.state != "" {
 		ss.setLength((ss.sb.masterClock.ticks - ss.startTicks) * clockTimeTick)
 	}
-}
-
-func (ss *stateSnapshot) delete() {
-	statemanager.StateDelete(ss.base)
 }
 
 func (ss *stateSnapshot) period() int64 {
