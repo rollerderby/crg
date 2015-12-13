@@ -3,10 +3,10 @@
 // governed by a GPL-style license that can be found
 // in the LICENSE file.
 
-// Package statemanager stores the global state and provides
+// Package state stores the global state and provides
 // mechanisms for updating the state, listing for state updates,
 // registering commands, and triggering commands
-package statemanager
+package state
 
 import (
 	"errors"
@@ -43,7 +43,7 @@ var ErrNotFound = errors.New("State Not Found")
 // ErrUpdaterNotFound is returned when an updater cannot be located for the key name
 var ErrUpdaterNotFound = errors.New("Updater Not Found")
 
-// ErrUnknownType is returned when the type passed to the statemanager is not
+// ErrUnknownType is returned when the type passed to the state is not
 // one of the supported types (currently string, int64, bool)
 var ErrUnknownType = errors.New("Unknown State Type")
 
@@ -58,11 +58,11 @@ func BaseFilePath() string { return baseFilePath }
 // SetBaseFilePath sets the base directory for loading or saving files
 func SetBaseFilePath(p ...string) {
 	path := filepath.Join(p...)
-	log.Printf("statemanager: Setting BaseFilePath to '%v'", path)
+	log.Printf("state: Setting BaseFilePath to '%v'", path)
 	baseFilePath = path
 }
 
-// Initialize starts up the statemanager
+// Initialize starts up the state
 func Initialize() {
 	cond = sync.NewCond(&lock)
 	states = make(map[string]*state)
@@ -70,13 +70,13 @@ func Initialize() {
 	go flushListeners()
 }
 
-// Lock places the statemanager in a locked state, should be called before
+// Lock places the state in a locked state, should be called before
 // any updates to the state are made, but only once.
 func Lock() {
 	lock.Lock()
 }
 
-// Unlock removes the lock from the statemanager and starts the processing
+// Unlock removes the lock from the state and starts the processing
 // of any updates to listeners waiting for changes
 func Unlock() {
 	cond.Signal()

@@ -10,19 +10,19 @@ import (
 	"strings"
 	"time"
 
-	"github.com/rollerderby/crg/statemanager"
+	"github.com/rollerderby/crg/state"
 )
 
 func setSettings(k, v string) error {
 	v = strings.TrimSpace(v)
 	if v == "" {
-		return statemanager.StateDelete(k)
+		return state.StateDelete(k)
 	}
-	return statemanager.StateUpdateString(k, v)
+	return state.StateUpdateString(k, v)
 }
 
 // setup default settings
-func initSettings(saveFile string) *statemanager.Saver {
+func initSettings(saveFile string) *state.Saver {
 	defaults := []struct{ name, value string }{
 		{"BackgroundStyle", "bg_blacktowhite"},
 		{"BoxStyle", "box_flat"},
@@ -34,13 +34,13 @@ func initSettings(saveFile string) *statemanager.Saver {
 		{"CustomHtml", "/customhtml/example"},
 	}
 	views := []string{"View", "Preview"}
-	statemanager.Lock()
+	state.Lock()
 	for _, v := range views {
 		for _, d := range defaults {
-			statemanager.StateUpdateString(fmt.Sprintf("Settings.%v.%v", v, d.name), d.value)
+			state.StateUpdateString(fmt.Sprintf("Settings.%v.%v", v, d.name), d.value)
 		}
 	}
-	statemanager.RegisterPatternUpdaterString("Settings", 0, setSettings)
-	statemanager.Unlock()
-	return statemanager.NewSaver(saveFile, "Settings", time.Duration(5)*time.Second, true, true)
+	state.RegisterPatternUpdaterString("Settings", 0, setSettings)
+	state.Unlock()
+	return state.NewSaver(saveFile, "Settings", time.Duration(5)*time.Second, true, true)
 }

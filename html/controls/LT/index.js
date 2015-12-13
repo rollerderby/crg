@@ -118,8 +118,9 @@ function jam(k, v) {
 		}
 	}
 
-	addJam(base, id);
-	var row = $("table.PaperWork tbody tr").filterByData("key", id);
+	var row = addJam(base, id, v != null);
+	if (row == null)
+		return;
 
 	if (field == "Jam" || field == "Period") {
 		row.find("td.Jam span."+field).text(v);
@@ -150,10 +151,12 @@ function jam(k, v) {
 	}
 }
 
-function addJam(base, id) {
-	if ($("table.PaperWork tbody tr").filterByData("key", id).length == 0) {
-		var tr = $(".Team1 table.PaperWork tbody tr.Template").clone();
-		tr.removeClass("Template").data("key", id).addClass("JamRow").data("key", id);
-		tr.appendTo($("table.PaperWork tbody"));
+function addJam(base, id, createNew) {
+	var row = $("table.PaperWork tbody tr").filterByData("key", id);
+	if (row.length == 0 && createNew) {
+		row = $(".Team1 table.PaperWork tbody tr.Template").clone();
+		row.removeClass("Template").data("key", id).addClass("JamRow").data("key", id);
+		row.appendTo($("table.PaperWork tbody"));
 	}
+	return row;
 }

@@ -10,7 +10,7 @@ import (
 	"log"
 	"time"
 
-	"github.com/rollerderby/crg/statemanager"
+	"github.com/rollerderby/crg/state"
 )
 
 type masterClock struct {
@@ -107,8 +107,8 @@ func newMasterClock(sb *Scoreboard) *masterClock {
 	mc.stateIDs["startTime"] = sb.stateBase() + ".MasterClock.StartTime"
 	mc.stateIDs["ticks"] = sb.stateBase() + ".MasterClock.Ticks"
 
-	statemanager.RegisterUpdaterTime(mc.stateIDs["startTime"], 0, mc.setStartTime)
-	statemanager.RegisterUpdaterInt64(mc.stateIDs["ticks"], 0, mc.setTicks)
+	state.RegisterUpdaterTime(mc.stateIDs["startTime"], 0, mc.setStartTime)
+	state.RegisterUpdaterInt64(mc.stateIDs["ticks"], 0, mc.setTicks)
 
 	go mc.tickClocks()
 
@@ -129,7 +129,7 @@ func (mc *masterClock) stateBase() string {
 }
 
 // Called from tickClocks() and stateSnapshot.rollback()
-// statemanager lock MUST be held before calling and
+// state lock MUST be held before calling and
 // released after ticker() returns by the caller
 func (mc *masterClock) ticker() {
 	now := time.Now()
@@ -163,21 +163,21 @@ func (mc *masterClock) ticker() {
 func (mc *masterClock) tickClocks() {
 	ticker := time.NewTicker(durationPerTick)
 	for range ticker.C {
-		statemanager.Lock()
+		state.Lock()
 		mc.ticker()
-		statemanager.Unlock()
+		state.Unlock()
 	}
 }
 
 func (mc *masterClock) setStartTime(v time.Time) error {
 	mc.startTime = v
-	statemanager.StateUpdateTime(mc.stateIDs["startTime"], v)
+	state.StateUpdateTime(mc.stateIDs["startTime"], v)
 	return nil
 }
 
 func (mc *masterClock) setTicks(v int64) error {
 	mc.ticks = v
-	statemanager.StateUpdateInt64(mc.stateIDs["ticks"], v)
+	state.StateUpdateInt64(mc.stateIDs["ticks"], v)
 	return nil
 }
 

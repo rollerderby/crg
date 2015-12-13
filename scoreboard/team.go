@@ -8,7 +8,7 @@ package scoreboard
 import (
 	"fmt"
 
-	"github.com/rollerderby/crg/statemanager"
+	"github.com/rollerderby/crg/state"
 )
 
 const (
@@ -63,44 +63,44 @@ func newTeam(sb *Scoreboard, id uint8) *team {
 	t.stateIDs["pivot"] = fmt.Sprintf("%s.Pivot.ID", t.base)
 	t.stateIDs["pivotInBox"] = fmt.Sprintf("%s.Pivot.InBox", t.base)
 
-	statemanager.StateUpdateInt64(t.stateIDs["id"], int64(id))
+	state.StateUpdateInt64(t.stateIDs["id"], int64(id))
 
-	statemanager.RegisterUpdaterString(t.stateIDs["name"], 0, t.setName)
-	statemanager.RegisterUpdaterString(t.stateIDs["color"], 0, t.setColor)
-	statemanager.RegisterUpdaterInt64(t.stateIDs["score"], 0, t.setScore)
-	statemanager.RegisterUpdaterInt64(t.stateIDs["lastScore"], 0, t.setLastScore)
-	statemanager.RegisterUpdaterInt64(t.stateIDs["timeouts"], 0, t.setTimeouts)
-	statemanager.RegisterUpdaterInt64(t.stateIDs["officialReviews"], 0, t.setOfficialReviews)
-	statemanager.RegisterUpdaterBool(t.stateIDs["officialReviewRetained"], 0, t.setOfficialReviewRetained)
-	statemanager.RegisterUpdaterString(t.stateIDs["lead"], 0, t.setLead)
-	statemanager.RegisterUpdaterBool(t.stateIDs["starPass"], 0, t.setStarPass)
+	state.RegisterUpdaterString(t.stateIDs["name"], 0, t.setName)
+	state.RegisterUpdaterString(t.stateIDs["color"], 0, t.setColor)
+	state.RegisterUpdaterInt64(t.stateIDs["score"], 0, t.setScore)
+	state.RegisterUpdaterInt64(t.stateIDs["lastScore"], 0, t.setLastScore)
+	state.RegisterUpdaterInt64(t.stateIDs["timeouts"], 0, t.setTimeouts)
+	state.RegisterUpdaterInt64(t.stateIDs["officialReviews"], 0, t.setOfficialReviews)
+	state.RegisterUpdaterBool(t.stateIDs["officialReviewRetained"], 0, t.setOfficialReviewRetained)
+	state.RegisterUpdaterString(t.stateIDs["lead"], 0, t.setLead)
+	state.RegisterUpdaterBool(t.stateIDs["starPass"], 0, t.setStarPass)
 
-	statemanager.RegisterUpdaterString(t.stateIDs["jammer"], 1, t.setJammer)         // Must be after skaters are loaded
-	statemanager.RegisterUpdaterString(t.stateIDs["pivot"], 1, t.setPivot)           // Must be after skaters are loaded
-	statemanager.RegisterUpdaterBool(t.stateIDs["jammerInBox"], 1, t.setJammerInBox) // Must be after skaters are loaded
-	statemanager.RegisterUpdaterBool(t.stateIDs["pivotInBox"], 1, t.setPivotInBox)   // Must be after skaters are loaded
+	state.RegisterUpdaterString(t.stateIDs["jammer"], 1, t.setJammer)         // Must be after skaters are loaded
+	state.RegisterUpdaterString(t.stateIDs["pivot"], 1, t.setPivot)           // Must be after skaters are loaded
+	state.RegisterUpdaterBool(t.stateIDs["jammerInBox"], 1, t.setJammerInBox) // Must be after skaters are loaded
+	state.RegisterUpdaterBool(t.stateIDs["pivotInBox"], 1, t.setPivotInBox)   // Must be after skaters are loaded
 
-	statemanager.RegisterCommand(t.stateIDs["score"]+".Inc", t.incScore)
-	statemanager.RegisterCommand(t.stateIDs["score"]+".Dec", t.decScore)
-	statemanager.RegisterCommand(t.stateIDs["lastScore"]+".Inc", t.incLastScore)
-	statemanager.RegisterCommand(t.stateIDs["lastScore"]+".Dec", t.decLastScore)
-	statemanager.RegisterCommand(t.stateIDs["timeouts"]+".Start", t.startTimeout)
-	statemanager.RegisterCommand(t.stateIDs["officialReviews"]+".Start", t.startOfficialReview)
-	statemanager.RegisterCommand(t.stateIDs["officialReviews"]+".Retained", t.retainOfficialReview)
-	statemanager.RegisterCommand(t.base+".DeleteSkater", t.deleteSkater)
+	state.RegisterCommand(t.stateIDs["score"]+".Inc", t.incScore)
+	state.RegisterCommand(t.stateIDs["score"]+".Dec", t.decScore)
+	state.RegisterCommand(t.stateIDs["lastScore"]+".Inc", t.incLastScore)
+	state.RegisterCommand(t.stateIDs["lastScore"]+".Dec", t.decLastScore)
+	state.RegisterCommand(t.stateIDs["timeouts"]+".Start", t.startTimeout)
+	state.RegisterCommand(t.stateIDs["officialReviews"]+".Start", t.startOfficialReview)
+	state.RegisterCommand(t.stateIDs["officialReviews"]+".Retained", t.retainOfficialReview)
+	state.RegisterCommand(t.base+".DeleteSkater", t.deleteSkater)
 
 	// Setup Updaters for skaters (functions located in skater.go)
-	statemanager.RegisterPatternUpdaterString(t.base+".Skater(*).ID", 0, t.sSetID)
-	statemanager.RegisterPatternUpdaterString(t.base+".Skater(*).Name", 0, t.sSetName)
-	statemanager.RegisterPatternUpdaterString(t.base+".Skater(*).LegalName", 0, t.sSetLegalName)
-	statemanager.RegisterPatternUpdaterString(t.base+".Skater(*).InsuranceNumber", 0, t.sSetInsuranceNumber)
-	statemanager.RegisterPatternUpdaterString(t.base+".Skater(*).Number", 0, t.sSetNumber)
-	statemanager.RegisterPatternUpdaterString(t.base+".Skater(*).Position", 0, t.sSetPosition)
-	statemanager.RegisterPatternUpdaterBool(t.base+".Skater(*).IsAlt", 0, t.sSetIsAlt)
-	statemanager.RegisterPatternUpdaterBool(t.base+".Skater(*).IsCaptain", 0, t.sSetIsCaptain)
-	statemanager.RegisterPatternUpdaterBool(t.base+".Skater(*).IsAltCaptain", 0, t.sSetIsAltCaptain)
-	statemanager.RegisterPatternUpdaterBool(t.base+".Skater(*).IsBenchStaff", 0, t.sSetIsBenchStaff)
-	statemanager.RegisterPatternUpdaterBool(t.base+".Skater(*).InBox", 0, t.sSetInBox)
+	state.RegisterPatternUpdaterString(t.base+".Skater(*).ID", 0, t.sSetID)
+	state.RegisterPatternUpdaterString(t.base+".Skater(*).Name", 0, t.sSetName)
+	state.RegisterPatternUpdaterString(t.base+".Skater(*).LegalName", 0, t.sSetLegalName)
+	state.RegisterPatternUpdaterString(t.base+".Skater(*).InsuranceNumber", 0, t.sSetInsuranceNumber)
+	state.RegisterPatternUpdaterString(t.base+".Skater(*).Number", 0, t.sSetNumber)
+	state.RegisterPatternUpdaterString(t.base+".Skater(*).Position", 0, t.sSetPosition)
+	state.RegisterPatternUpdaterBool(t.base+".Skater(*).IsAlt", 0, t.sSetIsAlt)
+	state.RegisterPatternUpdaterBool(t.base+".Skater(*).IsCaptain", 0, t.sSetIsCaptain)
+	state.RegisterPatternUpdaterBool(t.base+".Skater(*).IsAltCaptain", 0, t.sSetIsAltCaptain)
+	state.RegisterPatternUpdaterBool(t.base+".Skater(*).IsBenchStaff", 0, t.sSetIsBenchStaff)
+	state.RegisterPatternUpdaterBool(t.base+".Skater(*).InBox", 0, t.sSetInBox)
 
 	t.reset()
 	return t
@@ -133,7 +133,7 @@ func (t *team) deleteSkater(data []string) error {
 		return errSkaterNotFound
 	}
 	delete(t.skaters, data[0])
-	return statemanager.StateDelete(t.base + ".Skater(" + data[0] + ")")
+	return state.StateDelete(t.base + ".Skater(" + data[0] + ")")
 }
 
 func (t *team) stateBase() string {
@@ -169,12 +169,12 @@ func (t *team) retainOfficialReview(_ []string) error {
 
 func (t *team) setName(v string) error {
 	t.name = v
-	return statemanager.StateUpdateString(t.stateIDs["name"], v)
+	return state.StateUpdateString(t.stateIDs["name"], v)
 }
 
 func (t *team) setColor(v string) error {
 	t.color = v
-	return statemanager.StateUpdateString(t.stateIDs["color"], v)
+	return state.StateUpdateString(t.stateIDs["color"], v)
 }
 
 func (t *team) setScore(v int64) error {
@@ -185,8 +185,8 @@ func (t *team) setScore(v int64) error {
 	if v < t.lastScore {
 		t.setLastScore(v)
 	}
-	statemanager.StateUpdateInt64(t.stateIDs["score"], v)
-	statemanager.StateUpdateInt64(t.stateIDs["jamScore"], t.score-t.lastScore)
+	state.StateUpdateInt64(t.stateIDs["score"], v)
+	state.StateUpdateInt64(t.stateIDs["jamScore"], t.score-t.lastScore)
 	return nil
 }
 
@@ -198,36 +198,36 @@ func (t *team) setLastScore(v int64) error {
 		return nil
 	}
 	t.lastScore = v
-	statemanager.StateUpdateInt64(t.stateIDs["lastScore"], v)
-	statemanager.StateUpdateInt64(t.stateIDs["jamScore"], t.score-t.lastScore)
+	state.StateUpdateInt64(t.stateIDs["lastScore"], v)
+	state.StateUpdateInt64(t.stateIDs["jamScore"], t.score-t.lastScore)
 	return nil
 }
 
 func (t *team) setTimeouts(v int64) error {
 	t.timeouts = v
-	statemanager.StateUpdateInt64(t.stateIDs["timeouts"], v)
+	state.StateUpdateInt64(t.stateIDs["timeouts"], v)
 	return nil
 }
 
 func (t *team) setOfficialReviews(v int64) error {
 	t.officialReviews = v
-	statemanager.StateUpdateInt64(t.stateIDs["officialReviews"], v)
+	state.StateUpdateInt64(t.stateIDs["officialReviews"], v)
 	return nil
 }
 
 func (t *team) setOfficialReviewRetained(v bool) error {
 	t.officialReviewRetained = v
-	return statemanager.StateUpdateBool(t.stateIDs["officialReviewRetained"], v)
+	return state.StateUpdateBool(t.stateIDs["officialReviewRetained"], v)
 }
 
 func (t *team) setLead(v string) error {
 	t.lead = v
-	return statemanager.StateUpdateString(t.stateIDs["lead"], v)
+	return state.StateUpdateString(t.stateIDs["lead"], v)
 }
 
 func (t *team) setStarPass(v bool) error {
 	t.starPass = v
-	return statemanager.StateUpdateBool(t.stateIDs["starPass"], v)
+	return state.StateUpdateBool(t.stateIDs["starPass"], v)
 }
 
 func (t *team) setJammer(v string) error {
@@ -265,23 +265,23 @@ func (t *team) setPivotInBox(v bool) error {
 func (t *team) updatePositions() {
 	t.jammer = ""
 	t.pivot = ""
-	statemanager.StateDelete(t.base + ".Jammer")
-	statemanager.StateDelete(t.base + ".Pivot")
+	state.StateDelete(t.base + ".Jammer")
+	state.StateDelete(t.base + ".Pivot")
 	t.sb.activeJam.clearTeamPositions(t)
 	for _, s := range t.skaters {
 		t.sb.activeJam.setTeamPosition(s)
 		if s.position == positionJammer {
 			t.jammer = s.id
-			statemanager.StateUpdateString(t.base+".Jammer.ID", s.id)
-			statemanager.StateUpdateString(t.base+".Jammer.Name", s.name)
-			statemanager.StateUpdateString(t.base+".Jammer.Number", s.number)
-			statemanager.StateUpdateBool(t.base+".Jammer.InBox", s.inBox())
+			state.StateUpdateString(t.base+".Jammer.ID", s.id)
+			state.StateUpdateString(t.base+".Jammer.Name", s.name)
+			state.StateUpdateString(t.base+".Jammer.Number", s.number)
+			state.StateUpdateBool(t.base+".Jammer.InBox", s.inBox())
 		} else if s.position == positionPivot {
 			t.pivot = s.id
-			statemanager.StateUpdateString(t.base+".Pivot.ID", s.id)
-			statemanager.StateUpdateString(t.base+".Pivot.Name", s.name)
-			statemanager.StateUpdateString(t.base+".Pivot.Number", s.number)
-			statemanager.StateUpdateBool(t.base+".Pivot.InBox", s.inBox())
+			state.StateUpdateString(t.base+".Pivot.ID", s.id)
+			state.StateUpdateString(t.base+".Pivot.Name", s.name)
+			state.StateUpdateString(t.base+".Pivot.Number", s.number)
+			state.StateUpdateBool(t.base+".Pivot.InBox", s.inBox())
 		}
 	}
 }

@@ -18,7 +18,7 @@ import (
 
 	"github.com/rollerderby/crg/leagues"
 	"github.com/rollerderby/crg/scoreboard"
-	"github.com/rollerderby/crg/statemanager"
+	"github.com/rollerderby/crg/state"
 	"github.com/rollerderby/crg/websocket"
 )
 
@@ -91,7 +91,7 @@ func urlsHandler(w http.ResponseWriter, _ *http.Request) {
 }
 
 func openLog() *os.File {
-	path := filepath.Join(statemanager.BaseFilePath(), "logs", fmt.Sprintf("scoreboard-%v.log", time.Now().Format(time.RFC3339)))
+	path := filepath.Join(state.BaseFilePath(), "logs", fmt.Sprintf("scoreboard-%v.log", time.Now().Format(time.RFC3339)))
 	os.MkdirAll(filepath.Dir(path), 0775)
 	f, err := os.OpenFile(path, os.O_RDWR|os.O_CREATE|os.O_APPEND, 0664)
 	if err != nil {
@@ -110,21 +110,21 @@ func Start(port uint16) {
 		defer l.Close()
 	}
 	mux := http.NewServeMux()
-	var savers []*statemanager.Saver
+	var savers []*state.Saver
 
-	// Initialize statemanager and load Settings.*
-	statemanager.Initialize()
+	// Initialize state and load Settings.*
+	state.Initialize()
 	savers = append(savers, initSettings("config/settings"))
 
 	// Initialize leagues and load Leagues.*
 	leagues.Initialize()
-	savers = append(savers, statemanager.NewSaver("config/leagues", "Leagues", time.Duration(5)*time.Second, true, true))
+	savers = append(savers, state.NewSaver("config/leagues", "Leagues", time.Duration(5)*time.Second, true, true))
 
 	// Initialize scoreboard and load Scoreboard.*
-	statemanager.Lock()
-	scoreboard.New()
-	statemanager.Unlock()
-	savers = append(savers, statemanager.NewSaver("config/scoreboard", "Scoreboard", time.Duration(5)*time.Second, true, true))
+	state.Lock()
+	scoreboard.Initialize()
+	state.Unlock()
+	savers = append(savers, state.NewSaver("config/scoreboard", "Scoreboard", time.Duration(5)*time.Second, true, true))
 
 	// Initialize websocket interface
 	websocket.Initialize(mux)
@@ -136,7 +136,7 @@ func Start(port uint16) {
 	addFileWatcher("CustomHtml", "html", "/customhtml")
 
 	printStartup(port)
-	mux.Handle("/", http.FileServer(http.Dir(filepath.Join(statemanager.BaseFilePath(), "html"))))
+	mux.Handle("/", http.FileServer(http.Dir(filepath.Join(state.BaseFilePath(), "html"))))
 
 	c := make(chan os.Signal, 1)
 	go func() {

@@ -8,12 +8,12 @@ package scoreboard
 import (
 	"log"
 
-	"github.com/rollerderby/crg/statemanager"
+	"github.com/rollerderby/crg/state"
 )
 
 // Scoreboard is the realtime scoreboard controller.  All aspects of the
 // live state for the scoreboard are contained within and exported
-// via github.com/rollerderby/crg/statemanager
+// via github.com/rollerderby/crg/state
 type Scoreboard struct {
 	stateIDs       map[string]string
 	teams          []*team
@@ -55,32 +55,32 @@ func New() *Scoreboard {
 	sb.stateIDs = make(map[string]string)
 	sb.stateIDs["state"] = sb.stateBase() + ".State"
 
-	statemanager.RegisterUpdaterString(sb.stateIDs["state"], 0, sb.setState)
+	state.RegisterUpdaterString(sb.stateIDs["state"], 0, sb.setState)
 
-	statemanager.RegisterCommand("Scoreboard.StartJam", sb.startJam)
-	statemanager.RegisterCommand("Scoreboard.StopJam", sb.stopJam)
-	statemanager.RegisterCommand("Scoreboard.Timeout", sb.timeout)
-	statemanager.RegisterCommand("Scoreboard.EndTimeout", sb.endTimeout)
-	statemanager.RegisterCommand("Scoreboard.Undo", sb.undo)
+	state.RegisterCommand("Scoreboard.StartJam", sb.startJam)
+	state.RegisterCommand("Scoreboard.StopJam", sb.stopJam)
+	state.RegisterCommand("Scoreboard.Timeout", sb.timeout)
+	state.RegisterCommand("Scoreboard.EndTimeout", sb.endTimeout)
+	state.RegisterCommand("Scoreboard.Undo", sb.undo)
 
-	statemanager.RegisterCommand("Scoreboard.Reset", sb.reset)
+	state.RegisterCommand("Scoreboard.Reset", sb.reset)
 
 	// Setup Updaters for stateSnapshots (functions located in state_snapshot.go)
-	statemanager.RegisterPatternUpdaterString(sb.stateBase()+".Snapshot(*).State", 0, sb.ssSetState)
-	statemanager.RegisterPatternUpdaterBool(sb.stateBase()+".Snapshot(*).InProgress", 0, sb.ssSetInProgress)
-	statemanager.RegisterPatternUpdaterBool(sb.stateBase()+".Snapshot(*).CanRevert", 0, sb.ssSetCanRevert)
-	statemanager.RegisterPatternUpdaterInt64(sb.stateBase()+".Snapshot(*).StartTicks", 0, sb.ssSetStartTicks)
-	statemanager.RegisterPatternUpdaterInt64(sb.stateBase()+".Snapshot(*).EndTicks", 0, sb.ssSetEndTicks)
-	statemanager.RegisterPatternUpdaterInt64(sb.stateBase()+".Snapshot(*).Length", 0, sb.ssSetLength)
-	statemanager.RegisterPatternUpdaterTime(sb.stateBase()+".Snapshot(*).StartTime", 0, sb.ssSetStartTime)
-	statemanager.RegisterPatternUpdaterTime(sb.stateBase()+".Snapshot(*).EndTime", 0, sb.ssSetEndTime)
-	statemanager.RegisterPatternUpdaterInt64(sb.stateBase()+".Snapshot(*).Clock(*).Number", 0, sb.sscSetNumber)
-	statemanager.RegisterPatternUpdaterInt64(sb.stateBase()+".Snapshot(*).Clock(*).StartTime", 0, sb.sscSetStartTime)
-	statemanager.RegisterPatternUpdaterInt64(sb.stateBase()+".Snapshot(*).Clock(*).EndTime", 0, sb.sscSetEndTime)
-	statemanager.RegisterPatternUpdaterBool(sb.stateBase()+".Snapshot(*).Clock(*).Running", 0, sb.sscSetRunning)
-	statemanager.RegisterPatternUpdaterInt64(sb.stateBase()+".Snapshot(*).Team(*).Timeouts", 0, sb.sstSetTimeouts)
-	statemanager.RegisterPatternUpdaterInt64(sb.stateBase()+".Snapshot(*).Team(*).OfficialReviews", 0, sb.sstSetOfficialReviews)
-	statemanager.RegisterPatternUpdaterBool(sb.stateBase()+".Snapshot(*).Team(*).OfficialReviewRetained", 0, sb.sstSetOfficialReviewRetained)
+	state.RegisterPatternUpdaterString(sb.stateBase()+".Snapshot(*).State", 0, sb.ssSetState)
+	state.RegisterPatternUpdaterBool(sb.stateBase()+".Snapshot(*).InProgress", 0, sb.ssSetInProgress)
+	state.RegisterPatternUpdaterBool(sb.stateBase()+".Snapshot(*).CanRevert", 0, sb.ssSetCanRevert)
+	state.RegisterPatternUpdaterInt64(sb.stateBase()+".Snapshot(*).StartTicks", 0, sb.ssSetStartTicks)
+	state.RegisterPatternUpdaterInt64(sb.stateBase()+".Snapshot(*).EndTicks", 0, sb.ssSetEndTicks)
+	state.RegisterPatternUpdaterInt64(sb.stateBase()+".Snapshot(*).Length", 0, sb.ssSetLength)
+	state.RegisterPatternUpdaterTime(sb.stateBase()+".Snapshot(*).StartTime", 0, sb.ssSetStartTime)
+	state.RegisterPatternUpdaterTime(sb.stateBase()+".Snapshot(*).EndTime", 0, sb.ssSetEndTime)
+	state.RegisterPatternUpdaterInt64(sb.stateBase()+".Snapshot(*).Clock(*).Number", 0, sb.sscSetNumber)
+	state.RegisterPatternUpdaterInt64(sb.stateBase()+".Snapshot(*).Clock(*).StartTime", 0, sb.sscSetStartTime)
+	state.RegisterPatternUpdaterInt64(sb.stateBase()+".Snapshot(*).Clock(*).EndTime", 0, sb.sscSetEndTime)
+	state.RegisterPatternUpdaterBool(sb.stateBase()+".Snapshot(*).Clock(*).Running", 0, sb.sscSetRunning)
+	state.RegisterPatternUpdaterInt64(sb.stateBase()+".Snapshot(*).Team(*).Timeouts", 0, sb.sstSetTimeouts)
+	state.RegisterPatternUpdaterInt64(sb.stateBase()+".Snapshot(*).Team(*).OfficialReviews", 0, sb.sstSetOfficialReviews)
+	state.RegisterPatternUpdaterBool(sb.stateBase()+".Snapshot(*).Team(*).OfficialReviewRetained", 0, sb.sstSetOfficialReviewRetained)
 
 	sb.reset(nil)
 
@@ -177,13 +177,13 @@ func (sb *Scoreboard) stateBase() string {
 	return "Scoreboard"
 }
 
-func (sb *Scoreboard) setState(state string) error {
-	log.Printf("scoreboard: setState(%+v)", state)
-	sb.state = state
-	statemanager.StateUpdateString(sb.stateIDs["state"], state)
+func (sb *Scoreboard) setState(v string) error {
+	log.Printf("scoreboard: setState(%+v)", v)
+	sb.state = v
+	state.StateUpdateString(sb.stateIDs["state"], v)
 
 	adjustable := false
-	if isTimeoutState(state) {
+	if isTimeoutState(v) {
 		adjustable = true
 	}
 	sb.masterClock.setClockAdjustable(clockPeriod, adjustable)
@@ -229,6 +229,7 @@ func (sb *Scoreboard) stopJam(_ []string) error {
 	sb.snapshotStateEnd(sb.masterClock.jam.time.num != sb.masterClock.jam.time.min)
 	defer sb.snapshotStateStart()
 	sb.setState(stateLineup)
+
 	newJam(sb)
 
 	// Reset lineup clock
@@ -323,6 +324,7 @@ func (sb *Scoreboard) undo(_ []string) error {
 			sb.activeJam.delete()
 			sb.activeJam = sb.jams[len(sb.jams)-2]
 			sb.jams = sb.jams[:len(sb.jams)-2]
+			sb.activeJam.reinstatePositions()
 		}
 
 		for name, c := range lastSnapshot.clocks {

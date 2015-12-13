@@ -8,7 +8,7 @@ package scoreboard
 import (
 	"fmt"
 
-	"github.com/rollerderby/crg/statemanager"
+	"github.com/rollerderby/crg/state"
 )
 
 type clock struct {
@@ -41,12 +41,12 @@ func newClock(sb *Scoreboard, name string, numMin, numMax, timeMin, timeMax int6
 	c.stateIDs["running"] = c.base + ".Running"
 	c.stateIDs["adjustable"] = c.base + ".Adjustable"
 
-	statemanager.RegisterCommand(c.time.stateIDs["num"]+".Inc", c.incTime)
-	statemanager.RegisterCommand(c.time.stateIDs["num"]+".Dec", c.decTime)
+	state.RegisterCommand(c.time.stateIDs["num"]+".Inc", c.incTime)
+	state.RegisterCommand(c.time.stateIDs["num"]+".Dec", c.decTime)
 
-	statemanager.RegisterUpdaterString(c.stateIDs["name"], 0, c.setName)
-	statemanager.RegisterUpdaterBool(c.stateIDs["countdown"], 4, c.setCountDown)
-	statemanager.RegisterUpdaterBool(c.stateIDs["running"], 4, c.setRunning)
+	state.RegisterUpdaterString(c.stateIDs["name"], 0, c.setName)
+	state.RegisterUpdaterBool(c.stateIDs["countdown"], 4, c.setCountDown)
+	state.RegisterUpdaterBool(c.stateIDs["running"], 4, c.setRunning)
 
 	c.setName(name)
 	c.setCountDown(countdown)
@@ -62,20 +62,20 @@ func (c *clock) stateBase() string {
 
 func (c *clock) setName(name string) error {
 	c.name = name
-	statemanager.StateUpdateString(c.stateIDs["name"], name)
+	state.StateUpdateString(c.stateIDs["name"], name)
 	return nil
 }
 
 func (c *clock) setCountDown(countdown bool) error {
 	c.countdown = countdown
-	statemanager.StateUpdateBool(c.stateIDs["countdown"], countdown)
+	state.StateUpdateBool(c.stateIDs["countdown"], countdown)
 	c.time.setCountDown(countdown)
 	return nil
 }
 
 func (c *clock) setRunning(running bool) error {
 	c.running = running
-	statemanager.StateUpdateBool(c.stateIDs["running"], running)
+	state.StateUpdateBool(c.stateIDs["running"], running)
 	return nil
 }
 
@@ -103,12 +103,12 @@ func (c *clock) isRunning() bool {
 
 func (c *clock) start() {
 	c.running = true
-	statemanager.StateUpdateBool(c.stateIDs["running"], c.running)
+	state.StateUpdateBool(c.stateIDs["running"], c.running)
 }
 
 func (c *clock) stop() {
 	c.running = false
-	statemanager.StateUpdateBool(c.stateIDs["running"], c.running)
+	state.StateUpdateBool(c.stateIDs["running"], c.running)
 }
 
 // returns true if clock timedout
@@ -122,7 +122,7 @@ func (c *clock) tick(tickDuration int64) bool {
 
 func (c *clock) setAdjustable(adjustable bool) {
 	c.adjustable = adjustable
-	statemanager.StateUpdateBool(c.stateIDs["adjustable"], adjustable)
+	state.StateUpdateBool(c.stateIDs["adjustable"], adjustable)
 }
 
 func (c *clock) clone() *clock {

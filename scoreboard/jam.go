@@ -7,9 +7,16 @@ package scoreboard
 
 import (
 	"fmt"
+	"log"
 	"strconv"
 
-	"github.com/rollerderby/crg/statemanager"
+	"github.com/rollerderby/crg/state"
+)
+
+const (
+	starPassNo    = "No"
+	starPassYes   = "Yes"
+	starPassOther = "Other"
 )
 
 type jam struct {
@@ -24,8 +31,10 @@ type jam struct {
 }
 
 type jamTeam struct {
+	starPass string
 	jammer   string
 	pivot    string
+	noPivot  bool
 	blockers []string
 	scores   [9]int64
 }
@@ -63,6 +72,12 @@ func newJam(sb *Scoreboard) *jam {
 		j.setJam(sb.masterClock.jam.number.num + 1)
 	}
 
+	for _, t := range sb.teams {
+		for _, s := range t.skaters {
+			s.setPosition(positionBench)
+			j.setTeamPosition(s)
+		}
+	}
 	return j
 }
 
@@ -72,18 +87,47 @@ func (j *jam) updateJam() {
 }
 
 func (j *jam) delete() {
-	statemanager.StateDelete(j.base)
+	state.StateDelete(j.base)
 	j.sb = nil
+}
+
+func (j *jam) reinstatePositions() {
+	reinstate := func(t *team, jt *jamTeam) {
+		set := func(id, position string) error {
+			if s, ok := t.skaters[id]; ok {
+				s.position = position
+				return nil
+			}
+			return errSkaterNotFound
+		}
+		log.Printf("UNBENCH! %+v", jt)
+
+		for _, s := range t.skaters {
+			s.position = positionBench
+		}
+
+		set(jt.jammer, positionJammer)
+		set(jt.pivot, positionPivot)
+		for _, blocker := range jt.blockers {
+			set(blocker, positionBlocker)
+		}
+
+		for _, s := range t.skaters {
+			s.setPosition(s.position)
+		}
+	}
+	reinstate(j.sb.teams[0], &j.teams[0])
+	reinstate(j.sb.teams[1], &j.teams[1])
 }
 
 func (j *jam) clearTeamPositions(t *team) {
 	base := fmt.Sprintf("%v.Team(%v)", j.base, t.id)
 	j.teams[t.id-1].jammer = ""
-	statemanager.StateDelete(base + ".Jammer")
+	state.StateDelete(base + ".Jammer")
 	j.teams[t.id-1].pivot = ""
-	statemanager.StateDelete(base + ".Pivot")
+	state.StateDelete(base + ".Pivot")
 	for idx, _ := range j.teams[t.id-1].blockers {
-		statemanager.StateDelete(fmt.Sprintf("%v.Blocker(%v)", base, idx))
+		state.StateDelete(fmt.Sprintf("%v.Blocker(%v)", base, idx))
 	}
 	j.teams[t.id-1].blockers = nil
 }
@@ -93,29 +137,29 @@ func (j *jam) setTeamPosition(s *skater) {
 	switch s.position {
 	case positionJammer:
 		j.teams[s.t.id-1].jammer = s.id
-		statemanager.StateUpdateString(base+".Jammer", s.id)
+		state.StateUpdateString(base+".Jammer", s.id)
 	case positionPivot:
 		j.teams[s.t.id-1].jammer = s.id
-		statemanager.StateUpdateString(base+".Pivot", s.id)
+		state.StateUpdateString(base+".Pivot", s.id)
 	case positionBlocker:
 		j.teams[s.t.id-1].blockers = append(j.teams[s.t.id-1].blockers, s.id)
-		statemanager.StateUpdateString(fmt.Sprintf("%v.Blocker(%v)", base, len(j.teams[s.t.id-1].blockers)-1), s.id)
+		state.StateUpdateString(fmt.Sprintf("%v.Blocker(%v)", base, len(j.teams[s.t.id-1].blockers)-1), s.id)
 	}
 }
 
 func (j *jam) setPeriod(v int64) error {
 	j.period = v
-	return statemanager.StateUpdateInt64(j.stateIDs["period"], v)
+	return state.StateUpdateInt64(j.stateIDs["period"], v)
 }
 
 func (j *jam) setJam(v int64) error {
 	j.jam = v
-	return statemanager.StateUpdateInt64(j.stateIDs["jam"], v)
+	return state.StateUpdateInt64(j.stateIDs["jam"], v)
 }
 
 /* helper functions to find the jam for registerupdaters */
 func (sb *Scoreboard) findJam(k string) *jam {
-	ids := statemanager.ParseIDs(k)
+	ids := state.ParseIDs(k)
 	if len(ids) == 0 {
 		return nil
 	}

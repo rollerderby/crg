@@ -8,7 +8,7 @@ package scoreboard
 import (
 	"fmt"
 
-	"github.com/rollerderby/crg/statemanager"
+	"github.com/rollerderby/crg/state"
 )
 
 type minMaxNumber struct {
@@ -36,9 +36,9 @@ func newMinMaxNumber(p parent, id string, countdown bool, min, max, num, updateO
 	mmn.stateIDs["num"] = mmn.base + ".Num"
 	mmn.stateIDs["precise"] = mmn.base + ".PreciseNum"
 
-	statemanager.RegisterUpdaterInt64(mmn.stateIDs["min"], 1, mmn.setMin)
-	statemanager.RegisterUpdaterInt64(mmn.stateIDs["max"], 2, mmn.setMax)
-	statemanager.RegisterUpdaterInt64(mmn.stateIDs["precise"], 3, mmn.setNum)
+	state.RegisterUpdaterInt64(mmn.stateIDs["min"], 1, mmn.setMin)
+	state.RegisterUpdaterInt64(mmn.stateIDs["max"], 2, mmn.setMax)
+	state.RegisterUpdaterInt64(mmn.stateIDs["precise"], 3, mmn.setNum)
 
 	mmn.setMin(min)
 	mmn.setMax(max)
@@ -48,7 +48,7 @@ func newMinMaxNumber(p parent, id string, countdown bool, min, max, num, updateO
 }
 
 func (mmn *minMaxNumber) sendNumStateUpdate() {
-	statemanager.StateUpdateInt64(mmn.stateIDs["precise"], mmn.num)
+	state.StateUpdateInt64(mmn.stateIDs["precise"], mmn.num)
 	diff := mmn.num % mmn.updateOn
 	if mmn.countdown {
 		diff = -((mmn.updateOn - diff) % mmn.updateOn)
@@ -60,7 +60,7 @@ func (mmn *minMaxNumber) sendNumStateUpdate() {
 	} else if num > mmn.max {
 		num = mmn.max
 	}
-	statemanager.StateUpdateInt64(mmn.stateIDs["num"], num)
+	state.StateUpdateInt64(mmn.stateIDs["num"], num)
 }
 
 func (mmn *minMaxNumber) adjust(down bool, adjust int64) bool {
@@ -96,7 +96,7 @@ func (mmn *minMaxNumber) setMin(v int64) error {
 		mmn.setNum(mmn.num)
 	}
 
-	statemanager.StateUpdateInt64(mmn.stateIDs["min"], mmn.min)
+	state.StateUpdateInt64(mmn.stateIDs["min"], mmn.min)
 	return nil
 }
 
@@ -109,7 +109,7 @@ func (mmn *minMaxNumber) setMax(v int64) error {
 		mmn.setNum(mmn.max)
 	}
 
-	statemanager.StateUpdateInt64(mmn.stateIDs["max"], mmn.max)
+	state.StateUpdateInt64(mmn.stateIDs["max"], mmn.max)
 	return nil
 }
 

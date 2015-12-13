@@ -12,7 +12,7 @@ import (
 	"sync"
 
 	ws "github.com/gorilla/websocket"
-	"github.com/rollerderby/crg/statemanager"
+	"github.com/rollerderby/crg/state"
 	"github.com/satori/go.uuid"
 )
 
@@ -25,17 +25,17 @@ type connection struct {
 	sync.Mutex
 	conn     *ws.Conn
 	paths    []string
-	ch       chan map[string]*string
-	state    map[string]*string
-	listener *statemanager.Listener
+	listener *state.Listener
+	// ch       chan map[string]*string
+	// state    map[string]*string
 }
 
 func newConnection(conn *ws.Conn) *connection {
 	c := &connection{
 		conn: conn,
-		ch:   make(chan map[string]*string, 10),
+		// ch:   make(chan map[string]*string, 10),
 	}
-	c.listener = statemanager.NewListener(fmt.Sprintf("websocket(%v)", conn.RemoteAddr()), c.processUpdates)
+	c.listener = state.NewListener(fmt.Sprintf("websocket(%v)", conn.RemoteAddr()), c.processUpdates)
 
 	return c
 }
@@ -49,7 +49,7 @@ func (c *connection) Run() {
 	defer c.Close()
 
 	for {
-		var cmd command
+		var cmd msgCommand
 		err := c.conn.ReadJSON(&cmd)
 		if err != nil {
 			log.Print("Cannot read command: ", err)
@@ -67,12 +67,12 @@ func (c *connection) Run() {
 				fields[k] = v
 			}
 
-			statemanager.Lock()
-			statemanager.StateSetGroup(fields)
-			statemanager.Unlock()
+			state.Lock()
+			state.StateSetGroup(fields)
+			state.Unlock()
 		default:
-			// Try to send a command through the statemanager
-			err := statemanager.Command(cmd.Action, cmd.Data)
+			// Try to send a msgCommand through the state
+			err := state.Command(cmd.Action, cmd.Data)
 			if err != nil {
 				log.Print("Error processing command: ", err)
 			}
@@ -105,7 +105,7 @@ func (c *connection) processUpdates(s map[string]*string) {
 	c.Lock()
 	defer c.Unlock()
 
-	err := c.conn.WriteJSON(state{State: s})
+	err := c.conn.WriteJSON(msgState{State: s})
 	if err != nil {
 		log.Print("Cannot send JSON to client: ", err)
 		c.Close()

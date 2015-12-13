@@ -9,7 +9,7 @@ import (
 	"errors"
 	"strings"
 
-	"github.com/rollerderby/crg/statemanager"
+	"github.com/rollerderby/crg/state"
 )
 
 const (
@@ -96,51 +96,51 @@ func newSkater(t *team, id, name, legalName, insuranceNumber, number string, isA
 
 func (s *skater) setID(v string) error {
 	s.id = v
-	return statemanager.StateUpdateString(s.stateIDs["id"], v)
+	return state.StateUpdateString(s.stateIDs["id"], v)
 }
 
 func (s *skater) setName(v string) error {
 	s.name = v
-	return statemanager.StateUpdateString(s.stateIDs["name"], v)
+	return state.StateUpdateString(s.stateIDs["name"], v)
 }
 
 func (s *skater) setLegalName(v string) error {
 	s.legalName = v
-	return statemanager.StateUpdateString(s.stateIDs["legalName"], v)
+	return state.StateUpdateString(s.stateIDs["legalName"], v)
 }
 
 func (s *skater) setInsuranceNumber(v string) error {
 	s.insuranceNumber = v
-	return statemanager.StateUpdateString(s.stateIDs["insuranceNumber"], v)
+	return state.StateUpdateString(s.stateIDs["insuranceNumber"], v)
 }
 
 func (s *skater) setNumber(v string) error {
 	s.number = v
-	return statemanager.StateUpdateString(s.stateIDs["number"], v)
+	return state.StateUpdateString(s.stateIDs["number"], v)
 }
 
 func (s *skater) setIsAlt(v bool) error {
 	s.isAlt = v
 	s.setDescription()
-	return statemanager.StateUpdateBool(s.stateIDs["isAlt"], v)
+	return state.StateUpdateBool(s.stateIDs["isAlt"], v)
 }
 
 func (s *skater) setIsCaptain(v bool) error {
 	s.isCaptain = v
 	s.setDescription()
-	return statemanager.StateUpdateBool(s.stateIDs["isCaptain"], v)
+	return state.StateUpdateBool(s.stateIDs["isCaptain"], v)
 }
 
 func (s *skater) setIsAltCaptain(v bool) error {
 	s.isAltCaptain = v
 	s.setDescription()
-	return statemanager.StateUpdateBool(s.stateIDs["isAltCaptain"], v)
+	return state.StateUpdateBool(s.stateIDs["isAltCaptain"], v)
 }
 
 func (s *skater) setIsBenchStaff(v bool) error {
 	s.isBenchStaff = v
 	s.setDescription()
-	return statemanager.StateUpdateBool(s.stateIDs["isBenchStaff"], v)
+	return state.StateUpdateBool(s.stateIDs["isBenchStaff"], v)
 }
 
 func (s *skater) inBox() bool {
@@ -148,7 +148,7 @@ func (s *skater) inBox() bool {
 }
 
 func (s *skater) setInLastJam(v bool) error {
-	return statemanager.StateUpdateBool(s.stateIDs["inLastJam"], v)
+	return state.StateUpdateBool(s.stateIDs["inLastJam"], v)
 }
 
 func (s *skater) setInBox(v bool) error {
@@ -171,22 +171,17 @@ func (s *skater) setInBox(v bool) error {
 		s.t.updatePositions()
 	}
 
-	return statemanager.StateUpdateBool(s.stateIDs["inBox"], v)
+	return state.StateUpdateBool(s.stateIDs["inBox"], v)
 }
 
 func (s *skater) setPosition(v string) error {
 	var set = func(v string) error {
 		s.position = v
 		s.t.updatePositions()
-		return statemanager.StateUpdateString(s.stateIDs["position"], v)
+		return state.StateUpdateString(s.stateIDs["position"], v)
 	}
 
-	if v == s.position {
-		// Nothing to see, move along
-		return nil
-	}
-
-	if s.inBox() {
+	if s.inBox() || v == positionBench {
 		return errSkaterInBox
 	}
 
@@ -250,13 +245,13 @@ func (s *skater) setDescription() {
 		long = append(long, "Bench Staff")
 		short = append(short, "B")
 	}
-	statemanager.StateUpdateString(s.stateIDs["description"], strings.Join(long, ", "))
-	statemanager.StateUpdateString(s.stateIDs["shortDescription"], strings.Join(short, ""))
+	state.StateUpdateString(s.stateIDs["description"], strings.Join(long, ", "))
+	state.StateUpdateString(s.stateIDs["shortDescription"], strings.Join(short, ""))
 }
 
 /* Helper functions to find the skater for RegisterUpdaters */
 func (t *team) findSkater(k string) *skater {
-	ids := statemanager.ParseIDs(k)
+	ids := state.ParseIDs(k)
 	if len(ids) < 2 {
 		return nil
 	}

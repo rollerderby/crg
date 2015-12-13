@@ -3,7 +3,7 @@
 // governed by a GPL-style license that can be found
 // in the LICENSE file.
 
-package statemanager
+package state
 
 import (
 	"log"
@@ -159,47 +159,47 @@ func StateSetGroup(values map[string]string) {
 	}
 }
 
-// RegisterUpdaterString adds a string updater to the statemanager.
+// RegisterUpdaterString adds a string updater to the state.
 func RegisterUpdaterString(name string, groupPriority uint8, u UpdaterStringFunc) {
 	updaters[name] = &stateUpdater{updater: u, name: name, groupPriority: groupPriority, pm: newPatternMatcher(name)}
 }
 
-// RegisterUpdaterInt64 adds an int64 updater to the statemanager.
+// RegisterUpdaterInt64 adds an int64 updater to the state.
 func RegisterUpdaterInt64(name string, groupPriority uint8, u UpdaterInt64Func) {
 	updaters[name] = &stateUpdater{updater: u, name: name, groupPriority: groupPriority, pm: newPatternMatcher(name)}
 }
 
-// RegisterUpdaterBool adds a bool updater to the statemanager.
+// RegisterUpdaterBool adds a bool updater to the state.
 func RegisterUpdaterBool(name string, groupPriority uint8, u UpdaterBoolFunc) {
 	updaters[name] = &stateUpdater{updater: u, name: name, groupPriority: groupPriority, pm: newPatternMatcher(name)}
 }
 
-// RegisterUpdaterTime adds a time updater to the statemanager.
+// RegisterUpdaterTime adds a time updater to the state.
 func RegisterUpdaterTime(name string, groupPriority uint8, u UpdaterTimeFunc) {
 	updaters[name] = &stateUpdater{updater: u, name: name, groupPriority: groupPriority, pm: newPatternMatcher(name)}
 }
 
-// RegisterPatternUpdaterString adds a string updater to the statemanager.
+// RegisterPatternUpdaterString adds a string updater to the state.
 func RegisterPatternUpdaterString(name string, groupPriority uint8, u UpdaterPatternStringFunc) {
 	updaters[name] = &stateUpdater{updater: u, name: name, groupPriority: groupPriority, isPattern: true, pm: newPatternMatcher(name)}
 }
 
-// RegisterPatternUpdaterInt64 adds an int64 updater to the statemanager.
+// RegisterPatternUpdaterInt64 adds an int64 updater to the state.
 func RegisterPatternUpdaterInt64(name string, groupPriority uint8, u UpdaterPatternInt64Func) {
 	updaters[name] = &stateUpdater{updater: u, name: name, groupPriority: groupPriority, isPattern: true, pm: newPatternMatcher(name)}
 }
 
-// RegisterPatternUpdaterBool adds a bool updater to the statemanager.
+// RegisterPatternUpdaterBool adds a bool updater to the state.
 func RegisterPatternUpdaterBool(name string, groupPriority uint8, u UpdaterPatternBoolFunc) {
 	updaters[name] = &stateUpdater{updater: u, name: name, groupPriority: groupPriority, isPattern: true, pm: newPatternMatcher(name)}
 }
 
-// RegisterPatternUpdaterTime adds a time updater to the statemanager.
+// RegisterPatternUpdaterTime adds a time updater to the state.
 func RegisterPatternUpdaterTime(name string, groupPriority uint8, u UpdaterPatternTimeFunc) {
 	updaters[name] = &stateUpdater{updater: u, name: name, groupPriority: groupPriority, isPattern: true, pm: newPatternMatcher(name)}
 }
 
-// UnregisterUpdater removes an updater from the statemanager.
+// UnregisterUpdater removes an updater from the state.
 func UnregisterUpdater(name string) {
 	delete(updaters, name)
 }
