@@ -5,7 +5,11 @@
 
 package state
 
-import "testing"
+import (
+	"testing"
+
+	"github.com/rollerderby/crg/utils"
+)
 
 var cases = []*struct {
 	pattern  string
@@ -35,7 +39,7 @@ func TestPatternMatcher(t *testing.T) {
 		if r != c.expected {
 			t.Errorf("CheckPattern('%v', '%v') expected %v got %v", c.value, c.pattern, c.expected, r)
 		}
-		t.Logf("ParseIDs: %v %+v", c.value, ParseIDs(c.value))
+		t.Logf("ParseIDs: %v %+v", c.value, utils.ParseIDs(c.value))
 	}
 }
 

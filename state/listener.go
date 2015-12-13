@@ -5,18 +5,13 @@
 
 package state
 
-import (
-	"fmt"
-	"log"
-	"sort"
-)
+import "log"
 
 // Listener allows functions to listen for changes in the state of the scoreboard
 type Listener struct {
 	name     string
-	callback func(map[string]*string)
 	stateNum uint64
-	ch       chan map[string]*string
+	ch       chan map[string]*State
 	matchers []patternMatcher
 	paths    []string
 }
@@ -26,22 +21,49 @@ var listeners []*Listener
 // NewListener creates a listener with name describing the listener (for log messages)
 // and cb is a callback function which gets called on changes to the state filtered
 // by Listener.RegisterPaths
-func NewListener(name string, cb func(map[string]*string)) *Listener {
+func NewListener(name string, cb func(map[string]*State)) *Listener {
 	lock.Lock()
 	defer lock.Unlock()
 
 	l := &Listener{
 		name:     name,
 		stateNum: 0,
-		callback: cb,
-		ch:       make(chan map[string]*string, 10),
+		ch:       make(chan map[string]*State),
 		matchers: nil,
 		paths:    nil,
 	}
 
 	listeners = append(listeners, l)
-	go l.processUpdates()
+	// Process update goroutine
+	go func() {
+		for {
+			updates := <-l.ch
+			cb(updates)
+			if updates == nil {
+				return
+			}
+		}
+	}()
 	return l
+}
+
+// NewStringListener creates a listener with name describing the listener (for log messages)
+// and cb is a callback function which gets called on changes to the state filtered
+// by Listener.RegisterPaths
+func NewStringListener(name string, cb func(map[string]string)) *Listener {
+	var callbackConverter = func(u1 map[string]*State) {
+		u2 := make(map[string]string)
+		for k, s := range u1 {
+			if s.HasValue() {
+				u2[k] = ""
+			} else {
+				u2[k] = s.Value()
+			}
+		}
+		cb(u2)
+	}
+
+	return NewListener(name, callbackConverter)
 }
 
 // Close closes the listener.  After this call it the callback will never be called for
@@ -61,26 +83,6 @@ func (l *Listener) Close() {
 }
 
 func (l *Listener) processUpdates() {
-	for {
-		updates := <-l.ch
-		if debugFlag {
-			var values []string
-			for k, v := range updates {
-				if v != nil {
-					values = append(values, fmt.Sprintf("%v=\"%v\"", k, *v))
-				} else {
-					values = append(values, fmt.Sprintf("%v=nil", k))
-				}
-			}
-			sort.StringSlice(values).Sort()
-			log.Printf("Processing %v updates for %v  %+v", len(updates), l.name, values)
-		}
-
-		l.callback(updates)
-		if updates == nil {
-			return
-		}
-	}
 }
 
 func (l *Listener) findPatternMatcher(path string) (int, patternMatcher) {
@@ -138,15 +140,15 @@ func (l *Listener) UnregisterPaths(paths []string) {
 }
 
 func (l *Listener) flush(paths []string) {
-	var u map[string]*string
+	var u map[string]*State
 	if l.stateNum < stateNum || paths != nil {
-		for _, s := range states {
-			needed := l.stateNum < s.stateNum
+		for stateName, s := range states {
+			needed := l.stateNum < s.StateNum()
 			matched := false
 
 			for idx, pm := range l.matchers {
 				p := l.paths[idx]
-				if pm.Matches(s.name) {
+				if pm.Matches(stateName) {
 					matched = true
 
 					// Matched, now look for just registered
@@ -162,13 +164,9 @@ func (l *Listener) flush(paths []string) {
 
 			if matched && needed {
 				if u == nil {
-					u = make(map[string]*string)
+					u = make(map[string]*State)
 				}
-				if v, e := s.Value(); !e {
-					u[s.name] = &v
-				} else {
-					u[s.name] = nil
-				}
+				u[stateName] = s
 			}
 		}
 		if u != nil {

@@ -26,8 +26,6 @@ type connection struct {
 	conn     *ws.Conn
 	paths    []string
 	listener *state.Listener
-	// ch       chan map[string]*string
-	// state    map[string]*string
 }
 
 func newConnection(conn *ws.Conn) *connection {
@@ -101,9 +99,19 @@ func (c *connection) requestUpdates(paths []string) {
 	}
 }
 
-func (c *connection) processUpdates(s map[string]*string) {
+func (c *connection) processUpdates(u map[string]*state.State) {
 	c.Lock()
 	defer c.Unlock()
+
+	s := make(map[string]*string)
+	for k, v := range u {
+		if v.HasValue() {
+			v2 := v.Value()
+			s[k] = &v2
+		} else {
+			s[k] = nil
+		}
+	}
 
 	err := c.conn.WriteJSON(msgState{State: s})
 	if err != nil {

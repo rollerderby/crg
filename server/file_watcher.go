@@ -40,7 +40,7 @@ func addFileWatcher(mediaType, prefix, path string) (*fsnotify.Watcher, error) {
 		short := filepath.Base(name)
 		full := filepath.Join(path, short)
 
-		state.StateUpdateString(fmt.Sprintf("Media.Type(%v).File(%v)", mediaType, full), short)
+		state.SetStateString(fmt.Sprintf("Media.Type(%v).File(%v)", mediaType, full), short)
 	}
 
 	go func() {
@@ -51,11 +51,11 @@ func addFileWatcher(mediaType, prefix, path string) (*fsnotify.Watcher, error) {
 				full := filepath.Join(path, short)
 
 				if event.Op&fsnotify.Create == fsnotify.Create {
-					state.StateUpdateString(fmt.Sprintf("Media.Type(%v).File(%v)", mediaType, full), short)
+					state.SetStateString(fmt.Sprintf("Media.Type(%v).File(%v)", mediaType, full), short)
 				} else if event.Op&fsnotify.Rename == fsnotify.Rename {
-					state.StateDelete(fmt.Sprintf("Media.Type(%v).File(%v)", mediaType, full))
+					state.Delete(fmt.Sprintf("Media.Type(%v).File(%v)", mediaType, full))
 				} else if event.Op&fsnotify.Remove == fsnotify.Remove {
-					state.StateDelete(fmt.Sprintf("Media.Type(%v).File(%v)", mediaType, full))
+					state.Delete(fmt.Sprintf("Media.Type(%v).File(%v)", mediaType, full))
 				}
 			case err := <-watcher.Errors:
 				log.Println("error:", err)

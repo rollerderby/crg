@@ -22,7 +22,7 @@ import (
 // Saver handles saving part (or all) of the state to a file
 type Saver struct {
 	sync.Mutex
-	state       map[string]*string
+	state       map[string]string
 	name        string
 	interval    time.Duration
 	version     bool
@@ -45,14 +45,14 @@ func NewSaver(name, base string, interval time.Duration, version, setFromFile bo
 	}
 
 	s := &Saver{
-		state:       make(map[string]*string),
+		state:       make(map[string]string),
 		name:        name,
 		interval:    interval,
 		version:     version,
 		saveTrigger: make(chan bool),
 	}
 
-	s.listener = NewListener(fmt.Sprintf("Saver(%s)", name), s.processUpdates)
+	s.listener = NewStringListener(fmt.Sprintf("Saver(%s)", name), s.processUpdates)
 	s.listener.RegisterPaths([]string{base})
 	go s.saveLoop()
 
@@ -69,12 +69,12 @@ func (s *Saver) Close() {
 	s.saveTrigger <- true
 }
 
-func (s *Saver) processUpdates(updates map[string]*string) {
+func (s *Saver) processUpdates(updates map[string]string) {
 	s.Lock()
 	defer s.Unlock()
 
 	for key, value := range updates {
-		if value == nil {
+		if value == "" {
 			delete(s.state, key)
 		} else {
 			s.state[key] = value

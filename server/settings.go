@@ -16,9 +16,10 @@ import (
 func setSettings(k, v string) error {
 	v = strings.TrimSpace(v)
 	if v == "" {
-		return state.StateDelete(k)
+		return state.Delete(k)
 	}
-	return state.StateUpdateString(k, v)
+	state.SetStateString(k, v)
+	return nil
 }
 
 // setup default settings
@@ -37,7 +38,7 @@ func initSettings(saveFile string) *state.Saver {
 	state.Lock()
 	for _, v := range views {
 		for _, d := range defaults {
-			state.StateUpdateString(fmt.Sprintf("Settings.%v.%v", v, d.name), d.value)
+			state.SetStateString(fmt.Sprintf("Settings.%v.%v", v, d.name), d.value)
 		}
 	}
 	state.RegisterPatternUpdaterString("Settings", 0, setSettings)

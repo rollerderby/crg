@@ -123,7 +123,7 @@ func Start(port uint16) {
 
 	// Initialize scoreboard and load Scoreboard.*
 	state.Lock()
-	scoreboard.New()
+	scoreboard.Initialize()
 	state.Unlock()
 	savers = append(savers, state.NewSaver("config/scoreboard", "Scoreboard", time.Duration(5)*time.Second, true, true))
 
