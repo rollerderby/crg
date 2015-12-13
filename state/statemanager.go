@@ -11,7 +11,6 @@ package state
 import (
 	"errors"
 	"log"
-	"path/filepath"
 	"strconv"
 	"strings"
 	"sync"
@@ -47,20 +46,8 @@ var ErrUpdaterNotFound = errors.New("Updater Not Found")
 // one of the supported types (currently string, int64, bool)
 var ErrUnknownType = errors.New("Unknown State Type")
 
-var baseFilePath = ""
-
 // SetDebug turns debugging information on or off (sent to log)
 func SetDebug(d bool) { debugFlag = d }
-
-// BaseFilePath returns the base directory for loading or saving files
-func BaseFilePath() string { return baseFilePath }
-
-// SetBaseFilePath sets the base directory for loading or saving files
-func SetBaseFilePath(p ...string) {
-	path := filepath.Join(p...)
-	log.Printf("state: Setting BaseFilePath to '%v'", path)
-	baseFilePath = path
-}
 
 // Initialize starts up the state
 func Initialize() {
@@ -214,21 +201,4 @@ func StateUpdateTime(k string, v time.Time) error {
 		stateUpdated = true
 	}
 	return nil
-}
-
-// ParseIDs returns all values within () in the input string.
-// Example
-// Scoreboard.Team(1).Skater(abc123).Name returns ["1", "abc123"]
-func ParseIDs(k string) []string {
-	var ret []string
-	startPos := -1
-	for idx, c := range k {
-		if startPos == -1 && c == '(' {
-			startPos = idx + 1
-		} else if startPos != -1 && c == ')' {
-			ret = append(ret, k[startPos:idx])
-			startPos = -1
-		}
-	}
-	return ret
 }

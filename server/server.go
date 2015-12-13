@@ -19,6 +19,7 @@ import (
 	"github.com/rollerderby/crg/leagues"
 	"github.com/rollerderby/crg/scoreboard"
 	"github.com/rollerderby/crg/state"
+	"github.com/rollerderby/crg/utils"
 	"github.com/rollerderby/crg/websocket"
 )
 
@@ -91,7 +92,7 @@ func urlsHandler(w http.ResponseWriter, _ *http.Request) {
 }
 
 func openLog() *os.File {
-	path := filepath.Join(state.BaseFilePath(), "logs", fmt.Sprintf("scoreboard-%v.log", time.Now().Format(time.RFC3339)))
+	path := utils.Path("logs", fmt.Sprintf("scoreboard-%v.log", time.Now().Format(time.RFC3339)))
 	os.MkdirAll(filepath.Dir(path), 0775)
 	f, err := os.OpenFile(path, os.O_RDWR|os.O_CREATE|os.O_APPEND, 0664)
 	if err != nil {
@@ -122,7 +123,7 @@ func Start(port uint16) {
 
 	// Initialize scoreboard and load Scoreboard.*
 	state.Lock()
-	scoreboard.Initialize()
+	scoreboard.New()
 	state.Unlock()
 	savers = append(savers, state.NewSaver("config/scoreboard", "Scoreboard", time.Duration(5)*time.Second, true, true))
 
@@ -136,7 +137,7 @@ func Start(port uint16) {
 	addFileWatcher("CustomHtml", "html", "/customhtml")
 
 	printStartup(port)
-	mux.Handle("/", http.FileServer(http.Dir(filepath.Join(state.BaseFilePath(), "html"))))
+	mux.Handle("/", http.FileServer(http.Dir(utils.Path("html"))))
 
 	c := make(chan os.Signal, 1)
 	go func() {

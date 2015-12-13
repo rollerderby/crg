@@ -13,6 +13,7 @@ import (
 	"time"
 
 	"github.com/rollerderby/crg/state"
+	"github.com/rollerderby/crg/utils"
 )
 
 type stateSnapshot struct {
@@ -246,7 +247,7 @@ func (ss *stateSnapshot) findTeam(k string) *stateSnapshotTeam {
 
 /* Helper functions to find the stateSnapshot for RegisterUpdaters */
 func (sb *Scoreboard) findStateSnapshot(k string) *stateSnapshot {
-	ids := state.ParseIDs(k)
+	ids := utils.ParseIDs(k)
 	if len(ids) == 0 {
 		return nil
 	}

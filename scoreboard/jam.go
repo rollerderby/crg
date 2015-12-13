@@ -11,6 +11,7 @@ import (
 	"strconv"
 
 	"github.com/rollerderby/crg/state"
+	"github.com/rollerderby/crg/utils"
 )
 
 const (
@@ -159,7 +160,7 @@ func (j *jam) setJam(v int64) error {
 
 /* helper functions to find the jam for registerupdaters */
 func (sb *Scoreboard) findJam(k string) *jam {
-	ids := state.ParseIDs(k)
+	ids := utils.ParseIDs(k)
 	if len(ids) == 0 {
 		return nil
 	}

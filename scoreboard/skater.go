@@ -10,6 +10,7 @@ import (
 	"strings"
 
 	"github.com/rollerderby/crg/state"
+	"github.com/rollerderby/crg/utils"
 )
 
 const (
@@ -251,7 +252,7 @@ func (s *skater) setDescription() {
 
 /* Helper functions to find the skater for RegisterUpdaters */
 func (t *team) findSkater(k string) *skater {
-	ids := state.ParseIDs(k)
+	ids := utils.ParseIDs(k)
 	if len(ids) < 2 {
 		return nil
 	}

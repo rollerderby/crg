@@ -10,6 +10,7 @@ import (
 	"strconv"
 
 	"github.com/rollerderby/crg/state"
+	"github.com/rollerderby/crg/utils"
 )
 
 type boxTrip struct {
@@ -122,7 +123,7 @@ func (bt *boxTrip) setOutAfterStarPass(v bool) {
 
 /* Helper functions to find the jam for RegisterUpdaters */
 func (s *skater) findBoxTrip(k string) *boxTrip {
-	ids := state.ParseIDs(k)
+	ids := utils.ParseIDs(k)
 	if len(ids) == 0 {
 		return nil
 	}

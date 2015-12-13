@@ -9,6 +9,7 @@ import (
 	"errors"
 
 	"github.com/rollerderby/crg/state"
+	"github.com/rollerderby/crg/utils"
 )
 
 type Person struct {
@@ -92,7 +93,7 @@ func (p *Person) SetNumber(v string) error {
 
 /* Helper functions to find the Person for RegisterUpdaters */
 func findPerson(k string) *Person {
-	ids := state.ParseIDs(k)
+	ids := utils.ParseIDs(k)
 	id := ids[0]
 
 	p, ok := persons[id]

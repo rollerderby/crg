@@ -13,10 +13,11 @@ import (
 
 	"github.com/go-fsnotify/fsnotify"
 	"github.com/rollerderby/crg/state"
+	"github.com/rollerderby/crg/utils"
 )
 
 func addFileWatcher(mediaType, prefix, path string) (*fsnotify.Watcher, error) {
-	fullpath := filepath.Join(state.BaseFilePath(), prefix, path)
+	fullpath := utils.Path(prefix, path)
 	os.MkdirAll(fullpath, 0775)
 
 	watcher, err := fsnotify.NewWatcher()

@@ -9,6 +9,7 @@ import (
 	"errors"
 
 	"github.com/rollerderby/crg/state"
+	"github.com/rollerderby/crg/utils"
 )
 
 type League struct {
@@ -71,7 +72,7 @@ func (l *League) SetName(v string) error {
 
 /* Helper functions to find the League for RegisterUpdaters */
 func findLeague(k string) *League {
-	ids := state.ParseIDs(k)
+	ids := utils.ParseIDs(k)
 	id := ids[0]
 
 	l, ok := leagues[id]

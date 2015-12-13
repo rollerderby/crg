@@ -15,7 +15,7 @@ import (
 
 	"github.com/kardianos/osext"
 	"github.com/rollerderby/crg/server"
-	"github.com/rollerderby/crg/state"
+	"github.com/rollerderby/crg/utils"
 )
 
 var port int
@@ -44,15 +44,15 @@ func main() {
 	path, err := osext.ExecutableFolder()
 	if err == nil {
 		if exists(true, path, "html") && exists(false, path, "html/index.html") {
-			state.SetBaseFilePath(path)
+			utils.SetBaseFilePath(path)
 		} else if exists(true, path, "..", "html") && exists(false, path, "..", "html/index.html") {
-			state.SetBaseFilePath(path, "..")
+			utils.SetBaseFilePath(path, "..")
 		}
 	}
 	flag.Parse()
 
 	if cpuProf {
-		f, err := os.Create(filepath.Join(state.BaseFilePath(), "profile.cpu"))
+		f, err := os.Create(utils.Path("profile.cpu"))
 		if err != nil {
 			log.Print(err)
 		} else {

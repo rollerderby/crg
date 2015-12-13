@@ -15,6 +15,8 @@ import (
 	"path/filepath"
 	"sync"
 	"time"
+
+	"github.com/rollerderby/crg/utils"
 )
 
 // Saver handles saving part (or all) of the state to a file
@@ -89,7 +91,7 @@ func (s *Saver) processUpdates(updates map[string]*string) {
 func loadState(name string) map[string]string {
 	state := make(map[string]string)
 
-	filename := filepath.Join(baseFilePath, name)
+	filename := utils.Path(name)
 	os.MkdirAll(filepath.Dir(filename), 0775)
 	b, err := ioutil.ReadFile(fmt.Sprintf("%s.json", filename))
 	if err != nil {
@@ -121,7 +123,7 @@ func (s *Saver) saveLoop() {
 }
 
 func (s *Saver) saveState() {
-	filename := filepath.Join(baseFilePath, s.name)
+	filename := utils.Path(s.name)
 	os.MkdirAll(filepath.Dir(filename), 0775)
 	w, err := os.Create(fmt.Sprintf("%s.json", filename))
 	if err != nil {
