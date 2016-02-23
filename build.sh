@@ -29,10 +29,18 @@ go get -u github.com/gorilla/websocket
 go get -u github.com/satori/go.uuid
 go get -u github.com/go-fsnotify/fsnotify
 go get -u github.com/kardianos/osext
+
 if [ $ZIP -eq 0 ]; then
 	mkdir -p bin
-	rm -f ./bin/scoreboard
-	go build -v -o ./bin/scoreboard ./cmd/scoreboard
+	PLATFORM=$(uname -s)
+	EXT=""
+	case $PLATFORM in
+		CYGWIN*|MINGW32*|MSYS*)
+			EXT=".exe"
+		;;
+	esac
+	rm -f ./bin/scoreboard$EXT
+	go build -v -o ./bin/scoreboard$EXT ./cmd/scoreboard
 else
 	rm -f scoreboard-*
 	mkdir -p release
