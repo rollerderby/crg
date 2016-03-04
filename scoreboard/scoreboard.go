@@ -321,8 +321,8 @@ func (sb *Scoreboard) undo(_ []string) error {
 
 		if sb.state != stateJam && lastSnapshot.state == stateJam {
 			sb.activeJam.delete()
-			sb.activeJam = sb.jams[len(sb.jams)-2]
-			sb.jams = sb.jams[:len(sb.jams)-2]
+			sb.jams = sb.jams[:len(sb.jams)-1]
+			sb.activeJam = sb.jams[len(sb.jams)-1]
 		}
 
 		for name, c := range lastSnapshot.clocks {
